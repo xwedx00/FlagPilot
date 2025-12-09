@@ -2,45 +2,62 @@
 Ghosting Shield - Follow-up Strategy Agent
 """
 
-from metagpt.roles import Role
-from metagpt.actions import Action
-from metagpt.schema import Message
 from typing import ClassVar
+from agents.roles.base_role import FlagPilotRole, FlagPilotAction
 from config import get_configured_llm
+from lib.tools.rag_tool import RAGSearch
 
-
-class ShieldGhosting(Action):
+class ShieldGhosting(FlagPilotAction):
     """Create follow-up strategies for unresponsive clients"""
     
     name: str = "ShieldGhosting"
+    desc: str = "Plan follow-up sequences for ghosting clients."
     
     PROMPT_TEMPLATE: ClassVar[str] = """
-You are Ghosting Shield, an expert at re-engaging unresponsive clients professionally.
+    You are Ghosting Shield, re-engaging clients who went silent.
+    
+    Follow-up Strategy / Sequences (RAG):
+    {rag_context}
+    
+    Situation:
+    {content}
+    
+    Provide:
+    1. DIAGNOSIS (Why might they be silent? Busy? Not interested?)
+    2. STRATEGY (Wait? Call? Email?)
+    3. THE "MAGIC EMAIL" (A specific script designed to get a response)
+    4. THE "BREAK UP" EMAIL (Last resort script)
+    
+    Be persistent but never desperate.
+    """
 
-Create a follow-up strategy for:
-1. SITUATION ASSESSMENT (project stage, last contact, relationship)
-2. TIMING RECOMMENDATIONS for follow-ups
-3. MESSAGE TEMPLATES (ready to send)
-4. ALTERNATIVE CHANNELS to try
-5. WHEN TO MOVE ON
+    async def run(self, instruction: str, context: str = "") -> str:
+        # 1. Native Tool: Search for follow-up timing and templates
+        rag_context = "General follow-up advice."
+        try:
+            rag_context = RAGSearch.search_knowledge_base(
+                query=f"client ghosting follow up email {instruction[:50]}", 
+                top_k=2
+            )
+        except Exception:
+            pass
 
-Situation:
-{content}
-
-Context:
-{context}
-
-Provide professional templates that are persistent but not pushy.
-"""
-
-    async def run(self, content: str, context: str = "") -> str:
-        prompt = self.PROMPT_TEMPLATE.format(content=content, context=context)
+        # 2. Build Prompt
+        prompt = self.PROMPT_TEMPLATE.format(
+            content=instruction,
+            rag_context=f"{rag_context}\n\nProject History: {context}"
+        )
+        
+        # 3. Call LLM
         llm = get_configured_llm()
         return await llm.aask(prompt)
 
 
-class GhostingShield(Role):
-    """Ghosting Shield Agent - Follow-up strategies"""
+class GhostingShield(FlagPilotRole):
+    """
+    Ghosting Shield Agent
+    Watches for: Unanswered messages, stalled projects
+    """
     
     name: str = "GhostingShield"
     profile: str = "Client Re-engagement Specialist"
@@ -48,15 +65,9 @@ class GhostingShield(Role):
     constraints: str = "Be persistent but professional, know when to move on"
     
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.set_actions([ShieldGhosting])
-    
-    async def _act(self) -> Message:
-        todo = self.rc.todo
-        msg = self.rc.important_memory[-1] if self.rc.important_memory else None
-        result = await todo.run(content=msg.content if msg else "", context="")
-        return Message(content=result, role=self.profile, cause_by=type(todo), sent_from=self.name)
-    
+        super().__init__(actions=[ShieldGhosting], **kwargs)
+        
     async def analyze(self, text: str, context: dict = None) -> str:
-        ctx = "\n".join([f"{k}: {v}" for k, v in (context or {}).items()])
-        return await ShieldGhosting().run(content=text, context=ctx)
+        """Override for direct API usage"""
+        action = ShieldGhosting()
+        return await action.run(instruction=text, context=str(context))

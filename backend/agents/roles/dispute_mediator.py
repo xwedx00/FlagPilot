@@ -2,46 +2,62 @@
 Dispute Mediator - Conflict Resolution Agent
 """
 
-from metagpt.roles import Role
-from metagpt.actions import Action
-from metagpt.schema import Message
 from typing import ClassVar
+from agents.roles.base_role import FlagPilotRole, FlagPilotAction
 from config import get_configured_llm
+from lib.tools.rag_tool import RAGSearch
 
-
-class MediateDispute(Action):
+class MediateDispute(FlagPilotAction):
     """Resolve conflicts between freelancers and clients"""
     
     name: str = "MediateDispute"
+    desc: str = "Analyze disputes and provide fair resolution strategies."
     
     PROMPT_TEMPLATE: ClassVar[str] = """
-You are Dispute Mediator, an expert at resolving conflicts between freelancers and clients.
+    You are Dispute Mediator, a neutral conflict resolution expert.
+    
+    Relevant Precedents / Contract Terms (RAG):
+    {rag_context}
+    
+    Analyze this dispute:
+    {content}
+    
+    Provide:
+    1. OBJECTIVE SUMMARY of the conflict
+    2. PROPOSED RESOLUTION (Fair to both parties)
+    3. COMMUNICATION TEMPLATES to de-escalate
+    4. PREVENTATIVE MEASURES for future
+    
+    Prioritize de-escalation and professional relationships.
+    """
 
-Analyze this dispute and provide:
-1. BOTH PERSPECTIVES understanding
-2. CORE ISSUES identification
-3. COMMON GROUND finding
-4. WIN-WIN SOLUTIONS
-5. COMMUNICATION TEMPLATES
-6. DOCUMENTATION recommendations
+    async def run(self, instruction: str, context: str = "") -> str:
+        # 1. Native Tool: Search for similar disputes or standard contract clauses regarding disputes
+        rag_context = "No specific precedents found."
+        try:
+            rag_context = RAGSearch.search_knowledge_base(
+                query=f"dispute resolution contract clause {instruction[:50]}", 
+                top_k=2
+            )
+        except Exception:
+            pass
 
-Dispute/conflict:
-{content}
-
-Context:
-{context}
-
-Provide mediation strategies that resolve disputes while preserving professional relationships.
-"""
-
-    async def run(self, content: str, context: str = "") -> str:
-        prompt = self.PROMPT_TEMPLATE.format(content=content, context=context)
+        # 2. Build Prompt
+        prompt = self.PROMPT_TEMPLATE.format(
+            content=instruction,
+            rag_context=f"{rag_context}\n\nCase Details: {context}"
+        )
+        
+        # 3. Call LLM
         llm = get_configured_llm()
         return await llm.aask(prompt)
 
 
-class DisputeMediator(Role):
-    """Dispute Mediator Agent - Conflict resolution"""
+class DisputeMediator(FlagPilotRole):
+    """
+    Dispute Mediator Agent
+    Watches for: Conflict language, negative feedback
+    """
     
     name: str = "DisputeMediator"
     profile: str = "Conflict Resolution Specialist"
@@ -49,15 +65,9 @@ class DisputeMediator(Role):
     constraints: str = "Be neutral, focus on solutions, document agreements"
     
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.set_actions([MediateDispute])
-    
-    async def _act(self) -> Message:
-        todo = self.rc.todo
-        msg = self.rc.important_memory[-1] if self.rc.important_memory else None
-        result = await todo.run(content=msg.content if msg else "", context="")
-        return Message(content=result, role=self.profile, cause_by=type(todo), sent_from=self.name)
-    
+        super().__init__(actions=[MediateDispute], **kwargs)
+        
     async def analyze(self, text: str, context: dict = None) -> str:
-        ctx = "\n".join([f"{k}: {v}" for k, v in (context or {}).items()])
-        return await MediateDispute().run(content=text, context=ctx)
+        """Override for direct API usage"""
+        action = MediateDispute()
+        return await action.run(instruction=text, context=str(context))

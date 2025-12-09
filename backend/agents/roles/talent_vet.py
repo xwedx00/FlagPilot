@@ -2,49 +2,63 @@
 Talent Vet - Profile Evaluation Agent
 """
 
-from metagpt.roles import Role
-from metagpt.actions import Action
-from metagpt.schema import Message
 from typing import ClassVar
+from agents.roles.base_role import FlagPilotRole, FlagPilotAction
 from config import get_configured_llm
+from lib.tools.rag_tool import RAGSearch
 
-
-class VetTalent(Action):
+class VetTalent(FlagPilotAction):
     """Evaluate freelancer profiles and portfolios"""
     
     name: str = "VetTalent"
+    desc: str = "Evaluate profiles against industry standards and job requirements."
     
     PROMPT_TEMPLATE: ClassVar[str] = """
-You are Talent Vet, an expert at evaluating freelancer profiles and portfolios for clients.
+    You are Talent Vet, an expert at scouting top-tier freelancers.
+    
+    Job Description / Criteria (RAG):
+    {rag_context}
+    
+    Candidate Profile / Portfolio:
+    {content}
+    
+    Evaluate:
+    1. MATCH SCORE (1-10) against criteria
+    2. KEY STRENGTHS aligned with project
+    3. RED FLAGS / INCONSISTENCIES
+    4. RECOMMENDED INTERVIEW QUESTIONS to verify skills
+    
+    Be objective and critical. High standards protect the client.
+    """
 
-Evaluate this profile/portfolio for:
-1. PROFILE COMPLETENESS
-2. PORTFOLIO QUALITY and authenticity
-3. SKILL ALIGNMENT with project needs
-4. RED FLAGS (fake work, stolen samples, inflated metrics)
-5. INTERVIEW QUESTIONS to verify claims
+    async def run(self, instruction: str, context: str = "") -> str:
+        # 1. Native Tool: Search for specific job requirements if not fully provided
+        rag_context = "Standard evaluation criteria."
+        try:
+            # Search for specific role requirements mentioned in the profile (e.g., "Senior Python Dev requirements")
+            rag_context = RAGSearch.search_knowledge_base(
+                query=f"job requirements criteria {instruction[:50]}", 
+                top_k=2
+            )
+        except Exception:
+            pass
 
-Profile/Portfolio to evaluate:
-{content}
-
-Project requirements/context:
-{context}
-
-Provide:
-- QUALITY SCORE (1-10)
-- DETAILED EVALUATION
-- SUGGESTED INTERVIEW QUESTIONS
-- HIRING RECOMMENDATION
-"""
-
-    async def run(self, content: str, context: str = "") -> str:
-        prompt = self.PROMPT_TEMPLATE.format(content=content, context=context)
+        # 2. Build Prompt
+        prompt = self.PROMPT_TEMPLATE.format(
+            content=instruction,
+            rag_context=f"{rag_context}\n\nProject Context: {context}"
+        )
+        
+        # 3. Call LLM
         llm = get_configured_llm()
         return await llm.aask(prompt)
 
 
-class TalentVet(Role):
-    """Talent Vet Agent - Evaluates freelancer profiles"""
+class TalentVet(FlagPilotRole):
+    """
+    Talent Vet Agent
+    Watches for: Resume uploads, candidate profiles
+    """
     
     name: str = "TalentVet"
     profile: str = "Talent Evaluation Specialist"
@@ -52,15 +66,9 @@ class TalentVet(Role):
     constraints: str = "Be objective, verify claims, suggest verification methods"
     
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.set_actions([VetTalent])
-    
-    async def _act(self) -> Message:
-        todo = self.rc.todo
-        msg = self.rc.important_memory[-1] if self.rc.important_memory else None
-        result = await todo.run(content=msg.content if msg else "", context="")
-        return Message(content=result, role=self.profile, cause_by=type(todo), sent_from=self.name)
-    
+        super().__init__(actions=[VetTalent], **kwargs)
+        
     async def analyze(self, text: str, context: dict = None) -> str:
-        ctx = "\n".join([f"{k}: {v}" for k, v in (context or {}).items()])
-        return await VetTalent().run(content=text, context=ctx)
+        """Override for direct API usage"""
+        action = VetTalent()
+        return await action.run(instruction=text, context=str(context))

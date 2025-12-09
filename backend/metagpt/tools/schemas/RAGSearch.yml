@@ -1,0 +1,11 @@
+type: class
+description: Search internal knowledge base (RAG) for relevant documents, contracts,
+  and resumes.
+methods:
+  search_knowledge_base:
+    type: function
+    description: 'Search the knowledge base for documents relevant to the query. '
+    signature: '(query: str, top_k: int = 5) -> str'
+    parameters: 'Args: query: The search query (e.g., "candidate experience", "non-compete
+      clause") top_k: Number of results to return (default: 5) Returns: Formatted
+      string containing relevant document snippets.'

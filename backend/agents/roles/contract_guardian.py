@@ -1,79 +1,79 @@
+
 """
-Contract Guardian - Contract Analysis Agent
-Uses MetaGPT Role for team orchestration
+Contract Guardian - Legal Analysis Agent
 """
 
-from metagpt.roles import Role
-from metagpt.actions import Action
-from metagpt.schema import Message
 from typing import ClassVar
+from metagpt.schema import Message
+from agents.roles.base_role import FlagPilotRole, FlagPilotAction, AgentEvent
 from config import get_configured_llm
+from lib.tools.rag_tool import RAGSearch
 
-
-class AnalyzeContract(Action):
-    """Analyze contracts for risks and unfair terms"""
+class AnalyzeContract(FlagPilotAction):
+    """Analyze legal contracts for risks and clauses"""
     
     name: str = "AnalyzeContract"
+    desc: str = "Analyze legal documents for risks, non-competes, and IP rights."
     
     PROMPT_TEMPLATE: ClassVar[str] = """
-You are Contract Guardian, an expert contract analyst protecting freelancers.
+    You are Contract Guardian, a legal AI expert.
+    
+    Context from Knowledge Base:
+    {rag_context}
+    
+    Analyze the following contract section or document:
+    {content}
+    
+    Focus on:
+    1. Red Flags (Risks)
+    2. Non-compete clauses (Enforceability)
+    3. IP Ownership (Work for hire vs Retained rights)
+    4. Salary/Payment terms
+    
+    Provide a structured Markdown report.
+    """
 
-Analyze this contract/agreement for:
-1. HIGH RISK clauses (payment terms, IP rights, liability)
-2. MEDIUM RISK items needing clarification
-3. Missing standard protections
-4. Unfair or one-sided terms
-5. Hidden fees or penalties
+    async def run(self, instruction: str, context: str = "") -> str:
+        # 1. Native Tool Use: Search RAG for relevant legal context
+        rag_context = "No internal context found."
+        try:
+            # We search for keywords in the instruction to ground the analysis
+            rag_context = RAGSearch.search_knowledge_base(query=instruction[:100], top_k=3)
+        except Exception:
+            pass # Fallback if RAG fails
 
-Contract/Text to analyze:
-{content}
-
-Additional context:
-{context}
-
-Provide:
-- RISK SCORE (1-10)
-- DETAILED ANALYSIS with specific clause references
-- NEGOTIATION SUGGESTIONS
-- RED FLAGS to address immediately
-"""
-
-    async def run(self, content: str, context: str = "") -> str:
-        prompt = self.PROMPT_TEMPLATE.format(content=content, context=context)
+        # 2. Build Prompt
+        prompt = self.PROMPT_TEMPLATE.format(
+            content=instruction,
+            rag_context=rag_context
+        )
+        
+        # 3. Call LLM
         llm = get_configured_llm()
         return await llm.aask(prompt)
 
-
-class ContractGuardian(Role):
-    """Contract Guardian Agent - Analyzes contracts for risks"""
+class ContractGuardian(FlagPilotRole):
+    """
+    Contract Guardian Agent
+    
+    Watches for: User requests about contracts
+    Actions: AnalyzeContract
+    """
     
     name: str = "ContractGuardian"
-    profile: str = "Contract Analysis Specialist"
-    goal: str = "Identify risky contract terms and protect freelancers from unfair agreements"
-    constraints: str = "Be thorough, cite specific clauses, provide actionable negotiation advice"
+    profile: str = "Senior Legal AI Analyst"
+    goal: str = "Protect freelancers from unfair contracts"
+    constraints: str = "Cite specific clauses. Be conservative in risk assessment."
     
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.set_actions([AnalyzeContract])
-    
-    async def _act(self) -> Message:
-        todo = self.rc.todo
-        msg = self.rc.important_memory[-1] if self.rc.important_memory else None
+        # Initialize with specific action
+        super().__init__(actions=[AnalyzeContract], **kwargs)
         
-        if msg:
-            result = await todo.run(content=msg.content, context="")
-        else:
-            result = "No contract provided for analysis."
+        # In a team environment, we might watch for specific triggers
+        # For now, default watch is empty, set by Orchestrator or Team
         
-        return Message(
-            content=result,
-            role=self.profile,
-            cause_by=type(todo),
-            sent_from=self.name,
-        )
-    
     async def analyze(self, text: str, context: dict = None) -> str:
-        """Direct API method"""
-        ctx = "\n".join([f"{k}: {v}" for k, v in (context or {}).items()])
+        """Override for direct API usage"""
         action = AnalyzeContract()
-        return await action.run(content=text, context=ctx)
+        # Direct run
+        return await action.run(instruction=text, context=str(context))

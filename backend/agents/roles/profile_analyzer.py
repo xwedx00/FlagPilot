@@ -2,52 +2,63 @@
 Profile Analyzer - Profile Optimization Agent
 """
 
-import os
-from metagpt.roles import Role
-from metagpt.actions import Action
-from metagpt.schema import Message
-from metagpt.llm import LLM
-from metagpt.config2 import Config
 from typing import ClassVar
-from loguru import logger
-
-
+from agents.roles.base_role import FlagPilotRole, FlagPilotAction
 from config import get_configured_llm
+from lib.tools.rag_tool import RAGSearch
 
-
-class AnalyzeProfile(Action):
+class AnalyzeProfile(FlagPilotAction):
     """Optimize freelancer profiles"""
     
     name: str = "AnalyzeProfile"
+    desc: str = "Analyze profile metrics and suggest SEO/content improvements."
     
     PROMPT_TEMPLATE: ClassVar[str] = """
-You are Profile Analyzer, an expert at optimizing freelancer profiles for maximum visibility and client attraction.
+    You are Profile Analyzer, maximizing freelancer visibility.
+    
+    Industry Keywords / Trends (RAG):
+    {rag_context}
+    
+    Profile to Analyze:
+    {content}
+    
+    Provide:
+    1. VISIBILITY SCORE (1-10)
+    2. SEO KEYWORD GAP ANALYSIS (What's missing?)
+    3. HEADLINE MAKEOVER (3 variations)
+    4. SUMMARY REWRITE suggesting (Focus on benefits, not just features)
+    5. PORTFOLIO PRESENTATION tips
+    
+    Focus on conversion: turning views into interviews.
+    """
 
-Analyze this profile for:
-1. HEADLINE effectiveness
-2. SUMMARY/BIO impact
-3. PORTFOLIO presentation
-4. SKILLS and keywords optimization
-5. RATE positioning
-6. ACTIONABLE improvements
+    async def run(self, instruction: str, context: str = "") -> str:
+        # 1. Native Tool: Search for industry keywords (e.g., "React Developer keywords")
+        rag_context = "General best practices."
+        try:
+            rag_context = RAGSearch.search_knowledge_base(
+                query=f"high paying keywords skills {instruction[:50]}", 
+                top_k=3
+            )
+        except Exception:
+            pass
 
-Profile to analyze:
-{content}
-
-Target clients/industry:
-{context}
-
-Provide specific, actionable improvements to increase profile visibility and conversion.
-"""
-
-    async def run(self, content: str, context: str = "") -> str:
-        prompt = self.PROMPT_TEMPLATE.format(content=content, context=context)
+        # 2. Build Prompt
+        prompt = self.PROMPT_TEMPLATE.format(
+            content=instruction,
+            rag_context=f"{rag_context}\n\nClient Target: {context}"
+        )
+        
+        # 3. Call LLM
         llm = get_configured_llm()
         return await llm.aask(prompt)
 
 
-class ProfileAnalyzer(Role):
-    """Profile Analyzer Agent - Profile optimization"""
+class ProfileAnalyzer(FlagPilotRole):
+    """
+    Profile Analyzer Agent
+    Watches for: User profile updates, optimization requests
+    """
     
     name: str = "ProfileAnalyzer"
     profile: str = "Profile Optimization Specialist"
@@ -55,15 +66,9 @@ class ProfileAnalyzer(Role):
     constraints: str = "Be specific, suggest keywords, consider platform SEO"
     
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.set_actions([AnalyzeProfile])
-    
-    async def _act(self) -> Message:
-        todo = self.rc.todo
-        msg = self.rc.important_memory[-1] if self.rc.important_memory else None
-        result = await todo.run(content=msg.content if msg else "", context="")
-        return Message(content=result, role=self.profile, cause_by=type(todo), sent_from=self.name)
-    
+        super().__init__(actions=[AnalyzeProfile], **kwargs)
+        
     async def analyze(self, text: str, context: dict = None) -> str:
-        ctx = "\n".join([f"{k}: {v}" for k, v in (context or {}).items()])
-        return await AnalyzeProfile().run(content=text, context=ctx)
+        """Override for direct API usage"""
+        action = AnalyzeProfile()
+        return await action.run(instruction=text, context=str(context))

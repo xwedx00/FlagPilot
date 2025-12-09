@@ -2,50 +2,62 @@
 Communication Coach - Message Improvement Agent
 """
 
-import os
-from metagpt.roles import Role
-from metagpt.actions import Action
-from metagpt.schema import Message
-from metagpt.llm import LLM
-from metagpt.config2 import Config
 from typing import ClassVar
-
-
+from agents.roles.base_role import FlagPilotRole, FlagPilotAction
 from config import get_configured_llm
+from lib.tools.rag_tool import RAGSearch
 
-
-class CoachCommunication(Action):
+class CoachCommunication(FlagPilotAction):
     """Improve client communication"""
     
     name: str = "CoachCommunication"
+    desc: str = "Refine drafts and suggest better communication styles."
     
     PROMPT_TEMPLATE: ClassVar[str] = """
-You are Communication Coach, an expert at professional freelancer-client communication.
+    You are Communication Coach, ensuring professional and effective messages.
+    
+    Style Guide / Best Practices (RAG):
+    {rag_context}
+    
+    Draft Message:
+    {content}
+    
+    Analyze & Improve:
+    1. TONE CHECK (Is it professional? Passive-aggressive? Too casual?)
+    2. CLARITY CHECK (Is the call to action clear?)
+    3. POLISHED VERSION (Better phrasing)
+    4. ALTERNATIVE STRATEGY (If the message intent itself is flawed)
+    
+    Aim for clarity, confidence, and professionalism.
+    """
 
-Analyze and improve:
-1. MESSAGE ANALYSIS (tone, clarity, professionalism)
-2. TONE ISSUES identification
-3. IMPROVEMENTS suggested
-4. ALTERNATIVE VERSIONS
-5. REASONING explanation
+    async def run(self, instruction: str, context: str = "") -> str:
+        # 1. Native Tool: Search for communication templates
+        rag_context = "General professional standards."
+        try:
+            rag_context = RAGSearch.search_knowledge_base(
+                query=f"email template client communication {instruction[:50]}", 
+                top_k=2
+            )
+        except Exception:
+            pass
 
-Message/draft to review:
-{content}
-
-Context (client type, situation):
-{context}
-
-Provide improved versions that are clear, professional, and effective.
-"""
-
-    async def run(self, content: str, context: str = "") -> str:
-        prompt = self.PROMPT_TEMPLATE.format(content=content, context=context)
+        # 2. Build Prompt
+        prompt = self.PROMPT_TEMPLATE.format(
+            content=instruction,
+            rag_context=f"{rag_context}\n\nContext: {context}"
+        )
+        
+        # 3. Call LLM
         llm = get_configured_llm()
         return await llm.aask(prompt)
 
 
-class CommunicationCoach(Role):
-    """Communication Coach Agent - Message improvement"""
+class CommunicationCoach(FlagPilotRole):
+    """
+    Communication Coach Agent
+    Watches for: Draft messages, email replies
+    """
     
     name: str = "CommunicationCoach"
     profile: str = "Professional Communication Specialist"
@@ -53,15 +65,9 @@ class CommunicationCoach(Role):
     constraints: str = "Improve without changing meaning, consider cultural context"
     
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.set_actions([CoachCommunication])
-    
-    async def _act(self) -> Message:
-        todo = self.rc.todo
-        msg = self.rc.important_memory[-1] if self.rc.important_memory else None
-        result = await todo.run(content=msg.content if msg else "", context="")
-        return Message(content=result, role=self.profile, cause_by=type(todo), sent_from=self.name)
-    
+        super().__init__(actions=[CoachCommunication], **kwargs)
+        
     async def analyze(self, text: str, context: dict = None) -> str:
-        ctx = "\n".join([f"{k}: {v}" for k, v in (context or {}).items()])
-        return await CoachCommunication().run(content=text, context=ctx)
+        """Override for direct API usage"""
+        action = CoachCommunication()
+        return await action.run(instruction=text, context=str(context))

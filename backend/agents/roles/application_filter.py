@@ -1,63 +1,74 @@
 """
-Application Filter - Spam/AI Detection Agent
+Application Filter - Job Application Screening Agent
 """
 
-from metagpt.roles import Role
-from metagpt.actions import Action
-from metagpt.schema import Message
 from typing import ClassVar
+from agents.roles.base_role import FlagPilotRole, FlagPilotAction
 from config import get_configured_llm
+from lib.tools.rag_tool import RAGSearch
 
-
-class FilterApplication(Action):
-    """Filter spam and AI-generated applications"""
+class FilterApplication(FlagPilotAction):
+    """Screen job applications for fit and quality"""
     
     name: str = "FilterApplication"
+    desc: str = "Evaluate applications against job criteria to save client time."
     
     PROMPT_TEMPLATE: ClassVar[str] = """
-You are Application Filter, an expert at identifying genuine vs spam/AI-generated job applications.
+    You are Application Filter, screening freelancer proposals.
+    
+    Job Description / Criteria (RAG):
+    {rag_context}
+    
+    Proposal / Application:
+    {content}
+    
+    Evaluate:
+    1. RELEVANCE SCORE (1-10)
+    2. KEY QUALIFICATIONS MET (Yes/No list)
+    3. PROPOSAL QUALITY (Personalized vs Generic)
+    4. RED FLAGS (Spam, bot-like, irrelevant)
+    
+    Recommendation: SHORTLIST, MAYBE, or REJECT.
+    """
 
-Analyze this application for:
-1. AI/GENERATED content indicators
-2. TEMPLATE usage detection
-3. JOB RELEVANCE assessment
-4. EXPERIENCE VERIFICATION flags
-5. AUTHENTICITY scoring
-6. RECOMMENDATION
+    async def run(self, instruction: str, context: str = "") -> str:
+        # 1. Native Tool: Search for job details if looking at a specific application
+        rag_context = "Standard screening criteria."
+        try:
+            rag_context = RAGSearch.search_knowledge_base(
+                query=f"job description qualifications {instruction[:50]}", 
+                top_k=2
+            )
+        except Exception:
+            pass
 
-Application to analyze:
-{content}
-
-Job requirements:
-{context}
-
-Provide analysis to help find genuine, qualified candidates.
-"""
-
-    async def run(self, content: str, context: str = "") -> str:
-        prompt = self.PROMPT_TEMPLATE.format(content=content, context=context)
+        # 2. Build Prompt
+        prompt = self.PROMPT_TEMPLATE.format(
+            content=instruction,
+            # Context might contain the job ID or specific requirements passed by the orchestrator
+            rag_context=f"{rag_context}\n\nJob Context: {context}"
+        )
+        
+        # 3. Call LLM
         llm = get_configured_llm()
         return await llm.aask(prompt)
 
 
-class ApplicationFilter(Role):
-    """Application Filter Agent - Spam/AI detection"""
+class ApplicationFilter(FlagPilotRole):
+    """
+    Application Filter Agent
+    Watches for: New proposals on posted jobs
+    """
     
     name: str = "ApplicationFilter"
-    profile: str = "Application Screening Specialist"
-    goal: str = "Help clients identify genuine applicants from spam and AI-generated content"
-    constraints: str = "Be fair, look for substance, consider context"
+    profile: str = "Recruitment Screening Specialist"
+    goal: str = "Save client time by filtering irrelevant or low-quality proposals"
+    constraints: str = "Be fair, look for hidden gems, filter out spam"
     
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.set_actions([FilterApplication])
-    
-    async def _act(self) -> Message:
-        todo = self.rc.todo
-        msg = self.rc.important_memory[-1] if self.rc.important_memory else None
-        result = await todo.run(content=msg.content if msg else "", context="")
-        return Message(content=result, role=self.profile, cause_by=type(todo), sent_from=self.name)
-    
+        super().__init__(actions=[FilterApplication], **kwargs)
+        
     async def analyze(self, text: str, context: dict = None) -> str:
-        ctx = "\n".join([f"{k}: {v}" for k, v in (context or {}).items()])
-        return await FilterApplication().run(content=text, context=ctx)
+        """Override for direct API usage"""
+        action = FilterApplication()
+        return await action.run(instruction=text, context=str(context))

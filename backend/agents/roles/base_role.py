@@ -158,13 +158,31 @@ class FlagPilotRole(Role):
     goal: str = "Help freelancers succeed"
     constraints: str = "Be helpful, accurate, and actionable"
     
+    
     def __init__(self, **kwargs):
+        # Extract actions to prevent parent Role from crashing on non-instantiated classes
+        raw_actions = kwargs.pop("actions", [])
+        
         super().__init__(**kwargs)
-        self.set_actions([AnalyzeAction])
-        self._watch([])  # Can watch other roles' messages
+        
+        # Initialize actions with auto-instantiation logic
+        instantiated_actions = []
+        for a in raw_actions:
+            # Check if 'a' is a class (type) and subclass of Action/FlagPilotAction
+            if isinstance(a, type):
+                instantiated_actions.append(a())
+            else:
+                instantiated_actions.append(a)
+        
+        self.set_actions(instantiated_actions)
+        self._watch(kwargs.get("watch", []))
+
     
     async def _act(self) -> Message:
         """Execute the role's action"""
+        if not self.rc.todo:
+            return None
+            
         todo = self.rc.todo
         
         # Get context from memory
@@ -172,8 +190,16 @@ class FlagPilotRole(Role):
         context_str = "\n".join([m.content for m in context]) if context else ""
         
         # Run the action
+        # If the action has a run_streaming method, we should ideally use that for detailed events,
+        # but for standard _act from Team.run(), we fallback to standard run()
+        
+        # Extract instruction from the causing message if available
+        instruction = ""
+        if self.rc.important_memory:
+            instruction = self.rc.important_memory[-1].content
+            
         result = await todo.run(
-            instruction=self.rc.important_memory[-1].content if self.rc.important_memory else "",
+            instruction=instruction,
             context=context_str
         )
         
