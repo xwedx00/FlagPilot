@@ -1,0 +1,429 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * ============================================
+ * FlagPilot OS - Industrial Design System
+ * ============================================
+ * "The Cockpit, Not a Marketing Page"
+ * Console-first, High-Density, Utilitarian Dark
+ * 
+ * Typography: JetBrains Mono (code), IBM Plex Sans (distinctive)
+ * Palette: Deep zinc void with purple accents
+ */
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /* Industrial Typography */
+  --font-sans: "IBM Plex Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Geist Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Sidebar tokens */
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+
+  /* Chart tokens */
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+
+  /* Core tokens */
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+
+  /* Radius tokens - Sharp, minimal */
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* Light mode - rarely used */
+:root {
+  --radius: 0.375rem;
+  --background: #fafafa;
+  --foreground: #09090b;
+  --card: #ffffff;
+  --card-foreground: #09090b;
+  --popover: #ffffff;
+  --popover-foreground: #09090b;
+  --primary: #7c3aed;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f4f5;
+  --secondary-foreground: #18181b;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent: #f4f4f5;
+  --accent-foreground: #18181b;
+  --destructive: #dc2626;
+  --destructive-foreground: #ffffff;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #7c3aed;
+  --chart-1: #7c3aed;
+  --chart-2: #2563eb;
+  --chart-3: #059669;
+  --chart-4: #d97706;
+  --chart-5: #dc2626;
+  --sidebar: #fafafa;
+  --sidebar-foreground: #09090b;
+  --sidebar-primary: #7c3aed;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f4f4f5;
+  --sidebar-accent-foreground: #18181b;
+  --sidebar-border: #e4e4e7;
+  --sidebar-ring: #7c3aed;
+}
+
+/*
+ * ============================================
+ * DARK THEME - FlagPilot Industrial
+ * ============================================
+ */
+.dark {
+  --background: #09090b;
+  --foreground: #fafafa;
+  --card: rgba(24, 24, 27, 0.6);
+  --card-foreground: #fafafa;
+  --popover: #18181b;
+  --popover-foreground: #fafafa;
+  --primary: #8b5cf6;
+  --primary-foreground: #ffffff;
+  --secondary: #27272a;
+  --secondary-foreground: #fafafa;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --accent: #27272a;
+  --accent-foreground: #fafafa;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #3f3f46;
+  --input: #3f3f46;
+  --ring: #8b5cf6;
+  --chart-1: #8b5cf6;
+  --chart-2: #3b82f6;
+  --chart-3: #10b981;
+  --chart-4: #f59e0b;
+  --chart-5: #ef4444;
+  --sidebar: rgba(24, 24, 27, 0.9);
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #8b5cf6;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #27272a;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: #3f3f46;
+  --sidebar-ring: #8b5cf6;
+  --radius: 0.375rem;
+}
+
+/* ============================================
+ * BASE STYLES
+ * ============================================ */
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply scroll-smooth;
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  ::selection {
+    background-color: rgba(124, 58, 237, 0.3);
+    color: #ffffff;
+  }
+}
+
+/* ============================================
+ * FLAGPILOT CUSTOM STYLES (Pure CSS)
+ * ============================================ */
+
+/* Surface with blur effect */
+.fp-surface {
+  background: rgba(24, 24, 27, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid #3f3f46;
+}
+
+.fp-surface-solid {
+  background: #18181b;
+  border: 1px solid #3f3f46;
+}
+
+/* Terminal styles */
+.fp-terminal {
+  background: #000000;
+  color: #22c55e;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 0.25rem;
+  overflow: auto;
+}
+
+.fp-terminal-prompt::before {
+  content: "❯ ";
+  color: #8b5cf6;
+}
+
+/* Agent status indicators */
+.fp-status-idle { background: #10b981; }
+.fp-status-working { background: #f59e0b; animation: pulse 2s infinite; }
+.fp-status-thinking { background: #8b5cf6; animation: pulse 2s infinite; }
+.fp-status-error { background: #ef4444; }
+.fp-status-complete { background: #10b981; }
+
+/* Node borders */
+.fp-node-planning { border-color: #3b82f6; }
+.fp-node-working { border-color: #f59e0b; }
+.fp-node-done { border-color: #10b981; }
+.fp-node-blocked { border-color: #ef4444; }
+
+/* Badge variants */
+.fp-badge-danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+.fp-badge-success {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+.fp-badge-warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+.fp-badge-purple {
+  background: rgba(139, 92, 246, 0.15);
+  color: #a78bfa;
+  border: 1px solid rgba(139, 92, 246, 0.4);
+}
+.fp-badge-info {
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.4);
+}
+
+/* Chat bubbles */
+.fp-bubble-user {
+  background: #27272a;
+  font-size: 0.875rem;
+  border-radius: 0.75rem;
+  padding: 0.625rem 1rem;
+  max-width: 80%;
+  margin-left: auto;
+}
+
+.fp-bubble-agent {
+  font-size: 0.875rem;
+  max-width: 85%;
+}
+
+/* Thinking indicator */
+.fp-thinking-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: #8b5cf6;
+  animation: pulse 2s infinite;
+}
+
+/* Credit meter */
+.fp-credit-bar {
+  height: 0.25rem;
+  background: #27272a;
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.fp-credit-fill {
+  height: 100%;
+  background: linear-gradient(to right, #7c3aed, #a78bfa);
+  transition: width 0.3s ease;
+}
+
+/* File card */
+.fp-file-card {
+  background: rgba(24, 24, 27, 0.6);
+  backdrop-filter: blur(8px);
+  border: 1px solid #3f3f46;
+  border-radius: 0.375rem;
+  padding: 0.75rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.fp-file-card:hover {
+  background: rgba(39, 39, 42, 0.6);
+}
+
+.fp-file-card-private {
+  border-color: rgba(139, 92, 246, 0.5);
+}
+
+/* Dropzone */
+.fp-dropzone {
+  border: 2px dashed #3f3f46;
+  border-radius: 0.5rem;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.15s;
+}
+
+.fp-dropzone-active {
+  border-color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.1);
+}
+
+/* Scrollbar styling */
+.fp-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.fp-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.fp-scrollbar::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+  border-radius: 9999px;
+}
+
+.fp-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #52525b;
+}
+
+/* Dot pattern background */
+.fp-dot-pattern {
+  background-image: radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Animated edge for React Flow */
+.fp-edge-animated {
+  stroke-dasharray: 5;
+  animation: fp-dash 0.5s linear infinite;
+}
+
+@keyframes fp-dash {
+  to { stroke-dashoffset: -10; }
+}
+
+/* Race mode banner */
+.fp-race-banner {
+  background: linear-gradient(to right, rgba(124, 58, 237, 0.15), rgba(245, 158, 11, 0.15));
+  border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-family: var(--font-mono);
+}
+
+/* Destructive section */
+.fp-destructive-section {
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.05);
+  border-radius: 0.375rem;
+  padding: 1rem;
+}
+
+/* Panel dividers */
+.fp-divider {
+  width: 1px;
+  background: #3f3f46;
+}
+
+.fp-divider-horizontal {
+  height: 1px;
+  width: 100%;
+  background: #3f3f46;
+}
+
+/* Micro-interaction classes */
+.fp-hover {
+  transition: background-color 0.1s;
+}
+
+.fp-hover:hover {
+  background: #27272a;
+}
+
+.fp-press {
+  transition: transform 0.1s;
+}
+
+.fp-press:active {
+  transform: scale(0.98);
+}
+
+/* ============================================
+ * UTILITY ANIMATIONS
+ * ============================================ */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(139, 92, 246, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.5); }
+}
+
+.animate-in-fast {
+  animation: fadeIn 0.15s ease-out;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.2s ease-out;
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}

@@ -1,0 +1,17 @@
+**/node_modules
+**/__pycache__
+**/.git
+.env
+.env.local
+**/dist
+**/build
+**/coverage
+**/*.pyc
+**/*.pyo
+venv
+.venv
+.idea
+.vscode
+tmp
+brain
+*.log

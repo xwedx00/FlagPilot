@@ -1,0 +1,226 @@
+# FlagPilot - Minimal Docker Compose
+# ===================================
+# Services: Backend + PostgreSQL + Redis + RAGFlow Stack
+# (RAGFlow handles vectors, embeddings, file storage)
+
+services:
+  # ===========================================
+  # Backend - FastAPI + MetaGPT
+  # ===========================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: flagpilot-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    environment:
+      # Environment variables loaded from env_file (.env)
+      # We only explicit set overrides here
+      - LOG_LEVEL=INFO
+      - PYTHONPATH=/app
+      - GIT_PYTHON_REFRESH=quiet
+      # Legacy / Debug overrides if needed:
+      #- DATABASE_URL=postgresql://flagpilot:flagpilot@postgres:5432/flagpilot
+      #- REDIS_URL=redis://:flagpilot@redis:6379
+    volumes:
+      - ./backend:/app
+      - /app/__pycache__
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ragflow:
+        condition: service_started
+    networks:
+      - flagpilot-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ===========================================
+  # PostgreSQL 17 (Backend DB)
+  # ===========================================
+  postgres:
+    image: postgres:17-alpine
+    container_name: flagpilot-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: flagpilot
+      POSTGRES_PASSWORD: flagpilot
+      POSTGRES_DB: flagpilot
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - flagpilot-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U flagpilot" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================
+  # Redis 7 (Shared)
+  # ===========================================
+  redis:
+    image: redis:7-alpine
+    container_name: flagpilot-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --requirepass flagpilot --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
+    networks:
+      - flagpilot-network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-a", "flagpilot", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ===========================================
+  # RAGFlow Stack
+  # ===========================================
+
+  # 1. ElasticSearch (Vector Store)
+  es01:
+    container_name: ragflow-es01
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.3
+    restart: unless-stopped
+    environment:
+      - node.name=es01
+      - cluster.name=es-docker-cluster
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks:
+      - flagpilot-network
+    healthcheck:
+      test: [ "CMD-SHELL", "curl http://localhost:9200" ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
+  # 2. MinIO (Object Storage)
+  minio:
+    container_name: ragflow-minio
+    image: quay.io/minio/minio:RELEASE.2023-12-20T01-00-02Z
+    restart: unless-stopped
+    command: server --console-address ":9001" /data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    volumes:
+      - minio_data:/data
+    networks:
+      - flagpilot-network
+    # Healthcheck removed (curl missing in image)
+
+    # 3. MySQL (RAGFlow DB)
+  mysql:
+    container_name: ragflow-mysql
+    image: mysql:8.0.39
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=infinity
+      - MYSQL_USER=ragflow
+      - MYSQL_PASSWORD=infinity
+      - MYSQL_DATABASE=rag_flow
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: --max_connections=1000 --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci --default-authentication-plugin=mysql_native_password --transaction-isolation=READ-COMMITTED --binlog_format=ROW
+    networks:
+      - flagpilot-network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  # 4. RAGFlow Server
+  ragflow:
+    container_name: ragflow-server
+    image: infiniflow/ragflow:v0.15.1
+    restart: unless-stopped
+    depends_on:
+      es01:
+        condition: service_healthy
+      minio:
+        condition: service_started
+      mysql:
+        condition: service_healthy
+    ports:
+      - "9380:80"
+    environment:
+      - MYSQL_DATABASE=rag_flow
+      - MYSQL_DBNAME=rag_flow
+      - MYSQL_USER=ragflow
+      - MYSQL_PASSWORD=infinity
+      - MYSQL_HOST=mysql
+      - MYSQL_PORT=3306
+      - RAGFLOW_DB_NAME=ragflow
+      - RAGFLOW_DB_USER=ragflow
+      - RAGFLOW_DB_PASSWORD=infinity
+      - RAGFLOW_DB_HOST=mysql
+      - RAGFLOW_DB_PORT=3306
+      - ES_URL=http://es01:9200
+      - MINIO_URL=http://minio:9000
+      - MINIO_USER=minioadmin
+      - MINIO_PASSWORD=minioadmin
+      - REDIS_URL=redis://:flagpilot@redis:6379
+      - REDIS_PASSWORD=flagpilot
+      # SVR_HTTP_PORT=9380 means the python server binds to 9380.
+      # Nginx (on 80) proxies to it.
+      - SVR_HTTP_PORT=9380
+      - RAGFLOW_LOG_LEVEL=INFO
+      - REGISTER_ENABLED=1
+      # Initial Admin Setup
+      - RAGFLOW_ADMIN_EMAIL=admin@flagpilot.com
+      - RAGFLOW_ADMIN_PASSWORD=flagpilot123
+    volumes:
+      - ragflow_logs:/ragflow/logs
+      - ./backend/ragflow-nginx.conf:/etc/nginx/sites-enabled/default
+    networks:
+      - flagpilot-network
+      # ===========================================
+      # Volumes
+      # ===========================================
+volumes:
+  postgres_data:
+    name: flagpilot_postgres_data
+  redis_data:
+    name: flagpilot_redis_data
+  es_data:
+    name: ragflow_es_data
+  minio_data:
+    name: ragflow_minio_data
+  mysql_data:
+    name: ragflow_mysql_data
+  ragflow_logs:
+    name: ragflow_logs
+
+# ===========================================
+# Network
+# ===========================================
+networks:
+  flagpilot-network:
+    name: flagpilot-network
+    driver: bridge
