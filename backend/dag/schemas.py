@@ -41,6 +41,10 @@ class TaskNode(BaseModel):
     status: TaskStatus = TaskStatus.PENDING
     result: Optional[str] = None
     error: Optional[str] = None
+    rag_data_for_agent: Optional[str] = Field(
+        default=None, 
+        description="Specific RAG context ID/Summary for this agent (Tiered RAG)"
+    )
     started_at: Optional[str] = None
     completed_at: Optional[str] = None
     

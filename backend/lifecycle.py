@@ -13,7 +13,13 @@ async def lifespan(app: FastAPI):
     try:
         from lib.database import init_db
         await init_db()
-        logger.info("✅ PostgreSQL connected")
+        
+        # Initialize new Domain Models (WorkflowExecution, etc)
+        from models.base import init_db as init_domain_db
+        import models.intelligence  # Register models
+        await init_domain_db()
+        
+        logger.info("✅ PostgreSQL connected (Legacy & Domain)")
     except Exception as e:
         logger.warning(f"⚠️ Database not available: {e}")
     

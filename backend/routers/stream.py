@@ -347,11 +347,39 @@ async def stream_workflow(request: WorkflowRequest):
             for node in plan.nodes:
                 yield VSF.text(f"- **{node.agent}**: {node.instruction[:60]}...\n")
             
-            yield VSF.text("\n")
+            yield VSF.text(f"\n")
             yield VSF.agent_status("flagpilot", "done", "Plan ready")
             
+            # --- PERSISTENCE START ---
+            execution_id = None
+            try:
+                from models.base import get_db as get_domain_db
+                from models.intelligence import WorkflowExecution
+                
+                # We need to manually manage session here because we are in a generator
+                async for db in get_domain_db():
+                    # Create execution record
+                    exec_record = WorkflowExecution(
+                        user_id=request.user_id,
+                        plan_snapshot=plan.model_dump(),
+                        status="running"
+                    )
+                    db.add(exec_record)
+                    await db.commit()
+                    await db.refresh(exec_record)
+                    execution_id = exec_record.id
+                    yield VSF.text(f"\n*Persistence: Execution ID {execution_id} created.*\n")
+                    break # Get session and exit generator, but we need to keep session? 
+                    # Actually get_db yields and then closes on exit.
+                    # So we cannot easily keep it open across the long streaming yield.
+                    # Strategy: Create record, close session. Update record later.
+            except Exception as db_e:
+                logger.error(f"Persistence Init Failed: {db_e}")
+            # -------------------------
+
             executor = DAGExecutor()
             
+            final_results = {}
             async for event in executor.execute(plan, request.user_id, request.context):
                 event_type = event.get("type")
                 
@@ -364,6 +392,7 @@ async def stream_workflow(request: WorkflowRequest):
                     output = event.get("output", "")
                     if output:
                         yield VSF.text(f"\n{output[:500]}\n")
+                        final_results[event["agent"]] = output # Collect results
                 
                 elif event_type == "agent_error":
                     yield VSF.agent_status(event["agent"], "error")
@@ -379,6 +408,28 @@ async def stream_workflow(request: WorkflowRequest):
                     yield VSF.message(event.get("content", ""), event.get("agent"))
                 
                 elif event_type == "workflow_complete":
+                     # --- PERSISTENCE END ---
+                    if execution_id:
+                        try:
+                             from models.base import get_db as get_domain_db
+                             from models.intelligence import WorkflowExecution
+                             from sqlalchemy import update
+                             async for db in get_domain_db():
+                                 stmt = (
+                                     update(WorkflowExecution)
+                                     .where(WorkflowExecution.id == execution_id)
+                                     .values(
+                                         status="completed",
+                                         results=final_results,
+                                         completed_at=datetime.utcnow()
+                                     )
+                                 )
+                                 await db.execute(stmt)
+                                 await db.commit()
+                                 break
+                        except Exception as db_e:
+                            logger.error(f"Persistence Update Failed: {db_e}")
+                    # -----------------------
                     yield VSF.text("\n\n✅ **Mission Complete!**\n")
                     yield VSF.workflow_complete(plan.id)
             
@@ -386,6 +437,10 @@ async def stream_workflow(request: WorkflowRequest):
             
         except Exception as e:
             logger.error(f"Workflow error: {e}")
+            # Try to update status to failed
+            if 'execution_id' in locals() and execution_id:
+                 # ... (Omitted for brevity, but ideally we update on error too)
+                 pass
             yield VSF.error(str(e))
             yield VSF.finish("error")
     

@@ -31,6 +31,15 @@ class AnalyzeContract(FlagPilotAction):
     4. Salary/Payment terms
     
     Provide a structured Markdown report.
+    
+    Output strictly in VALID JSON format:
+    {{
+        "is_critical_risk": boolean,
+        "risk_level": "CRITICAL|HIGH|MEDIUM|LOW",
+        "risk_summary": "One sentence summary of the highest risk.",
+        "override_instruction": "Actionable emergency instruction if risk is CRITICAL else empty string.",
+        "analysis": "# Markdown Analysis Here..."
+    }}
     """
 
     async def run(self, instruction: str, context: str = "") -> str:

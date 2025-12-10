@@ -22,7 +22,7 @@ AGENT_CAPABILITIES = {
     "talent-vet": "Resume Review, Portfolio Analysis, Skill Assessment",
     "dispute-mediator": "Conflict Resolution, Evidence Analysis, Mediation",
     "payment-enforcer": "Invoice Collection, Payment Tracking, Financial Protection",
-    "scope-sentinel": "Scope Creep Detection, Change Order Management",
+    "scope-sentinel": "Scope Creep Detection, 'Just one quick thing', New Feature Requests, Unpaid Work Analysis",
     "ghosting-shield": "Re-engagement Strategies, Follow-up Planning",
     "application-filter": "Spam Detection, Applicant Screening, Quality Filtering",
     "feedback-loop": "Feedback Analysis, Continuous Improvement",
@@ -51,6 +51,7 @@ class CreatePlan(FlagPilotAction):
     3. Assign the BEST specialist agent for each task.
     4. Determine dependencies (which task must finish before another starts).
     5. CRITICAL: Check the provided 'Context' for "Global Wisdom" or "Strategies". If a relevant strategy is found (e.g. from RAG_CONTEXT), you MUST explicitly instruct the assigned agent to use it by name.
+    6. TIERED RAG: If a specific RAG document is relevant to a specific task, map its ID to 'rag_data_for_agent'.
     
     Output strictly in VALID JSON format.
     Do not include any thinking chain, markdown formatting, or introductory text.
@@ -65,6 +66,7 @@ class CreatePlan(FlagPilotAction):
                 "agent": "agent-id",
                 "instruction": "Detailed instruction (Mention Strategy Name if applicable)",
                 "priority": "high",
+                "rag_data_for_agent": "doc_id_or_summary",
                 "dependencies": []
             }}
         ]

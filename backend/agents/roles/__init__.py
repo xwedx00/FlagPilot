@@ -15,6 +15,7 @@ from .negotiation_assistant import NegotiationAssistant
 from .application_filter import ApplicationFilter
 from .feedback_loop import FeedbackLoop
 from .flagpilot_orchestrator import FlagPilotOrchestrator
+from .risk_advisor import RiskAdvisor
 
 __all__ = [
     "ContractGuardian",
@@ -30,4 +31,5 @@ __all__ = [
     "ApplicationFilter",
     "FeedbackLoop",
     "FlagPilotOrchestrator",
+    "RiskAdvisor",
 ]

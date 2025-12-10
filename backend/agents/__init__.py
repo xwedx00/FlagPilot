@@ -22,6 +22,7 @@ from .roles import (
     ApplicationFilter,
     FeedbackLoop,
     FlagPilotOrchestrator,
+    RiskAdvisor,
 )
 
 from .team import FlagPilotTeam, run_team_task
@@ -61,6 +62,7 @@ AGENT_REGISTRY = {
     "application-filter": ApplicationFilter,
     "feedback-loop": FeedbackLoop,
     "flagpilot": FlagPilotOrchestrator,
+    "risk-advisor": RiskAdvisor,
 }
 
 

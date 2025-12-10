@@ -411,3 +411,40 @@ class ChatMessage(Base):
         Index("idx_chat_message_user_id", "user_id"),
         Index("idx_chat_message_created_at", "created_at"),
     )
+
+
+class WorkflowExecution(Base):
+    """
+    Record of a specific execution of a workflow.
+    Stores the final results and status.
+    """
+    __tablename__ = "workflow_execution"
+    
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid.uuid4
+    )
+    workflow_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("workflow.id", ondelete="SET NULL"),
+        nullable=True
+    )
+    user_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("user.id", ondelete="CASCADE"),
+        nullable=False
+    )
+    
+    # Execution snapshot
+    plan_snapshot: Mapped[Dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    results: Mapped[Optional[Dict[str, Any]]] = mapped_column(JSONB, nullable=True)
+    
+    status: Mapped[str] = mapped_column(String(50), default="pending")
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    
+    __table_args__ = (
+        Index("idx_wf_exec_user_id", "user_id"),
+        Index("idx_wf_exec_created_at", "created_at"),
+    )

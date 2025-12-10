@@ -30,13 +30,22 @@ class AuthenticateJob(FlagPilotAction):
     3. Payment Scams (Check fraud, equipment purchase)
     
     Provide a LEGITIMACY SCORE (1-10) and specific warnings.
+    
+    Output strictly in VALID JSON format:
+    {{
+        "is_critical_risk": boolean,
+        "risk_level": "CRITICAL|HIGH|MEDIUM|LOW",
+        "risk_summary": "One sentence summary of the highest risk.",
+        "override_instruction": "Actionable emergency instruction if risk is CRITICAL else empty string.",
+        "score": 5,
+        "analysis": "# Markdown Analysis Here..."
+    }}
     """
-
+    
     async def run(self, instruction: str, context: str = "") -> str:
         # 1. Native Tool Use: Search for similar scams or company reputation
         rag_context = "No internal context found."
         try:
-            # Query for "scam patterns" or the company name if found in instruction
             rag_context = RAGSearch.search_knowledge_base(query="common job scams " + instruction[:50], top_k=3)
         except Exception:
             pass

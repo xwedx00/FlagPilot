@@ -156,6 +156,57 @@ class DAGExecutor:
                     output = result.get("output", "")
                     task.complete(output)
                     
+                    # --- GENERALIZED FAST-FAIL MECHANISM ---
+                    try:
+                        import json
+                        # Clean output if it has markdown block
+                        clean_output = output.replace("```json", "").replace("```", "").strip()
+                        data = json.loads(clean_output)
+                        
+                        # Check Standard Risk Schema
+                        if isinstance(data, dict) and data.get("is_critical_risk") is True:
+                            logger.warning(f"FAST-FAIL TRIGGERED: Critical Risk confirmed by {task.agent}")
+                            
+                            # 1. Notify UI of Abort
+                            yield {
+                                "type": "message",
+                                "agent": "flagpilot",
+                                "content": f"🚨 **WORKFLOW INTERRUPTED** 🚨\n\nAgent **{task.agent}** detected a critical risk. Engaging Risk Advisor protocol.\n\n**Risk:** {data.get('risk_summary', 'Critical issue found')}"
+                            }
+                            
+                            # 2. Abort Pending Tasks
+                            plan.status = TaskStatus.FAILED # Technically failed the original plan
+                            for p_task in plan.get_pending_tasks():
+                                p_task.status = TaskStatus.SKIPPED
+                                logger.info(f"Skipping task {p_task.id} due to critical risk.")
+                            
+                             # 3. Dynamic Injection: Risk Advisor
+                            override_instr = data.get("override_instruction", "Provide emergency advice.")
+                            risk_summary = data.get("risk_summary", "Critical risk detected.")
+                            
+                            risk_task = TaskNode(
+                                id=f"risk-advisor-override-{datetime.utcnow().timestamp()}",
+                                agent="risk-advisor",
+                                instruction=f"CRITICAL OVERRIDE: {override_instr}. Synthesize final report based on warning: {risk_summary}",
+                                priority="critical",
+                                status=TaskStatus.PENDING
+                            )
+                            # Add to plan so it gets executed
+                            plan.nodes.append(risk_task)
+                            
+                            logger.info("Injecting RiskAdvisor compliance task")
+                            yield {
+                                "type": "workflow_update",
+                                **plan.to_react_flow(),
+                            }
+                            # Continue loop to pick up this new task
+                            continue
+                            
+                    except Exception as e:
+                        # logger.warning(f"Fast-Fail check skipped: {e}")
+                        pass 
+                    # ---------------------------
+                    
                     yield {
                         "type": "agent_finish",
                         "task_id": task.id,
@@ -235,8 +286,29 @@ class DAGExecutor:
                 return {"output": f"Agent {task.agent} not found"}
             
             agent = agent_cls()
+            
+            # --- TIERED RAG CONTEXT INJECTION ---
+            execution_context = context.copy() if context else {}
+            if task.rag_data_for_agent:
+                # Inject specific guidance from Orchestrator as a high-priority system note
+                rag_guidance = (
+                    f"\n\n!!! CRITICAL CONTEXT FOR {task.agent} !!!\n"
+                    f"The Orchestrator has flagged specific knowledge for this task:\n"
+                    f"{task.rag_data_for_agent}\n"
+                    f"!!! YOU MUST USE THIS INFORMATION !!!\n"
+                )
+                
+                # Append to existing RAG context or creation new
+                if "RAG_CONTEXT" in execution_context:
+                    execution_context["RAG_CONTEXT"] = rag_guidance + "\n" + execution_context["RAG_CONTEXT"]
+                else:
+                    execution_context["RAG_CONTEXT"] = rag_guidance
+                
+                logger.info(f"Injecting Tiered RAG context for {task.agent}: {task.rag_data_for_agent[:50]}...")
+            # ------------------------------------
+
             # Execute agent analysis
-            result = await agent.analyze(task.instruction, context)
+            result = await agent.analyze(task.instruction, execution_context)
             
             return {
                 "output": result if isinstance(result, str) else str(result),

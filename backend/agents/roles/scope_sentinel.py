@@ -28,6 +28,16 @@ class DetectScopeCreep(FlagPilotAction):
     3. RESPONSE SCRIPT (Diplomatically requesting change order or extra pay)
     
     Be firm but polite. "Freebies" set bad precedents.
+    
+    Output strictly in VALID JSON format:
+    {{
+        "is_critical_risk": boolean,
+        "risk_level": "CRITICAL|HIGH|MEDIUM|LOW",
+        "risk_summary": "One sentence summary of the highest risk (e.g. Unpaid features).",
+        "override_instruction": "Actionable emergency instruction if risk is CRITICAL else empty string.",
+        "analysis": "# Markdown Analysis Here...",
+        "detected_scope_creep": boolean
+    }}
     """
 
     async def run(self, instruction: str, context: str = "") -> str:
