@@ -26,19 +26,37 @@ class UserData(BaseModel):
     name: Optional[str] = None
     role: str = "user"
 
-# Security Scheme
-security = HTTPBearer()
+from fastapi import Request
+
+# Security Scheme (Optional so we can check cookies manually)
+security = HTTPBearer(auto_error=False)
 
 async def verify_token(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    request: Request,
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
     db: AsyncSession = Depends(get_db)
 ) -> UserData:
     """
     Verify Token (Hybrid Strategy)
-    1. Check DB for Better Auth Session
-    2. Fallback to JWT Decode (for tests)
+    1. Check Authorization Header (Bearer)
+    2. Check Cookie (better-auth.session_token)
+    3. Check DB for Better Auth Session
     """
-    token = credentials.credentials
+    token = None
+    
+    # Try Header
+    if credentials:
+        token = credentials.credentials
+    # Try Cookie
+    elif request.cookies.get("better-auth.session_token"):
+        token = request.cookies.get("better-auth.session_token")
+        
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     
     # --- Strategy 1: Better Auth Session (DB) ---
     try:
