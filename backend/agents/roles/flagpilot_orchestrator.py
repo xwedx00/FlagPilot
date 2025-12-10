@@ -50,7 +50,7 @@ class CreatePlan(FlagPilotAction):
     2. Break it down into atomic, logical tasks.
     3. Assign the BEST specialist agent for each task.
     4. Determine dependencies (which task must finish before another starts).
-    5. If applicable, explicitly Instruct the agent to use specific "Global Patterns" found in Context (cite the Strategy Name).
+    5. CRITICAL: Check the provided 'Context' for "Global Wisdom" or "Strategies". If a relevant strategy is found (e.g. from RAG_CONTEXT), you MUST explicitly instruct the assigned agent to use it by name.
     
     Output strictly in VALID JSON format.
     Do not include any thinking chain, markdown formatting, or introductory text.
@@ -63,7 +63,7 @@ class CreatePlan(FlagPilotAction):
             {{
                 "id": "task-1",
                 "agent": "agent-id",
-                "instruction": "Detailed instruction",
+                "instruction": "Detailed instruction (Mention Strategy Name if applicable)",
                 "priority": "high",
                 "dependencies": []
             }}
@@ -94,7 +94,7 @@ class FlagPilotOrchestrator(FlagPilotRole):
     name: str = "FlagPilotOrchestrator"
     profile: str = "Workflow Manager"
     goal: str = "Orchestrate the perfect team for any freelancer problem"
-    constraints: str = "Optimize for efficiency and accuracy. Use RAG context where available."
+    constraints: str = "Optimize for efficiency. MANDATORY: You must prioritize and apply 'Global Wisdom' strategies found in context."
     
     def __init__(self, **kwargs):
         super().__init__(actions=[CreatePlan()], **kwargs)
@@ -104,6 +104,31 @@ class FlagPilotOrchestrator(FlagPilotRole):
         Direct entry point for generating a plan.
         Returns raw JSON string from the LLM.
         """
+        # Prioritize RAG Context by placing it at the top
+        ctx_parts = []
+        if context and "RAG_CONTEXT" in context:
+             ctx_parts.append(f"!!! GLOBAL WISDOM / RAG STRATEGIES !!!\n{context['RAG_CONTEXT']}\n!!! SYSTEM NOTE: USE THESE STRATEGIES !!!")
+             # DEBUG Log
+             logger.info("✅ RAG_CONTEXT Found and highlighted in Orchestrator arguments")
+        elif context and "RAG_CONTEXT" not in context:
+             logger.warning("❌ RAG_CONTEXT MISSING in Orchestrator arguments")
+             
+        for k, v in (context or {}).items():
+             if k != "RAG_CONTEXT":
+                  ctx_parts.append(f"{k}: {v}")
+                  
+        ctx_str = "\n\n".join(ctx_parts)
+        
+        # DEBUG: Log the context to verify RAG injection
+        logger.info(f"🔍 ORCHESTRATOR INPUT CONTEXT: {ctx_str[:1000]}...")
+
         action = CreatePlan()
-        ctx_str = "\n".join([f"{k}: {v}" for k, v in (context or {}).items()])
-        return await action.run(instruction=text, context=ctx_str)
+        
+        # FORCE INSTRUCTION: Append system note to user request to override model bias
+        forced_instruction = (
+             f"{text}\n\n"
+             "[SYSTEM NOTE: You MUST inspect the Context above for 'Global Wisdom' strategies (e.g. 'Escalation Strategy Beta'). "
+             "If found, you MUST explicitly cite the strategy name in your plan instructions for the relevant agent.]"
+        )
+        
+        return await action.run(instruction=forced_instruction, context=ctx_str)

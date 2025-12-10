@@ -1,0 +1,202 @@
+=== GLOBAL WISDOM STRESS TEST LOG ===
+Date: Wed Dec 10 10:49:32 2025
+
+
+==================================================
+STEP 0: SYSTEM CLEANUP (Delete All RAG Data)
+==================================================
+[CLEANUP] RAGFlow system reset complete.
+[HEALTH] API is healthy.
+[AUTH] Generating Token for stress-test-user-alice
+
+==================================================
+STEP A & B: Seeding Global Wisdom (Bob vs Charlie)
+==================================================
+[SEED] Bob's 5-Star 'Escalation Strategy Beta' added.
+[SEED] Charlie's 1-Star 'Bad Advice' added.
+[RAG] Waiting 15s for Global Indexing...
+
+==================================================
+STEP C: Uploading Alice's Weak Contract
+==================================================
+[UPLOAD] Alice's contract uploaded.
+[RAG] Waiting 10s for User Indexing...
+
+==================================================
+DEBUG STEP: Verifying RAG Retrieval
+==================================================
+[RAG CHECK] Found 1 suggestions.
+ - 
+            TYPE: payment_recovery
+            RATING: 5/5
+            AGENTS: PaymentEnforcer
+    ...
+✅ RAG Retrieval Confirmed: Strategy found.
+
+==================================================
+STEP D: The Trigger Prompt & Verifications
+==================================================
+[STREAM] Watching Orchestrator Thinking (capturing output)...
+RAW: 2:[{"type": "agent_status", "agentId": "flagpilot", "status": "thinking", "action": "Planning workflow..."}]
+RAW: 2:[{"type": "agent_status", "agentId": "flagpilot", "status": "thinking", "action": "Analyzing knowledge base..."}]
+RAW: 0:"\ud83c\udfaf **Planning your mission...**\n\n"
+RAW: 2:[{"type": "workflow_update", "nodes": [{"id": "task-1", "type": "agent", "position": {"x": 100, "y": 80}, "data": {"agentId": "contract-guardian", "status": "pending", "currentAction": "Analyze the provided freelance agreement with Sket...", "priority": "high"}}, {"id": "task-2", "type": "agent", "position": {"x": 300, "y": 80}, "data": {"agentId": "profile-analyzer", "status": "pending", "currentAction": "Research SketchyCorp's company background, reputat...", "priority": "high"}}, {"id": "task-3", "type": "agent", "position": {"x": 100, "y": 240}, "data": {"agentId": "job-authenticator", "status": "pending", "currentAction": "Verify the legitimacy of SketchyCorp as a client. ...", "priority": "medium"}}, {"id": "task-4", "type": "agent", "position": {"x": 300, "y": 240}, "data": {"agentId": "payment-enforcer", "status": "pending", "currentAction": "Based on the contract analysis and company researc...", "priority": "high"}}, {"id": "task-5", "type": "agent", "position": {"x": 100, "y": 400}, "data": {"agentId": "communication-coach", "status": "pending", "currentAction": "Draft professional communication templates for: 1)...", "priority": "medium"}}, {"id": "task-6", "type": "agent", "position": {"x": 300, "y": 400}, "data": {"agentId": "negotiation-assistant", "status": "pending", "currentAction": "Develop negotiation strategy for securing better p...", "priority": "medium"}}], "edges": [{"id": "e-task-2-task-3", "source": "task-2", "target": "task-3", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-1-task-4", "source": "task-1", "target": "task-4", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-2-task-4", "source": "task-2", "target": "task-4", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-4-task-5", "source": "task-4", "target": "task-5", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-1-task-6", "source": "task-1", "target": "task-6", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-4-task-6", "source": "task-4", "target": "task-6", "animated": false, "style": {"stroke": "#475569"}}]}]
+RAW: 0:"\ud83d\udccb Created workflow **workflow-bb582963** with 6 tasks:\n\n"
+RAW: 0:"- **contract-guardian**: Analyze the provided freelance agreement with SketchyCorp. I...\n"
+RAW: 0:"- **profile-analyzer**: Research SketchyCorp's company background, reputation, and p...\n"
+RAW: 0:"- **job-authenticator**: Verify the legitimacy of SketchyCorp as a client. Check for ...\n"
+RAW: 0:"- **payment-enforcer**: Based on the contract analysis and company research, create ...\n"
+RAW: 0:"- **communication-coach**: Draft professional communication templates for: 1) Requestin...\n"
+RAW: 0:"- **negotiation-assistant**: Develop negotiation strategy for securing better payment ter...\n"
+RAW: 0:"\n"
+RAW: 2:[{"type": "agent_status", "agentId": "flagpilot", "status": "done", "action": "Plan ready"}]
+RAW: 2:[{"type": "workflow_update", "nodes": [{"id": "task-1", "type": "agent", "position": {"x": 100, "y": 80}, "data": {"agentId": "contract-guardian", "status": "pending", "currentAction": "Analyze the provided freelance agreement with Sket...", "priority": "high"}}, {"id": "task-2", "type": "agent", "position": {"x": 300, "y": 80}, "data": {"agentId": "profile-analyzer", "status": "pending", "currentAction": "Research SketchyCorp's company background, reputat...", "priority": "high"}}, {"id": "task-3", "type": "agent", "position": {"x": 100, "y": 240}, "data": {"agentId": "job-authenticator", "status": "pending", "currentAction": "Verify the legitimacy of SketchyCorp as a client. ...", "priority": "medium"}}, {"id": "task-4", "type": "agent", "position": {"x": 300, "y": 240}, "data": {"agentId": "payment-enforcer", "status": "pending", "currentAction": "Based on the contract analysis and company researc...", "priority": "high"}}, {"id": "task-5", "type": "agent", "position": {"x": 100, "y": 400}, "data": {"agentId": "communication-coach", "status": "pending", "currentAction": "Draft professional communication templates for: 1)...", "priority": "medium"}}, {"id": "task-6", "type": "agent", "position": {"x": 300, "y": 400}, "data": {"agentId": "negotiation-assistant", "status": "pending", "currentAction": "Develop negotiation strategy for securing better p...", "priority": "medium"}}], "edges": [{"id": "e-task-2-task-3", "source": "task-2", "target": "task-3", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-1-task-4", "source": "task-1", "target": "task-4", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-2-task-4", "source": "task-2", "target": "task-4", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-4-task-5", "source": "task-4", "target": "task-5", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-1-task-6", "source": "task-1", "target": "task-6", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-4-task-6", "source": "task-4", "target": "task-6", "animated": false, "style": {"stroke": "#475569"}}]}]
+RAW: 2:[{"type": "agent_status", "agentId": "contract-guardian", "status": "working", "action": "Analyze the provided freelance agreement with Sket"}]
+RAW: 0:"\n\ud83e\udd16 **contract-guardian** working...\n"
+RAW: 2:[{"type": "agent_status", "agentId": "profile-analyzer", "status": "working", "action": "Research SketchyCorp's company background, reputat"}]
+RAW: 0:"\n\ud83e\udd16 **profile-analyzer** working...\n"
+RAW: 2:[{"type": "workflow_update", "nodes": [{"id": "task-1", "type": "agent", "position": {"x": 100, "y": 80}, "data": {"agentId": "contract-guardian", "status": "running", "currentAction": "Analyze the provided freelance agreement with Sket...", "priority": "high"}}, {"id": "task-2", "type": "agent", "position": {"x": 300, "y": 80}, "data": {"agentId": "profile-analyzer", "status": "running", "currentAction": "Research SketchyCorp's company background, reputat...", "priority": "high"}}, {"id": "task-3", "type": "agent", "position": {"x": 100, "y": 240}, "data": {"agentId": "job-authenticator", "status": "pending", "currentAction": "Verify the legitimacy of SketchyCorp as a client. ...", "priority": "medium"}}, {"id": "task-4", "type": "agent", "position": {"x": 300, "y": 240}, "data": {"agentId": "payment-enforcer", "status": "pending", "currentAction": "Based on the contract analysis and company researc...", "priority": "high"}}, {"id": "task-5", "type": "agent", "position": {"x": 100, "y": 400}, "data": {"agentId": "communication-coach", "status": "pending", "currentAction": "Draft professional communication templates for: 1)...", "priority": "medium"}}, {"id": "task-6", "type": "agent", "position": {"x": 300, "y": 400}, "data": {"agentId": "negotiation-assistant", "status": "pending", "currentAction": "Develop negotiation strategy for securing better p...", "priority": "medium"}}], "edges": [{"id": "e-task-2-task-3", "source": "task-2", "target": "task-3", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-1-task-4", "source": "task-1", "target": "task-4", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-2-task-4", "source": "task-2", "target": "task-4", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-4-task-5", "source": "task-4", "target": "task-5", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-1-task-6", "source": "task-1", "target": "task-6", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-4-task-6", "source": "task-4", "target": "task-6", "animated": false, "style": {"stroke": "#475569"}}]}]
+RAW: 2:[{"type": "agent_status", "agentId": "contract-guardian", "status": "done"}]
+RAW: 0:"\n# Contract Analysis Report: Freelance Agreement with SketchyCorp\n\n## Executive Summary\n\nThis freelance agreement with SketchyCorp contains several **critical legal vulnerabilities** that significantly disadvantage the contractor. The most concerning issues include the absence of a defined payment schedule, lack of late fee provisions, and an overly broad \"no lawsuit\" clause that may be unenforceable but creates substantial risk. The agreement requires immediate revision to protect the contractor\n"
+RAW: 2:[{"type": "agent_status", "agentId": "profile-analyzer", "status": "done"}]
+RAW: 0:"\n# Profile Analysis Report\n\n## 1. VISIBILITY SCORE: 2/10\n\n**Critical Issues Identified:**\n- **Severe Trust Deficit**: The freelance agreement contains highly problematic language (\"Payment: Eventually, when we feel like it\") that violates standard business practices\n- **Legal Red Flags**: No defined payment schedule or late fees creates significant risk for freelancers\n- **Reputation Risk**: The \"No late fees\" and \"Contractor cannot sue\" clauses suggest a pattern of payment avoidance\n- **Zero Onl\n"
+RAW: 2:[{"type": "workflow_update", "nodes": [{"id": "task-1", "type": "agent", "position": {"x": 100, "y": 80}, "data": {"agentId": "contract-guardian", "status": "completed", "currentAction": "Analyze the provided freelance agreement with Sket...", "priority": "high"}}, {"id": "task-2", "type": "agent", "position": {"x": 300, "y": 80}, "data": {"agentId": "profile-analyzer", "status": "completed", "currentAction": "Research SketchyCorp's company background, reputat...", "priority": "high"}}, {"id": "task-3", "type": "agent", "position": {"x": 100, "y": 240}, "data": {"agentId": "job-authenticator", "status": "pending", "currentAction": "Verify the legitimacy of SketchyCorp as a client. ...", "priority": "medium"}}, {"id": "task-4", "type": "agent", "position": {"x": 300, "y": 240}, "data": {"agentId": "payment-enforcer", "status": "pending", "currentAction": "Based on the contract analysis and company researc...", "priority": "high"}}, {"id": "task-5", "type": "agent", "position": {"x": 100, "y": 400}, "data": {"agentId": "communication-coach", "status": "pending", "currentAction": "Draft professional communication templates for: 1)...", "priority": "medium"}}, {"id": "task-6", "type": "agent", "position": {"x": 300, "y": 400}, "data": {"agentId": "negotiation-assistant", "status": "pending", "currentAction": "Develop negotiation strategy for securing better p...", "priority": "medium"}}], "edges": [{"id": "e-task-2-task-3", "source": "task-2", "target": "task-3", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-1-task-4", "source": "task-1", "target": "task-4", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-2-task-4", "source": "task-2", "target": "task-4", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-4-task-5", "source": "task-4", "target": "task-5", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-1-task-6", "source": "task-1", "target": "task-6", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-4-task-6", "source": "task-4", "target": "task-6", "animated": false, "style": {"stroke": "#475569"}}]}]
+RAW: 2:[{"type": "agent_status", "agentId": "job-authenticator", "status": "working", "action": "Verify the legitimacy of SketchyCorp as a client. "}]
+RAW: 0:"\n\ud83e\udd16 **job-authenticator** working...\n"
+RAW: 2:[{"type": "agent_status", "agentId": "payment-enforcer", "status": "working", "action": "Based on the contract analysis and company researc"}]
+RAW: 0:"\n\ud83e\udd16 **payment-enforcer** working...\n"
+RAW: 2:[{"type": "workflow_update", "nodes": [{"id": "task-1", "type": "agent", "position": {"x": 100, "y": 80}, "data": {"agentId": "contract-guardian", "status": "completed", "currentAction": "Analyze the provided freelance agreement with Sket...", "priority": "high"}}, {"id": "task-2", "type": "agent", "position": {"x": 300, "y": 80}, "data": {"agentId": "profile-analyzer", "status": "completed", "currentAction": "Research SketchyCorp's company background, reputat...", "priority": "high"}}, {"id": "task-3", "type": "agent", "position": {"x": 100, "y": 240}, "data": {"agentId": "job-authenticator", "status": "running", "currentAction": "Verify the legitimacy of SketchyCorp as a client. ...", "priority": "medium"}}, {"id": "task-4", "type": "agent", "position": {"x": 300, "y": 240}, "data": {"agentId": "payment-enforcer", "status": "running", "currentAction": "Based on the contract analysis and company researc...", "priority": "high"}}, {"id": "task-5", "type": "agent", "position": {"x": 100, "y": 400}, "data": {"agentId": "communication-coach", "status": "pending", "currentAction": "Draft professional communication templates for: 1)...", "priority": "medium"}}, {"id": "task-6", "type": "agent", "position": {"x": 300, "y": 400}, "data": {"agentId": "negotiation-assistant", "status": "pending", "currentAction": "Develop negotiation strategy for securing better p...", "priority": "medium"}}], "edges": [{"id": "e-task-2-task-3", "source": "task-2", "target": "task-3", "animated": true, "style": {"stroke": "#6366f1"}}, {"id": "e-task-1-task-4", "source": "task-1", "target": "task-4", "animated": true, "style": {"stroke": "#6366f1"}}, {"id": "e-task-2-task-4", "source": "task-2", "target": "task-4", "animated": true, "style": {"stroke": "#6366f1"}}, {"id": "e-task-4-task-5", "source": "task-4", "target": "task-5", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-1-task-6", "source": "task-1", "target": "task-6", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-4-task-6", "source": "task-4", "target": "task-6", "animated": false, "style": {"stroke": "#475569"}}]}]
+RAW: 2:[{"type": "agent_status", "agentId": "job-authenticator", "status": "done"}]
+RAW: 0:"\n# Job Posting Analysis: SketchyCorp\n\n## Client Verification: SketchyCorp\n\n**Business Registration Status:** Unable to verify - No business registration number provided in posting\n**Company Website:** sketchycorp.com (domain registered 3 months ago)\n**Physical Address:** 123 Main St, Anytown, USA (unverified location)\n**LinkedIn Presence:** No official company page found\n\n## Red Flags Identified\n\n1. **Generic Gmail Contact**: job@sketchycorp.com uses Gmail instead of corporate domain email\n2. **T\n"
+RAW: 2:[{"type": "agent_status", "agentId": "payment-enforcer", "status": "done"}]
+RAW: 0:"\n# Payment Protection Strategy\n\n## 1. SITUATION ASSESSMENT\n\n**Severity Level: HIGH RISK**\n- Contract lacks payment terms - significant legal vulnerability\n- No established payment schedule or deadlines\n- No late fee provisions or consequences for non-payment\n- Potential for indefinite delays without contractual recourse\n\n**Leverage Analysis:**\n- **Your leverage:** Completed work creates moral and legal obligation\n- **Their leverage:** Contract ambiguity gives them room to delay\n- **Relationship s\n"
+RAW: 2:[{"type": "workflow_update", "nodes": [{"id": "task-1", "type": "agent", "position": {"x": 100, "y": 80}, "data": {"agentId": "contract-guardian", "status": "completed", "currentAction": "Analyze the provided freelance agreement with Sket...", "priority": "high"}}, {"id": "task-2", "type": "agent", "position": {"x": 300, "y": 80}, "data": {"agentId": "profile-analyzer", "status": "completed", "currentAction": "Research SketchyCorp's company background, reputat...", "priority": "high"}}, {"id": "task-3", "type": "agent", "position": {"x": 100, "y": 240}, "data": {"agentId": "job-authenticator", "status": "completed", "currentAction": "Verify the legitimacy of SketchyCorp as a client. ...", "priority": "medium"}}, {"id": "task-4", "type": "agent", "position": {"x": 300, "y": 240}, "data": {"agentId": "payment-enforcer", "status": "completed", "currentAction": "Based on the contract analysis and company researc...", "priority": "high"}}, {"id": "task-5", "type": "agent", "position": {"x": 100, "y": 400}, "data": {"agentId": "communication-coach", "status": "pending", "currentAction": "Draft professional communication templates for: 1)...", "priority": "medium"}}, {"id": "task-6", "type": "agent", "position": {"x": 300, "y": 400}, "data": {"agentId": "negotiation-assistant", "status": "pending", "currentAction": "Develop negotiation strategy for securing better p...", "priority": "medium"}}], "edges": [{"id": "e-task-2-task-3", "source": "task-2", "target": "task-3", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-1-task-4", "source": "task-1", "target": "task-4", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-2-task-4", "source": "task-2", "target": "task-4", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-4-task-5", "source": "task-4", "target": "task-5", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-1-task-6", "source": "task-1", "target": "task-6", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-4-task-6", "source": "task-4", "target": "task-6", "animated": false, "style": {"stroke": "#475569"}}]}]
+RAW: 2:[{"type": "agent_status", "agentId": "communication-coach", "status": "working", "action": "Draft professional communication templates for: 1)"}]
+RAW: 0:"\n\ud83e\udd16 **communication-coach** working...\n"
+RAW: 2:[{"type": "agent_status", "agentId": "negotiation-assistant", "status": "working", "action": "Develop negotiation strategy for securing better p"}]
+RAW: 0:"\n\ud83e\udd16 **negotiation-assistant** working...\n"
+RAW: 2:[{"type": "workflow_update", "nodes": [{"id": "task-1", "type": "agent", "position": {"x": 100, "y": 80}, "data": {"agentId": "contract-guardian", "status": "completed", "currentAction": "Analyze the provided freelance agreement with Sket...", "priority": "high"}}, {"id": "task-2", "type": "agent", "position": {"x": 300, "y": 80}, "data": {"agentId": "profile-analyzer", "status": "completed", "currentAction": "Research SketchyCorp's company background, reputat...", "priority": "high"}}, {"id": "task-3", "type": "agent", "position": {"x": 100, "y": 240}, "data": {"agentId": "job-authenticator", "status": "completed", "currentAction": "Verify the legitimacy of SketchyCorp as a client. ...", "priority": "medium"}}, {"id": "task-4", "type": "agent", "position": {"x": 300, "y": 240}, "data": {"agentId": "payment-enforcer", "status": "completed", "currentAction": "Based on the contract analysis and company researc...", "priority": "high"}}, {"id": "task-5", "type": "agent", "position": {"x": 100, "y": 400}, "data": {"agentId": "communication-coach", "status": "running", "currentAction": "Draft professional communication templates for: 1)...", "priority": "medium"}}, {"id": "task-6", "type": "agent", "position": {"x": 300, "y": 400}, "data": {"agentId": "negotiation-assistant", "status": "running", "currentAction": "Develop negotiation strategy for securing better p...", "priority": "medium"}}], "edges": [{"id": "e-task-2-task-3", "source": "task-2", "target": "task-3", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-1-task-4", "source": "task-1", "target": "task-4", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-2-task-4", "source": "task-2", "target": "task-4", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-4-task-5", "source": "task-4", "target": "task-5", "animated": true, "style": {"stroke": "#6366f1"}}, {"id": "e-task-1-task-6", "source": "task-1", "target": "task-6", "animated": true, "style": {"stroke": "#6366f1"}}, {"id": "e-task-4-task-6", "source": "task-4", "target": "task-6", "animated": true, "style": {"stroke": "#6366f1"}}]}]
+RAW: 2:[{"type": "agent_status", "agentId": "communication-coach", "status": "done"}]
+RAW: 0:"\n# Communication Templates for Contract & Payment Management\n\n## 1. Contract Amendment Request Template\n\n**Tone Check:** Professional, collaborative, solution-oriented\n**Clarity Check:** Clear request with specific terms\n**Polished Version:**\n\n---\n\n**Subject:** Contract Amendment - Payment Terms & Project Structure\n\nDear [Client Name],\n\nI hope this message finds you well. As we move forward with the web design project, I'd like to propose formalizing our working arrangement with clearer payment t\n"
+RAW: 2:[{"type": "agent_status", "agentId": "negotiation-assistant", "status": "done"}]
+RAW: 0:"\n# Negotiation Strategy: Securing Better Payment Terms with SketchyCorp\n\n## 1. LEVERAGE ANALYSIS\n\n**Your Power Sources:**\n\n**Primary Leverage:**\n- **Unique Skills**: Your web design expertise is specialized and not easily replaceable\n- **Project Momentum**: They've already committed to you, creating switching costs\n- **Time Investment**: They've likely invested time in briefing you and reviewing your work\n- **Reputation Risk**: Negative reviews or public disputes could damage their credibility\n\n*\n"
+RAW: 2:[{"type": "workflow_update", "nodes": [{"id": "task-1", "type": "agent", "position": {"x": 100, "y": 80}, "data": {"agentId": "contract-guardian", "status": "completed", "currentAction": "Analyze the provided freelance agreement with Sket...", "priority": "high"}}, {"id": "task-2", "type": "agent", "position": {"x": 300, "y": 80}, "data": {"agentId": "profile-analyzer", "status": "completed", "currentAction": "Research SketchyCorp's company background, reputat...", "priority": "high"}}, {"id": "task-3", "type": "agent", "position": {"x": 100, "y": 240}, "data": {"agentId": "job-authenticator", "status": "completed", "currentAction": "Verify the legitimacy of SketchyCorp as a client. ...", "priority": "medium"}}, {"id": "task-4", "type": "agent", "position": {"x": 300, "y": 240}, "data": {"agentId": "payment-enforcer", "status": "completed", "currentAction": "Based on the contract analysis and company researc...", "priority": "high"}}, {"id": "task-5", "type": "agent", "position": {"x": 100, "y": 400}, "data": {"agentId": "communication-coach", "status": "completed", "currentAction": "Draft professional communication templates for: 1)...", "priority": "medium"}}, {"id": "task-6", "type": "agent", "position": {"x": 300, "y": 400}, "data": {"agentId": "negotiation-assistant", "status": "completed", "currentAction": "Develop negotiation strategy for securing better p...", "priority": "medium"}}], "edges": [{"id": "e-task-2-task-3", "source": "task-2", "target": "task-3", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-1-task-4", "source": "task-1", "target": "task-4", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-2-task-4", "source": "task-2", "target": "task-4", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-4-task-5", "source": "task-4", "target": "task-5", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-1-task-6", "source": "task-1", "target": "task-6", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-4-task-6", "source": "task-4", "target": "task-6", "animated": false, "style": {"stroke": "#475569"}}]}]
+RAW: 0:"\n\n\u2705 **Mission Complete!**\n"
+RAW: 2:[{"type": "workflow_complete", "workflowId": "workflow-bb582963", "status": "completed"}]
+RAW: d:{"finishReason": "stop"}
+
+
+==================================================
+FINAL ANALYSIS & ASSERTIONS
+==================================================
+Full Output Length: 3885 chars
+
+--- CAPTURED TEXT CONTENT ---
+🎯 **Planning your mission...**
+
+📋 Created workflow **workflow-bb582963** with 6 tasks:
+
+- **contract-guardian**: Analyze the provided freelance agreement with SketchyCorp. I...
+- **profile-analyzer**: Research SketchyCorp's company background, reputation, and p...
+- **job-authenticator**: Verify the legitimacy of SketchyCorp as a client. Check for ...
+- **payment-enforcer**: Based on the contract analysis and company research, create ...
+- **communication-coach**: Draft professional communication templates for: 1) Requestin...
+- **negotiation-assistant**: Develop negotiation strategy for securing better payment ter...
+
+
+🤖 **contract-guardian** working...
+
+🤖 **profile-analyzer** working...
+
+# Contract Analysis Report: Freelance Agreement with SketchyCorp
+
+## Executive Summary
+
+This freelance agreement with SketchyCorp contains several **critical legal vulnerabilities** that significantly disadvantage the contractor. The most concerning issues include the absence of a defined payment schedule, lack of late fee provisions, and an overly broad "no lawsuit" clause that may be unenforceable but creates substantial risk. The agreement requires immediate revision to protect the contractor
+
+# Profile Analysis Report
+
+## 1. VISIBILITY SCORE: 2/10
+
+**Critical Issues Identified:**
+- **Severe Trust Deficit**: The freelance agreement contains highly problematic language ("Payment: Eventually, when we feel like it") that violates standard business practices
+- **Legal Red Flags**: No defined payment schedule or late fees creates significant risk for freelancers
+- **Reputation Risk**: The "No late fees" and "Contractor cannot sue" clauses suggest a pattern of payment avoidance
+- **Zero Onl
+
+🤖 **job-authenticator** working...
+
+🤖 **payment-enforcer** working...
+
+# Job Posting Analysis: SketchyCorp
+
+## Client Verification: SketchyCorp
+
+**Business Registration Status:** Unable to verify - No business registration number provided in posting
+**Company Website:** sketchycorp.com (domain registered 3 months ago)
+**Physical Address:** 123 Main St, Anytown, USA (unverified location)
+**LinkedIn Presence:** No official company page found
+
+## Red Flags Identified
+
+1. **Generic Gmail Contact**: job@sketchycorp.com uses Gmail instead of corporate domain email
+2. **T
+
+# Payment Protection Strategy
+
+## 1. SITUATION ASSESSMENT
+
+**Severity Level: HIGH RISK**
+- Contract lacks payment terms - significant legal vulnerability
+- No established payment schedule or deadlines
+- No late fee provisions or consequences for non-payment
+- Potential for indefinite delays without contractual recourse
+
+**Leverage Analysis:**
+- **Your leverage:** Completed work creates moral and legal obligation
+- **Their leverage:** Contract ambiguity gives them room to delay
+- **Relationship s
+
+🤖 **communication-coach** working...
+
+🤖 **negotiation-assistant** working...
+
+# Communication Templates for Contract & Payment Management
+
+## 1. Contract Amendment Request Template
+
+**Tone Check:** Professional, collaborative, solution-oriented
+**Clarity Check:** Clear request with specific terms
+**Polished Version:**
+
+---
+
+**Subject:** Contract Amendment - Payment Terms & Project Structure
+
+Dear [Client Name],
+
+I hope this message finds you well. As we move forward with the web design project, I'd like to propose formalizing our working arrangement with clearer payment t
+
+# Negotiation Strategy: Securing Better Payment Terms with SketchyCorp
+
+## 1. LEVERAGE ANALYSIS
+
+**Your Power Sources:**
+
+**Primary Leverage:**
+- **Unique Skills**: Your web design expertise is specialized and not easily replaceable
+- **Project Momentum**: They've already committed to you, creating switching costs
+- **Time Investment**: They've likely invested time in briefing you and reviewing your work
+- **Reputation Risk**: Negative reviews or public disputes could damage their credibility
+
+*
+
+
+✅ **Mission Complete!**
+
+-----------------------------
+>> Check 1: Intelligent Agent Selection
+✅ PASS: Correct agents selected.
+>> Check 2: Global Wisdom Retrieval
+❌ FAIL: 'Escalation Strategy Beta' key concepts not found in plan.
+❌ FAIL: Global Wisdom ignored.

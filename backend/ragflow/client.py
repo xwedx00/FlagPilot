@@ -62,6 +62,24 @@ class RAGFlowClient:
             logger.error(f"❌ RAGFlow connection failed (Key provided but unreachable): {e}")
             # Fail Fast: If key is provided, we expect it to work.
             raise ConnectionError(f"RAGFlow unreachable: {e}")
+            
+    def reset_system(self):
+        """
+        DANGEROUS: Wipes all datasets to ensure a clean slate for stress testing.
+        """
+        if not self._client:
+             return
+        
+        try:
+            logger.warning("⚠️ RESETTING RAGFLOW SYSTEM - DELETING ALL DATASETS")
+            # Using None to delete all datasets as per SDK documentation
+            self._client.delete_datasets(ids=None)
+            logger.info("✅ All RAGFlow datasets deleted.")
+            
+        except Exception as e:
+            logger.error(f"Failed to reset system: {e}")
+            # Don't raise, just log, as this is a cleanup step might fail if empty
+
     
     @property
     def is_connected(self) -> bool:
