@@ -13,6 +13,8 @@ import os
 import time
 from typing import Optional, List, Dict, Any
 from loguru import logger
+import requests
+import re
 
 # Global instance
 _ragflow_client: Optional["RAGFlowClient"] = None
@@ -246,18 +248,38 @@ class RAGFlowClient:
             
             filename = f"workflow_{int(time.time())}_{workflow_type}.txt"
             
+            # Step 1: Upload (creates the document record)
             dataset.upload_documents([{
                 "display_name": filename,
                 "blob": content.encode('utf-8')
             }])
             
-            # Auto-parse
-            time.sleep(1)
+            # Step 2: Set Metadata (Update meta_fields explicitly)
+            # We must wait briefly or look it up to get the ID
+            time.sleep(1) 
             docs = dataset.list_documents(keywords=filename, page=1, page_size=1)
+            
             if docs:
-                dataset.async_parse_documents([docs[0].id])
+                doc = docs[0]
                 
-            return True
+                logger.info(f"Setting metadata for {doc.name}: rating={rating}")
+                # Update metadata via Direct API (SDK update is flaky)
+                try:
+                    url = f"{self.base_url}/api/v1/datasets/{doc.dataset_id}/documents/{doc.id}"
+                    headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
+                    resp = requests.put(url, json={"meta_fields": {"rating": rating}}, headers=headers)
+                    if resp.status_code != 200 or resp.json().get("code") != 0:
+                        logger.error(f"Failed to update metadata via API: {resp.text}")
+                    else:
+                        logger.info(f"Updated metadata via API for {doc.name}: rating={rating}")
+                except Exception as e:
+                     logger.error(f"Metadata update exception: {e}")
+
+                # Trigger parsing explicitly
+                dataset.async_parse_documents([doc.id])
+                return True
+                
+            return False
             
         except Exception as e:
             logger.error(f"Failed to add global wisdom: {e}")
@@ -277,14 +299,44 @@ class RAGFlowClient:
             if not dataset:
                 return []
             
+            # Filter: Only retrieve advice with rating >= 4
+            # Using RAGFlow's metadata_condition syntax
+            # Fetch more chunks to account for potential empty/ghost docs
+            fetch_limit = max(10, limit * 5)
             chunks = self._client.retrieve(
                 question=query,
                 dataset_ids=[dataset.id],
-                top_k=limit,
+                top_k=fetch_limit,
                 similarity_threshold=0.1
+                # Removed metadata_condition as it is unreliable for RAGFlow parsing
             )
             
-            return [{"content": c.content_with_weight, "similarity": c.similarity} for c in chunks]
+            logger.info(f"Global Wisdom Search: query='{query}' -> found {len(chunks)} chunks (requested {fetch_limit}).")
+            results = []
+            for c in chunks:
+                # Direct attribute access is safer than to_json/dict due to SDK variations
+                content = getattr(c, "content_with_weight", getattr(c, "content", ""))
+                
+                # Log a snippet for debugging (replace newlines to ensure visibility)
+                clean_log_content = content.replace("\n", " ") if content else ""
+                logger.info(f"Global Chunk: {clean_log_content[:100]}...")
+                
+                if content and content.strip():
+                    # Client-side filtering for Rating
+                    # Expected format: "RATING: 5/5"
+                    match = re.search(r"RATING:\s*(\d+)/5", content)
+                    if match:
+                        rating_val = int(match.group(1))
+                        if rating_val < 4:
+                            logger.info(f"Skipping low-rated chunk (Rating: {rating_val}/5).")
+                            continue
+                    else:
+                        logger.warning("Chunk missing RATING field, including by default.")
+                        
+                    results.append({"content": content, "similarity": getattr(c, "similarity", 0.0)})
+            
+            # Return only the requested number of valid suggestions
+            return results[:limit]
             
         except Exception as e:
             logger.error(f"Global wisdom query failed: {e}")

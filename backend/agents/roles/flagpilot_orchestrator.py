@@ -50,6 +50,7 @@ class CreatePlan(FlagPilotAction):
     2. Break it down into atomic, logical tasks.
     3. Assign the BEST specialist agent for each task.
     4. Determine dependencies (which task must finish before another starts).
+    5. If applicable, explicitly Instruct the agent to use specific "Global Patterns" found in Context (cite the Strategy Name).
     
     Output strictly in VALID JSON format.
     Do not include any thinking chain, markdown formatting, or introductory text.
