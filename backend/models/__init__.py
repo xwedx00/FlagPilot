@@ -12,6 +12,7 @@ from .intelligence import (
     Project, AgentTask, AgentMemory, TaskStatus, 
     Workflow, Document, Mission, ChatMessage, MissionStatus
 )
+from .credits import CreditWallet, CreditTransaction
 
 __all__ = [
     "Base",
@@ -32,4 +33,7 @@ __all__ = [
     "Mission",
     "ChatMessage",
     "MissionStatus",
+    # Credits
+    "CreditWallet",
+    "CreditTransaction",
 ]

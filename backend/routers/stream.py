@@ -334,12 +334,21 @@ async def stream_workflow(request: WorkflowRequest):
                     except Exception as e:
                         logger.warning(f"Stream: Failed to inject RAG context: {e}")
 
-            yield VSF.text("🎯 **Planning your mission...**\n\n")
+            yield VSF.text(f"🎯 **Planning your mission...**\n\n")
             
             plan = await generate_workflow_plan(
                 user_request=request.message,
                 context=request.context,
             )
+            
+            # --- FAST PATH: DIRECT RESPONSE ---
+            if plan.outcome == "direct_response":
+                yield VSF.text(f"\n{plan.direct_response_content}\n")
+                yield VSF.agent_status("flagpilot", "done", "Responded directly")
+                # Add persistence for direct response if needed, for now skip to keep it light
+                yield VSF.finish("stop")
+                return # Exit generator
+            # ----------------------------------
             
             yield VSF.workflow_update(**plan.to_react_flow())
             yield VSF.text(f"📋 Created workflow **{plan.id}** with {len(plan.nodes)} tasks:\n\n")

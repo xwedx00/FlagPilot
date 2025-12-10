@@ -68,6 +68,8 @@ async def generate_workflow_plan(
         return WorkflowPlan(
             id=workflow_id,
             objective=plan_data.get("objective", user_request[:100]),
+            outcome=plan_data.get("outcome", "plan"),
+            direct_response_content=plan_data.get("direct_response_content"),
             nodes=nodes
         )
         

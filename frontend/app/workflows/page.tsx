@@ -121,9 +121,8 @@ export default function WorkflowsPage() {
     };
 
     const handleRunWorkflow = (workflow: Workflow) => {
-        // TODO: Execute workflow via WebSocket
-        console.log("Running workflow:", workflow);
-        alert(`Running workflow: ${workflow.name}`);
+        // Navigate to Mission page with workflow ID
+        window.location.href = `/mission?workflowId=${workflow.id}`;
     };
 
     const filteredWorkflows = workflows.filter((w) =>

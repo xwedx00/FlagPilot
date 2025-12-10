@@ -32,9 +32,10 @@ import { FileUpload } from '@/components/file-upload';
 
 interface WarRoomProps {
   className?: string;
+  workflowId?: string;
 }
 
-export function WarRoom({ className }: WarRoomProps) {
+export function WarRoom({ className, workflowId }: WarRoomProps) {
   const {
     currentMission,
     messages,
@@ -50,6 +51,7 @@ export function WarRoom({ className }: WarRoomProps) {
   const [activeMissionId, setActiveMissionId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const lastArtifactCount = useRef(artifacts.length);
+  const hasAutoStarted = useRef(false);
 
   // File upload state
   const [isUploading, setIsUploading] = useState(false);
@@ -64,7 +66,19 @@ export function WarRoom({ className }: WarRoomProps) {
   });
 
   // Hook for starting workflows
-  const { start: startWorkflow, isLoading } = useStartWorkflow();
+  const { start: startWorkflow, executeSaved, isLoading } = useStartWorkflow();
+
+  // Auto-run workflow if ID provided
+  useEffect(() => {
+    if (workflowId && !hasAutoStarted.current && !isLoading) {
+      hasAutoStarted.current = true;
+      toast.info('Initializing Custom Workflow...');
+      executeSaved(workflowId).then((success) => {
+        if (success) toast.success('Workflow execution started!');
+        else toast.error('Failed to start workflow');
+      });
+    }
+  }, [workflowId, executeSaved, isLoading]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

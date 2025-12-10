@@ -174,3 +174,26 @@ export const subscription = pgTable("subscription", {
   customFieldData: text("customFieldData"), // JSON string
   userId: text("userId").references(() => user.id),
 });
+
+// Credit System (Shared ownership: Frontend for Purchase, Backend for Usage)
+export const creditWallet = pgTable("credit_wallet", {
+  id: text("id").primaryKey(),
+  userId: text("userId")
+    .notNull()
+    .unique()
+    .references(() => user.id, { onDelete: "cascade" }),
+  balance: integer("balance").notNull().default(0),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+});
+
+export const creditTransaction = pgTable("credit_transaction", {
+  id: text("id").primaryKey(),
+  walletId: text("walletId")
+    .notNull()
+    .references(() => creditWallet.id, { onDelete: "cascade" }),
+  amount: integer("amount").notNull(), // + for buy, - for use
+  description: text("description").notNull(),
+  referenceId: text("referenceId"), // AgentTask ID or Payment ID
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+});

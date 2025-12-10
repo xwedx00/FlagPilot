@@ -76,7 +76,7 @@ function MissionContent() {
       missions={sidebarMissions}
       credits={balance ? { current: balance.current, total: balance.total } : { current: 0, total: 0 }}
     >
-      <WarRoom />
+      <WarRoom workflowId={searchParams.get('workflowId') || undefined} />
     </AppLayout>
   );
 }

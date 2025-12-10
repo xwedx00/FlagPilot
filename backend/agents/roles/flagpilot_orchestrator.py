@@ -53,23 +53,35 @@ class CreatePlan(FlagPilotAction):
     5. CRITICAL: Check the provided 'Context' for "Global Wisdom" or "Strategies". If a relevant strategy is found (e.g. from RAG_CONTEXT), you MUST explicitly instruct the assigned agent to use it by name.
     6. TIERED RAG: If a specific RAG document is relevant to a specific task, map its ID to 'rag_data_for_agent'.
     
+    SPECIAL CASE: DIRECT RESPONSE
+    If the user's request is a simple greeting (e.g., "Hi", "Hello"), a question about your capabilities, or does not require a complex multi-agent workflow, you may choose to respond directly.
+    In this case, set "outcome" to "direct_response" and provide your answer in "direct_response_content". Set "nodes" to an empty list.
+
     Output strictly in VALID JSON format.
     Do not include any thinking chain, markdown formatting, or introductory text.
     The response should start with {{ and end with }}.
     
-    JSON Schema:
+    JSON Schema (Standard Plan):
     {{
         "objective": "Brief summary",
+        "outcome": "plan",
         "nodes": [
             {{
                 "id": "task-1",
                 "agent": "agent-id",
-                "instruction": "Detailed instruction (Mention Strategy Name if applicable)",
+                "instruction": "Detailed instruction",
                 "priority": "high",
-                "rag_data_for_agent": "doc_id_or_summary",
                 "dependencies": []
             }}
         ]
+    }}
+
+    JSON Schema (Direct Response):
+    {{
+        "objective": "Greeting/Direct Answer",
+        "outcome": "direct_response",
+        "direct_response_content": "Hello! I am FlagPilot. How can I help you regarding freelance contracts or client checks?",
+        "nodes": []
     }}
     """
     

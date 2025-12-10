@@ -74,6 +74,10 @@ class WorkflowPlan(BaseModel):
     created_at: str = Field(default_factory=lambda: datetime.utcnow().isoformat())
     status: TaskStatus = TaskStatus.PENDING
     
+    # New fields for conversational/direct response support
+    outcome: str = Field(default="plan", description="Either 'plan' or 'direct_response'")
+    direct_response_content: Optional[str] = Field(default=None, description="Response content if outcome is direct_response")
+    
     def get_ready_tasks(self) -> List[TaskNode]:
         """
         Get tasks that are ready to execute.

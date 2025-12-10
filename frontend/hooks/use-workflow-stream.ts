@@ -354,6 +354,120 @@ export function useStartWorkflow() {
     }
   }, [startMission, processStreamEvent]);
 
-  return { start, isLoading, error };
+  const executeSaved = useCallback(async (
+    workflowId: string,
+    initialMessage: string = "Execute workflow"
+  ): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Start local mission state
+      startMission(`Running Workflow: ${workflowId}`);
+
+      const response = await fetch(`${API_BASE_URL}/api/v1/stream/workflow/${workflowId}/run`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          message: initialMessage,
+          user_id: 'user' // Replaced by session middleware on backend usually
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Execution failed: ${response.status}`);
+      }
+
+      // Reuse the same stream processor logic
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error('No response body');
+
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      const processStream = async () => {
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            let currentEvent = '';
+            for (const line of lines) {
+              if (line.startsWith('event: ')) {
+                currentEvent = line.slice(7).trim();
+              } else if (line.startsWith('data: ') && currentEvent) {
+                try {
+                  const data = JSON.parse(line.slice(6));
+                  // Map to StreamEvent format and process
+                  switch (currentEvent) {
+                    case 'agent_status':
+                      processStreamEvent({
+                        type: 'agent_status',
+                        agentId: data.agentId,
+                        status: data.status,
+                        action: data.action,
+                      });
+                      break;
+                    case 'agent_thinking':
+                      processStreamEvent({
+                        type: 'agent_thinking',
+                        agentId: data.agentId,
+                        thought: data.thought,
+                      });
+                      break;
+                    case 'workflow_update':
+                      processStreamEvent({
+                        type: 'workflow_update',
+                        nodes: data.nodes,
+                        edges: data.edges,
+                      });
+                      break;
+                    case 'message':
+                      processStreamEvent({
+                        type: 'message',
+                        content: data.content,
+                        agentId: data.agentId,
+                      });
+                      break;
+                    case 'ui_component':
+                      processStreamEvent({
+                        type: 'ui_component',
+                        componentName: data.componentName,
+                        props: data.props,
+                      });
+                      break;
+                    case 'mission_complete':
+                      processStreamEvent({ type: 'mission_complete' });
+                      break;
+                  }
+                } catch (e) {
+                  console.warn('Failed to parse SSE data:', e);
+                }
+                currentEvent = '';
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Stream processing error:', error);
+        }
+      };
+
+      processStream();
+      return true;
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Unknown error');
+      setError(error);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [startMission, processStreamEvent]);
+
+  return { start, executeSaved, isLoading, error };
 }
 

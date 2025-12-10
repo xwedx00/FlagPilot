@@ -84,12 +84,15 @@ from routers.missions import router as missions_router
 from routers.feedback import router as feedback_router
 from routers.history import router as history_router
 
+from routers.credits import router as credits_router
+
 app.include_router(health.router)
 app.include_router(stream_router)    # Main SSE chat endpoint
 app.include_router(files_router)      # File upload to MinIO/RAGFlow
 app.include_router(missions_router)   # Chat persistence
 app.include_router(feedback_router)   # RLHF feedback → Global Wisdom
 app.include_router(history_router)    # Workflow History
+app.include_router(credits_router)    # Billing / Usage
 
 
 
