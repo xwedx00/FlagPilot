@@ -1,5 +1,8 @@
 "use client"
 
+import * as React from "react"
+import { useRouter } from "next/navigation"
+
 import {
   BadgeCheck,
   Bell,
@@ -30,6 +33,9 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 
+import { useCreditStore } from "@/stores/credit-store"
+import { authClient } from "@/lib/auth-client"
+
 export function NavUser({
   user,
 }: {
@@ -40,6 +46,31 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
+  const router = useRouter()
+
+  // Credit Integration
+  const { balance, fetchBalance, purchase, isLoading } = useCreditStore()
+
+  React.useEffect(() => {
+    fetchBalance()
+  }, [])
+
+  const handleTopUp = async () => {
+    const url = await purchase(100) // Buy 100 credits
+    if (url) {
+      window.open(url, '_blank')
+    }
+  }
+
+  const handleLogout = async () => {
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          router.push("/login")
+        },
+      },
+    })
+  }
 
   return (
     <SidebarMenu>
@@ -56,7 +87,9 @@ export function NavUser({
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
+                <span className="truncate text-xs text-muted-foreground">
+                  {balance !== null ? `Credits: ${balance}` : user.email}
+                </span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -79,11 +112,19 @@ export function NavUser({
                 </div>
               </div>
             </DropdownMenuLabel>
+
+            <div className="px-2 py-2">
+              <div className="flex items-center justify-between rounded-md bg-muted px-2 py-2">
+                <span className="text-xs font-medium">Balance</span>
+                <span className="text-sm font-bold text-primary">{balance ?? '...'} Credits</span>
+              </div>
+            </div>
+
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
+              <DropdownMenuItem onClick={handleTopUp} disabled={isLoading}>
+                <Sparkles className="mr-2" />
+                {isLoading ? 'Processing...' : 'Top up $10 (100 Credits)'}
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
@@ -102,7 +143,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
               <LogOut />
               Log out
             </DropdownMenuItem>

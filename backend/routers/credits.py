@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 from pydantic import BaseModel
@@ -7,6 +6,7 @@ from datetime import datetime
 
 from auth import get_current_user, UserData
 from models import get_db, CreditWallet, CreditTransaction
+from lib.credits import CreditService
 
 router = APIRouter(prefix="/api/v1/credits", tags=["credits"])
 
@@ -34,24 +34,9 @@ async def get_balance(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Get real credit balance from DB.
-    Auto-creates wallet if missing (Onboarding logic).
+    Get real credit balance from DB via CreditService.
     """
-    query = select(CreditWallet).where(CreditWallet.user_id == user.id)
-    result = await db.execute(query)
-    wallet = result.scalars().first()
-
-    if not wallet:
-        # Auto-create wallet for new users
-        import uuid
-        wallet = CreditWallet(
-            id=str(uuid.uuid4()),
-            user_id=user.id,
-            balance=50 # Welcome bonus
-        )
-        db.add(wallet)
-        await db.commit()
-    
+    wallet = await CreditService.get_wallet(db, user.id)
     return CreditBalance(current=wallet.balance)
 
 @router.get("/history", response_model=List[CreditTransactionSchema])
@@ -63,15 +48,13 @@ async def get_history(
     """
     Get real credit history.
     """
-    # First get wallet
-    wallet_query = select(CreditWallet).where(CreditWallet.user_id == user.id)
-    result = await db.execute(wallet_query)
-    wallet = result.scalars().first()
-
-    if not wallet:
-        return []
-
-    # Get transactions
+    # Using CreditService logic manually for history for now, 
+    # or could add get_history to Service. 
+    # Keeping direct DB access here is fine for read-only View logic.
+    from sqlalchemy import select
+    
+    wallet = await CreditService.get_wallet(db, user.id)
+    
     stmt = (
         select(CreditTransaction)
         .where(CreditTransaction.wallet_id == wallet.id)
@@ -84,10 +67,17 @@ async def get_history(
     return txs
 
 @router.post("/purchase", response_model=PurchaseResponse)
-async def purchase_credits(amount: int, user: UserData = Depends(get_current_user)):
+async def purchase_credits(amount: int, user: UserData = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     """
-    Initiate credit purchase (Mock for now, returns Polar URL).
+    Initiate credit purchase.
+    FOR DEMO: Adds credits immediately.
     """
+    # In production, this would call Stripe/Polar and wait for webhook.
+    # For testing, we auto-refill.
+    success = await CreditService.add_credits(db, user.id, amount, "Top-up via API")
+    if not success:
+         raise HTTPException(status_code=500, detail="Purchase failed")
+         
     return PurchaseResponse(
         checkoutUrl=f"https://polar.sh/checkout?amount={amount}&user={user.id}"
     )

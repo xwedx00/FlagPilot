@@ -317,6 +317,39 @@ async def stream_workflow(request: WorkflowRequest):
     
     async def generate():
         try:
+            # --- RATE LIMIT CHECK ---
+            if request.user_id and request.user_id != "anonymous":
+                try:
+                    from lib.rate_limit import RateLimiter
+                    # Raises 429 if exceeded
+                    await RateLimiter.check_rate_limit(request.user_id)
+                except Exception as e:
+                     logger.warning(f"Rate Limit Stop: {e}")
+                     yield VSF.error("Rate limit exceeded. Please wait.")
+                     yield VSF.finish("error")
+                     return
+            # ------------------------
+
+            # --- CREDIT CHECK ---
+            if request.user_id and request.user_id != "anonymous":
+                 try:
+                     from lib.credits import CreditService
+                     from models.base import get_db as get_domain_db
+                     
+                     async for db in get_domain_db():
+                         # Cost: 10 Credits
+                         paid = await CreditService.deduct_credits(db, request.user_id, 10, f"Mission: {request.message[:30]}")
+                         if not paid:
+                             yield VSF.error("Insufficient Credits. Please recharge.")
+                             yield VSF.finish("error")
+                             return
+                         break
+                 except Exception as e:
+                     logger.error(f"Credit Check Error: {e}")
+                     # Optionally fail open or closed? Safest is warn.
+                     # yield VSF.text(f"⚠️ Credit check failed: {e}\n\n")
+            # --------------------
+
             yield VSF.agent_status("flagpilot", "thinking", "Planning workflow...")
             
             # Inject RAG Context if User ID is present
@@ -345,7 +378,50 @@ async def stream_workflow(request: WorkflowRequest):
             if plan.outcome == "direct_response":
                 yield VSF.text(f"\n{plan.direct_response_content}\n")
                 yield VSF.agent_status("flagpilot", "done", "Responded directly")
-                # Add persistence for direct response if needed, for now skip to keep it light
+                
+                # PERSIST DIRECT RESPONSE
+                try:
+                    from models.base import get_db as get_domain_db
+                    from models.intelligence import Mission, MissionStatus, ChatMessage
+                    import uuid
+                    
+                    mission_id = request.context.get("mission_id") if request.context else None
+                    
+                    async for db in get_domain_db():
+                        # 1. Create Mission if needed
+                        if not mission_id:
+                            new_mission = Mission(
+                                user_id=request.user_id if request.user_id != "anonymous" else None,
+                                title=request.message[:50],
+                                status=MissionStatus.ACTIVE.value
+                            )
+                            db.add(new_mission)
+                            await db.commit()
+                            await db.refresh(new_mission)
+                            mission_id = str(new_mission.id)
+                        
+                        # 2. Save User Message
+                        user_msg = ChatMessage(
+                            mission_id=uuid.UUID(mission_id),
+                            role="user",
+                            content=request.message
+                        )
+                        db.add(user_msg)
+
+                        # 3. Save Assistant Message
+                        ai_msg = ChatMessage(
+                            mission_id=uuid.UUID(mission_id),
+                            role="assistant",
+                            agent_id="flagpilot",
+                            content=plan.direct_response_content
+                        )
+                        db.add(ai_msg)
+                        
+                        await db.commit()
+                        break
+                except Exception as e:
+                    logger.error(f"Persistence (Direct Response) Failed: {e}")
+
                 yield VSF.finish("stop")
                 return # Exit generator
             # ----------------------------------
@@ -386,6 +462,41 @@ async def stream_workflow(request: WorkflowRequest):
                 logger.error(f"Persistence Init Failed: {db_e}")
             # -------------------------
 
+            # --- PERSISTENCE: MISSION & CHAT ---
+            mission_id = request.context.get("mission_id") if request.context else None
+            
+            try:
+                from models.base import get_db as get_domain_db
+                from models.intelligence import Mission, MissionStatus, ChatMessage
+                import uuid
+                
+                async for db in get_domain_db():
+                    # 1. Create Mission if needed
+                    if not mission_id:
+                        new_mission = Mission(
+                            user_id=request.user_id if request.user_id != "anonymous" else None, # Support auth
+                            title=request.message[:50],
+                            status=MissionStatus.ACTIVE.value
+                        )
+                        db.add(new_mission)
+                        await db.commit()
+                        await db.refresh(new_mission)
+                        mission_id = str(new_mission.id)
+                        # yield VSF.text(f"DEBUG: Created mission {mission_id}\n")
+
+                    # 2. Save User Message
+                    user_msg = ChatMessage(
+                        mission_id=uuid.UUID(mission_id),
+                        role="user",
+                        content=request.message
+                    )
+                    db.add(user_msg)
+                    await db.commit()
+                    break
+            except Exception as e:
+                logger.error(f"Mission Init Failed: {e}")
+            # -----------------------------------
+
             executor = DAGExecutor()
             
             final_results = {}
@@ -402,6 +513,23 @@ async def stream_workflow(request: WorkflowRequest):
                     if output:
                         yield VSF.text(f"\n{output[:500]}\n")
                         final_results[event["agent"]] = output # Collect results
+                        
+                        # PERSIST AGENT MESSAGE
+                        if mission_id:
+                             try:
+                                 async for db in get_domain_db():
+                                     agent_msg = ChatMessage(
+                                         mission_id=uuid.UUID(mission_id),
+                                         role="assistant",
+                                         agent_id=event["agent"],
+                                         content=output
+                                     )
+                                     db.add(agent_msg)
+                                     await db.commit()
+                                     break
+                             except Exception as e:
+                                 logger.error(f"Failed to save agent msg: {e}")
+
                 
                 elif event_type == "agent_error":
                     yield VSF.agent_status(event["agent"], "error")
@@ -414,7 +542,24 @@ async def stream_workflow(request: WorkflowRequest):
                     yield VSF.ui_component(event.get("componentName", ""), event.get("props", {}))
                 
                 elif event_type == "message":
-                    yield VSF.message(event.get("content", ""), event.get("agent"))
+                    content = event.get("content", "")
+                    yield VSF.message(content, event.get("agent"))
+                    # PERSIST GENERAL MESSAGE
+                    if mission_id and content:
+                        try:
+                            async for db in get_domain_db():
+                                msg = ChatMessage(
+                                    mission_id=uuid.UUID(mission_id),
+                                    role="assistant",
+                                    agent_id=event.get("agent", "flagpilot"),
+                                    content=content
+                                )
+                                db.add(msg)
+                                await db.commit()
+                                break
+                        except Exception as e:
+                            logger.error(f"Failed to save msg: {e}")
+
                 
                 elif event_type == "workflow_complete":
                      # --- PERSISTENCE END ---
@@ -523,6 +668,44 @@ async def execute_saved_workflow(
         
     async def generate():
         try:
+            # --- RATE LIMIT CHECK ---
+            if request.user_id and request.user_id != "anonymous":
+                try:
+                    from lib.rate_limit import RateLimiter
+                    # Raises 429 if exceeded
+                    await RateLimiter.check_rate_limit(request.user_id)
+                except Exception as e:
+                     logger.warning(f"Rate Limit Stop: {e}")
+                     yield VSF.error("Rate limit exceeded. Please wait.")
+                     yield VSF.finish("error")
+                     return
+            # ------------------------
+
+            # --- CREDIT CHECK ---
+            if request.user_id and request.user_id != "anonymous":
+                 try:
+                     from lib.credits import CreditService
+                     
+                     # Deduct 10 Credits
+                     # We can reuse the 'db' dependency passed to the parent function if we want,
+                     # but 'generate' is async generator.
+                     # The parent 'execute_saved_workflow' has 'db'.
+                     # But we are inside 'generate'. DB session might be closed if we await?
+                     # Ideally we use a fresh session or manage it carefully.
+                     # Let's use get_domain_db inside to be safe.
+                     from models.base import get_db as get_domain_db
+                     
+                     async for db_session in get_domain_db():
+                         paid = await CreditService.deduct_credits(db_session, request.user_id, 10, f"Workflow: {workflow.name}")
+                         if not paid:
+                             yield VSF.error("Insufficient Credits. Please recharge.")
+                             yield VSF.finish("error")
+                             return
+                         break
+                 except Exception as e:
+                     logger.error(f"Credit Check Error: {e}")
+            # --------------------
+
             yield VSF.agent_status("flagpilot", "thinking", f"Loading workflow: {workflow.name}...")
             yield VSF.text(f"🚀 **Executing Workflow: {workflow.name}**\n\n{workflow.description or ''}\n\n")
             

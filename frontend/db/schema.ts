@@ -4,196 +4,311 @@ import {
   pgTable,
   text,
   timestamp,
+  json,
+  jsonb,
+  uuid,
+  real,
 } from "drizzle-orm/pg-core";
 
-// Better Auth Tables
+// --- AUTH (Better Auth Compatible) ---
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
-  emailVerified: boolean("emailVerified").notNull().default(false),
+  emailVerified: boolean("email_verified").notNull().default(false),
   image: text("image"),
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+
+  // FlagPilot Extensions
+  isFreelancer: boolean("is_freelancer").default(true),
+  themePref: text("theme_pref").default("mgx-dark"),
+  onboardingStep: integer("onboarding_step").default(0),
 });
 
 export const session = pgTable("session", {
   id: text("id").primaryKey(),
-  expiresAt: timestamp("expiresAt").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
   token: text("token").notNull().unique(),
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
-  ipAddress: text("ipAddress"),
-  userAgent: text("userAgent"),
-  userId: text("userId")
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
 });
 
 export const account = pgTable("account", {
   id: text("id").primaryKey(),
-  accountId: text("accountId").notNull(),
-  providerId: text("providerId").notNull(),
-  userId: text("userId")
+  accountId: text("account_id").notNull(),
+  providerId: text("provider_id").notNull(),
+  userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  accessToken: text("accessToken"),
-  refreshToken: text("refreshToken"),
-  idToken: text("idToken"),
-  accessTokenExpiresAt: timestamp("accessTokenExpiresAt"),
-  refreshTokenExpiresAt: timestamp("refreshTokenExpiresAt"),
+  accessToken: text("access_token"),
+  refreshToken: text("refresh_token"),
+  idToken: text("id_token"),
+  accessTokenExpiresAt: timestamp("access_token_expires_at"),
+  refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
   scope: text("scope"),
   password: text("password"),
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export const verification = pgTable("verification", {
   id: text("id").primaryKey(),
   identifier: text("identifier").notNull(),
   value: text("value").notNull(),
-  expiresAt: timestamp("expiresAt").notNull(),
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-// User Profile table for onboarding and preferences
+// --- USER PROFILE & PREFERENCES ---
+
 export const userProfile = pgTable("user_profile", {
   id: text("id").primaryKey(),
-  userId: text("userId")
+  userId: text("user_id")
     .notNull()
     .unique()
     .references(() => user.id, { onDelete: "cascade" }),
-  displayName: text("displayName"),
-  freelanceType: text("freelanceType"),
-  experienceLevel: text("experienceLevel"),
+  displayName: text("display_name"),
+  freelanceType: text("freelance_type"),
+  experienceLevel: text("experience_level"),
   platforms: text("platforms"), // JSON array string
   bio: text("bio"),
-  hourlyRate: integer("hourlyRate"),
-  portfolioUrl: text("portfolioUrl"),
+  hourlyRate: integer("hourly_rate"),
+  portfolioUrl: text("portfolio_url"),
   timezone: text("timezone"),
   language: text("language").default("en"),
-  onboardingCompleted: boolean("onboardingCompleted").default(false),
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  onboardingCompleted: boolean("onboarding_completed").default(false),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-// User Preferences table for settings
 export const userPreferences = pgTable("user_preferences", {
   id: text("id").primaryKey(),
-  userId: text("userId")
+  userId: text("user_id")
     .notNull()
     .unique()
     .references(() => user.id, { onDelete: "cascade" }),
   // AI Settings
-  aiModel: text("aiModel").default("google/gemini-2.0-flash-001"),
-  aiTemperature: text("aiTemperature").default("0.7"),
-  maxTokens: integer("maxTokens").default(4096),
+  aiModel: text("ai_model").default("google/gemini-2.0-flash-001"),
+  aiTemperature: text("ai_temperature").default("0.7"),
+  maxTokens: integer("max_tokens").default(4096),
   // Privacy & Data
-  dataRetentionDays: integer("dataRetentionDays").default(90),
-  allowAnalytics: boolean("allowAnalytics").default(true),
-  allowDataSharing: boolean("allowDataSharing").default(false),
+  dataRetentionDays: integer("data_retention_days").default(90),
+  allowAnalytics: boolean("allow_analytics").default(true),
+  allowDataSharing: boolean("allow_data_sharing").default(false),
   // Notifications
-  emailNotifications: boolean("emailNotifications").default(true),
-  agentAlerts: boolean("agentAlerts").default(true),
-  weeklyDigest: boolean("weeklyDigest").default(false),
+  emailNotifications: boolean("email_notifications").default(true),
+  agentAlerts: boolean("agent_alerts").default(true),
+  weeklyDigest: boolean("weekly_digest").default(false),
   // Theme
   theme: text("theme").default("system"),
   // Compliance
-  gdprConsent: boolean("gdprConsent").default(false),
-  gdprConsentDate: timestamp("gdprConsentDate"),
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  gdprConsent: boolean("gdpr_consent").default(false),
+  gdprConsentDate: timestamp("gdpr_consent_date"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-// Chat History table for import/export
+// --- INTELLIGENCE DOMAIN (Backend Aligned) ---
+
+export const project = pgTable("project", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  clientName: text("client_name"),
+  minioPath: text("minio_path").notNull().default(""),
+  status: text("status").default("active"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const mission = pgTable("mission", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  projectId: uuid("project_id").references(() => project.id, { onDelete: "set null" }),
+  title: text("title").notNull(),
+  description: text("description"),
+  status: text("status").default("active"),
+  workflowData: jsonb("workflow_data"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+});
+
+export const chatMessage = pgTable("chat_message", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  missionId: uuid("mission_id").notNull().references(() => mission.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  role: text("role").notNull(), // user, assistant, system
+  content: text("content").notNull(),
+  agentId: text("agent_id"),
+  messageType: text("message_type").default("text"),
+  messageMetadata: jsonb("message_metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const workflow = pgTable("workflow", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  definition: jsonb("definition").notNull(),
+  isPublic: boolean("is_public").default(false),
+  tags: jsonb("tags"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const workflowExecution = pgTable("workflow_execution", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  workflowId: uuid("workflow_id").references(() => workflow.id, { onDelete: "set null" }),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  planSnapshot: jsonb("plan_snapshot").notNull(),
+  results: jsonb("results"),
+  status: text("status").default("pending"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const agentTask = pgTable("agent_task", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  projectId: uuid("project_id").references(() => project.id, { onDelete: "set null" }),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  agentRole: text("agent_role").notNull(),
+  status: text("status").default("queued"),
+  inputContext: jsonb("input_context").notNull().default({}),
+  outputArtifact: jsonb("output_artifact"),
+  errorMessage: text("error_message"),
+  costCredits: integer("cost_credits").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+});
+
+export const agentMemory = pgTable("agent_memory", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  taskId: uuid("task_id").references(() => agentTask.id, { onDelete: "set null" }),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  agentRole: text("agent_role").notNull(),
+  key: text("key").notNull(),
+  value: text("value").notNull(),
+  confidence: real("confidence").default(1.0),
+  memoryType: text("memory_type").default("fact"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+  expiresAt: timestamp("expires_at"),
+});
+
+// Using 'document_table' to avoid conflict with DOM 'document'
+export const documentTable = pgTable("document", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  projectId: uuid("project_id").references(() => project.id, { onDelete: "set null" }),
+  filename: text("filename").notNull(),
+  contentType: text("content_type").notNull(),
+  sizeBytes: integer("size_bytes").notNull(),
+  bucket: text("bucket").notNull(),
+  objectKey: text("object_key").notNull(),
+  processingStatus: text("processing_status").default("pending"),
+  embeddingStatus: text("embedding_status").default("pending"),
+  extractedText: text("extracted_text"),
+  fileMetadata: jsonb("file_metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+  processedAt: timestamp("processed_at"),
+});
+
+// --- EXTRAS ---
+
 export const chatHistory = pgTable("chat_history", {
   id: text("id").primaryKey(),
-  userId: text("userId")
+  userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   title: text("title"),
-  messages: text("messages").notNull(), // JSON string
-  agentsUsed: text("agentsUsed"), // JSON array string
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  messages: text("messages").notNull(), // Legacy JSON string
+  agentsUsed: text("agents_used"), // JSON array string
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-// Knowledge Context table for uploaded documents
 export const knowledgeContext = pgTable("knowledge_context", {
   id: text("id").primaryKey(),
-  userId: text("userId")
+  userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
-  type: text("type").notNull(), // eu-law, contract-template, custom, etc.
+  type: text("type").notNull(),
   content: text("content").notNull(),
-  metadata: text("metadata"), // JSON string
-  isActive: boolean("isActive").default(true),
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  metadata: text("metadata"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-// Usage tracking table
 export const usageTracking = pgTable("usage_tracking", {
   id: text("id").primaryKey(),
-  userId: text("userId")
+  userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   date: timestamp("date").notNull(),
-  chatMessages: integer("chatMessages").default(0),
-  agentCalls: integer("agentCalls").default(0),
-  documentsAnalyzed: integer("documentsAnalyzed").default(0),
-  tokensUsed: integer("tokensUsed").default(0),
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  chatMessages: integer("chat_messages").default(0),
+  agentCalls: integer("agent_calls").default(0),
+  documentsAnalyzed: integer("documents_analyzed").default(0),
+  tokensUsed: integer("tokens_used").default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-// Subscription table for Polar webhook data
 export const subscription = pgTable("subscription", {
   id: text("id").primaryKey(),
-  createdAt: timestamp("createdAt").notNull(),
-  modifiedAt: timestamp("modifiedAt"),
+  createdAt: timestamp("created_at").notNull(),
+  modifiedAt: timestamp("modified_at"),
   amount: integer("amount").notNull(),
   currency: text("currency").notNull(),
-  recurringInterval: text("recurringInterval").notNull(),
+  recurringInterval: text("recurring_interval").notNull(),
   status: text("status").notNull(),
-  currentPeriodStart: timestamp("currentPeriodStart").notNull(),
-  currentPeriodEnd: timestamp("currentPeriodEnd").notNull(),
-  cancelAtPeriodEnd: boolean("cancelAtPeriodEnd").notNull().default(false),
-  canceledAt: timestamp("canceledAt"),
-  startedAt: timestamp("startedAt").notNull(),
-  endsAt: timestamp("endsAt"),
-  endedAt: timestamp("endedAt"),
-  customerId: text("customerId").notNull(),
-  productId: text("productId").notNull(),
-  discountId: text("discountId"),
-  checkoutId: text("checkoutId").notNull(),
-  customerCancellationReason: text("customerCancellationReason"),
-  customerCancellationComment: text("customerCancellationComment"),
-  metadata: text("metadata"), // JSON string
-  customFieldData: text("customFieldData"), // JSON string
-  userId: text("userId").references(() => user.id),
+  currentPeriodStart: timestamp("current_period_start").notNull(),
+  currentPeriodEnd: timestamp("current_period_end").notNull(),
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").notNull().default(false),
+  canceledAt: timestamp("canceled_at"),
+  startedAt: timestamp("started_at").notNull(),
+  endsAt: timestamp("ends_at"),
+  endedAt: timestamp("ended_at"),
+  customerId: text("customer_id").notNull(),
+  productId: text("product_id").notNull(),
+  discountId: text("discount_id"),
+  checkoutId: text("checkout_id").notNull(),
+  customerCancellationReason: text("customer_cancellation_reason"),
+  customerCancellationComment: text("customer_cancellation_comment"),
+  metadata: text("metadata"),
+  customFieldData: text("custom_field_data"),
+  userId: text("user_id").references(() => user.id),
 });
 
-// Credit System (Shared ownership: Frontend for Purchase, Backend for Usage)
 export const creditWallet = pgTable("credit_wallet", {
   id: text("id").primaryKey(),
-  userId: text("userId")
+  userId: text("user_id")
     .notNull()
     .unique()
     .references(() => user.id, { onDelete: "cascade" }),
   balance: integer("balance").notNull().default(0),
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
-  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 export const creditTransaction = pgTable("credit_transaction", {
   id: text("id").primaryKey(),
-  walletId: text("walletId")
+  walletId: text("wallet_id")
     .notNull()
     .references(() => creditWallet.id, { onDelete: "cascade" }),
-  amount: integer("amount").notNull(), // + for buy, - for use
+  amount: integer("amount").notNull(),
   description: text("description").notNull(),
-  referenceId: text("referenceId"), // AgentTask ID or Payment ID
-  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  referenceId: text("reference_id"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });

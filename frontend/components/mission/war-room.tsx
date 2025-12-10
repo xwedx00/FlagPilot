@@ -109,8 +109,13 @@ export function WarRoom({ className, workflowId }: WarRoomProps) {
     const missionId = await startWorkflow(userInput, options);
 
     if (missionId) {
-      setActiveMissionId(missionId);
-      toast.success('Mission started - agents are working...');
+      // Do NOT set activeMissionId here.
+      // startWorkflow handles the stream via the POST response.
+      // Setting activeMissionId would trigger useWorkflowStream to open a SECOND stream 
+      // to the legacy /stream/mission endpoint, causing double execution and "Activating Squad" hallucinations.
+      // setActiveMissionId(missionId); 
+
+      toast.success('Mission started...');
       setPendingUploads([]); // Clear pending uploads after start
     }
 
