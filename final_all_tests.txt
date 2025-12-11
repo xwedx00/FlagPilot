@@ -1,0 +1,28 @@
+============================= test session starts ==============================
+platform linux -- Python 3.11.14, pytest-8.4.2, pluggy-1.6.0 -- /usr/local/bin/python3.11
+cachedir: .pytest_cache
+rootdir: /app
+plugins: asyncio-1.1.1, anyio-4.12.0
+asyncio: mode=Mode.STRICT, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 11 items
+
+tests/test_direct_response.py::test_direct_response_trivial PASSED       [  9%]
+tests/test_direct_response.py::test_plan_response_complex PASSED         [ 18%]
+tests/test_fast_fail_persistence.py::TestFastFailPersistence::test_health PASSED [ 27%]
+tests/test_fast_fail_persistence.py::TestFastFailPersistence::test_stress_fast_fail PASSED [ 36%]
+tests/test_fast_fail_persistence.py::TestFastFailPersistence::test_stress_scope_creep PASSED [ 45%]
+tests/test_stress_global_wisdom.py::TestGlobalWisdomStress::test_00_cleanup_system PASSED [ 54%]
+tests/test_stress_global_wisdom.py::TestGlobalWisdomStress::test_health PASSED [ 63%]
+tests/test_stress_global_wisdom.py::TestGlobalWisdomStress::test_seed_global_wisdom PASSED [ 72%]
+tests/test_stress_global_wisdom.py::TestGlobalWisdomStress::test_upload_real_contract PASSED [ 81%]
+tests/test_stress_global_wisdom.py::TestGlobalWisdomStress::test_verify_retrieval PASSED [ 90%]
+tests/test_stress_global_wisdom.py::TestGlobalWisdomStress::test_stress_workflow PASSED [100%]
+
+=============================== warnings summary ===============================
+../usr/local/lib/python3.11/site-packages/pydantic/_internal/_config.py:272
+../usr/local/lib/python3.11/site-packages/pydantic/_internal/_config.py:272
+  /usr/local/lib/python3.11/site-packages/pydantic/_internal/_config.py:272: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.6/migration/
+    warnings.warn(DEPRECATION_MESSAGE, DeprecationWarning)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================== 11 passed, 2 warnings in 233.30s (0:03:53) ==================

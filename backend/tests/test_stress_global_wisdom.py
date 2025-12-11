@@ -199,6 +199,8 @@ class TestGlobalWisdomStress:
         assert resp.status_code == 200
 
         full_output = ""
+        llm_error_detected = False
+        llm_error_msg = ""
         log_and_print("[STREAM] Watching Orchestrator Thinking (capturing output)...")
         
         # Capture Stream
@@ -229,6 +231,20 @@ class TestGlobalWisdomStress:
                              print(chunk, end="", flush=True)
                     except:
                         pass
+                
+                # Check for OpenRouter/LLM errors (429 rate limit, 404, etc)
+                if "Error code: 429" in line_str or "Rate limit exceeded" in line_str:
+                    llm_error_detected = True
+                    llm_error_msg = "429 Rate Limit Exceeded - Free tier limit hit"
+                    log_and_print(f"❌ [LLM ERROR] {llm_error_msg}")
+                elif "Error code: 404" in line_str or "No endpoints found" in line_str:
+                    llm_error_detected = True
+                    llm_error_msg = "404 - Model not found or privacy policy issue"
+                    log_and_print(f"❌ [LLM ERROR] {llm_error_msg}")
+                elif "error" in line_str.lower() and "Error code:" in line_str:
+                    llm_error_detected = True
+                    llm_error_msg = line_str[:200]
+                    log_and_print(f"❌ [LLM ERROR] {llm_error_msg}")
 
         log_and_print("\n\n" + "="*50)
         log_and_print("FINAL ANALYSIS & ASSERTIONS")
@@ -242,6 +258,11 @@ class TestGlobalWisdomStress:
             f.write("\n-----------------------------\n")
 
         lower_output = full_output.lower()
+
+        # FIRST: Check for LLM/OpenRouter errors - if rate limited, test cannot pass
+        if llm_error_detected:
+            log_and_print(f"❌ FAIL: LLM/OpenRouter error detected: {llm_error_msg}")
+            pytest.fail(f"LLM/OpenRouter error: {llm_error_msg}")
 
         # ✅ Check 1: Intelligent Agent Selection
         log_and_print(">> Check 1: Intelligent Agent Selection")

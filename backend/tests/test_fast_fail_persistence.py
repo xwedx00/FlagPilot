@@ -63,6 +63,8 @@ class TestFastFailPersistence:
         # Stream request
         interrupted_msg = False
         risk_advisor_ran = False
+        llm_error_detected = False  # Track OpenRouter/LLM errors (429, 404, etc)
+        llm_error_msg = ""
         
         with requests.post(url, json=payload, headers=auth_headers, stream=True) as response:
             assert response.status_code == 200, f"API Error: {response.text}"
@@ -79,6 +81,20 @@ class TestFastFailPersistence:
                 if "risk-advisor" in decoded or "Risk Advisor" in decoded:
                      risk_advisor_ran = True
                      log_and_print("✅ [FAST-FAIL] Risk Advisor signature detected in stream (Global Check).")
+
+                # Check for OpenRouter/LLM errors (429 rate limit, 404, etc)
+                if "Error code: 429" in decoded or "Rate limit exceeded" in decoded:
+                    llm_error_detected = True
+                    llm_error_msg = "429 Rate Limit Exceeded - Free tier limit hit"
+                    log_and_print(f"❌ [LLM ERROR] {llm_error_msg}")
+                elif "Error code: 404" in decoded or "No endpoints found" in decoded:
+                    llm_error_detected = True
+                    llm_error_msg = "404 - Model not found or privacy policy issue"
+                    log_and_print(f"❌ [LLM ERROR] {llm_error_msg}")
+                elif "error" in decoded.lower() and "Error code:" in decoded:
+                    llm_error_detected = True
+                    llm_error_msg = decoded[:200]
+                    log_and_print(f"❌ [LLM ERROR] {llm_error_msg}")
 
                 # Parse Vercel / SSE
                 content_chunk = None
@@ -111,7 +127,14 @@ class TestFastFailPersistence:
 
                 # --- Analyze Content (Text) ---
                 if content_chunk and isinstance(content_chunk, str):
-                    if "WORKFLOW INTERRUPTED" in content_chunk or "CRITICAL RISK" in content_chunk:
+                    # Check for various forms of risk/scam detection messages
+                    interrupt_keywords = [
+                        "WORKFLOW INTERRUPTED", "CRITICAL RISK", 
+                        "SCAM ALERT", "STOP", "DO NOT PROCEED",
+                        "high-risk scam", "DO NOT ENGAGE",
+                        "IMMEDIATE WARNING", "RED FLAG"
+                    ]
+                    if any(kw in content_chunk.upper() for kw in [k.upper() for k in interrupt_keywords]):
                         interrupted_msg = True
                         log_and_print("✅ [FAST-FAIL] Detected 'WORKFLOW INTERRUPTED' message.")
                     if "risk-advisor" in content_chunk or "Risk Advisor" in content_chunk:
@@ -139,6 +162,12 @@ class TestFastFailPersistence:
                                 log_and_print("✅ [FAST-FAIL] Risk Advisor node found in plan.")
 
         # Assertions
+        
+        # FIRST: Check for LLM/OpenRouter errors - if rate limited, test cannot pass
+        if llm_error_detected:
+            log_and_print(f"❌ FAIL: LLM/OpenRouter error detected: {llm_error_msg}")
+            pytest.fail(f"LLM/OpenRouter error: {llm_error_msg}")
+        
         if not risk_advisor_ran:
              log_and_print("❌ FAIL: RiskAdvisor did not run!")
              pytest.fail("RiskAdvisor injection failed")
