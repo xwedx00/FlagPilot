@@ -167,37 +167,74 @@ export function FileUpload({
     const pendingFiles = files.filter(f => f.status !== 'complete' && f.status !== 'error');
 
     return (
-        <div className={cn('space-y-4', className)}>
-            {/* Dropzone */}
+        <div className={cn('space-y-3', className)}>
+            {/* Completed files - show FIRST for visibility */}
+            {completedFiles.length > 0 && (
+                <div className="space-y-2">
+                    <p className="text-xs text-primary font-medium flex items-center gap-1.5">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        {completedFiles.length} file{completedFiles.length > 1 ? 's' : ''} ready
+                    </p>
+                    {completedFiles.map((file) => {
+                        const FileIcon = getFileIcon(file.type);
+                        return (
+                            <div
+                                key={file.id}
+                                className="flex items-center gap-3 p-2.5 rounded-lg bg-primary/5 border border-primary/20"
+                            >
+                                <FileIcon className="h-4 w-4 text-primary shrink-0" />
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm text-white truncate">{file.name}</p>
+                                </div>
+                                <span className="text-xs text-primary">
+                                    {(file.size / 1024).toFixed(0)} KB
+                                </span>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-5 w-5 opacity-50 hover:opacity-100"
+                                    onClick={(e) => { e.stopPropagation(); removeFile(file.id); }}
+                                >
+                                    <X className="h-3 w-3" />
+                                </Button>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+
+            {/* Compact Dropzone */}
             <div
                 {...getRootProps()}
                 className={cn(
-                    'relative rounded-lg border-2 border-dashed p-8 transition-colors cursor-pointer',
+                    'relative rounded-lg border-2 border-dashed p-4 transition-colors cursor-pointer',
                     isDragActive
                         ? 'border-primary bg-primary/5'
-                        : 'border-slate-700 hover:border-slate-600',
+                        : 'border-slate-700 hover:border-slate-600 hover:bg-slate-900/30',
                     isUploading && 'pointer-events-none opacity-60'
                 )}
             >
                 <input {...getInputProps()} />
-                <div className="flex flex-col items-center justify-center text-center">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-800 mb-4">
+                <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800">
                         {isUploading ? (
-                            <Loader2 className="h-6 w-6 text-primary animate-spin" />
+                            <Loader2 className="h-4 w-4 text-primary animate-spin" />
                         ) : (
-                            <Upload className="h-6 w-6 text-slate-400" />
+                            <Upload className="h-4 w-4 text-slate-400" />
                         )}
                     </div>
-                    <p className="text-sm text-white mb-1">
-                        {isDragActive ? 'Drop files here' : 'Drag & drop files here'}
-                    </p>
-                    <p className="text-xs text-slate-400">
-                        or click to browse • PDF, DOC, TXT, Images
-                    </p>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-sm text-white">
+                            {isDragActive ? 'Drop files here' : 'Drop files or click to upload'}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                            PDF, DOC, TXT, Images
+                        </p>
+                    </div>
                 </div>
             </div>
 
-            {/* Pending uploads */}
+            {/* Pending uploads - show progress */}
             {pendingFiles.length > 0 && (
                 <div className="space-y-2">
                     {pendingFiles.map((file) => {
@@ -205,9 +242,9 @@ export function FileUpload({
                         return (
                             <div
                                 key={file.id}
-                                className="flex items-center gap-3 p-3 rounded-lg bg-slate-900 border border-slate-800"
+                                className="flex items-center gap-3 p-2.5 rounded-lg bg-slate-900 border border-slate-800"
                             >
-                                <FileIcon className="h-5 w-5 text-slate-400 shrink-0" />
+                                <FileIcon className="h-4 w-4 text-slate-400 shrink-0" />
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm text-white truncate">{file.name}</p>
                                     <Progress value={file.progress} className="h-1 mt-1" />
@@ -221,46 +258,13 @@ export function FileUpload({
                 </div>
             )}
 
-            {/* Completed files */}
-            {completedFiles.length > 0 && (
-                <div className="space-y-2">
-                    <p className="text-xs text-slate-400 font-medium">Uploaded Files</p>
-                    {completedFiles.map((file) => {
-                        const FileIcon = getFileIcon(file.type);
-                        return (
-                            <div
-                                key={file.id}
-                                className="flex items-center gap-3 p-3 rounded-lg bg-slate-900/50 border border-slate-800"
-                            >
-                                <FileIcon className="h-5 w-5 text-primary shrink-0" />
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm text-white truncate">{file.name}</p>
-                                    <p className="text-xs text-slate-500">
-                                        {(file.size / 1024).toFixed(1)} KB
-                                    </p>
-                                </div>
-                                <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-6 w-6"
-                                    onClick={() => removeFile(file.id)}
-                                >
-                                    <X className="h-3 w-3" />
-                                </Button>
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
-
             {/* Error files */}
             {files.filter(f => f.status === 'error').map((file) => (
                 <div
                     key={file.id}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-red-500/10 border border-red-500/30"
+                    className="flex items-center gap-3 p-2.5 rounded-lg bg-red-500/10 border border-red-500/30"
                 >
-                    <AlertCircle className="h-5 w-5 text-red-500 shrink-0" />
+                    <AlertCircle className="h-4 w-4 text-red-500 shrink-0" />
                     <div className="flex-1 min-w-0">
                         <p className="text-sm text-white truncate">{file.name}</p>
                         <p className="text-xs text-red-400">{file.error}</p>
@@ -268,7 +272,7 @@ export function FileUpload({
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="h-6 w-6"
+                        className="h-5 w-5"
                         onClick={() => removeFile(file.id)}
                     >
                         <X className="h-3 w-3" />
