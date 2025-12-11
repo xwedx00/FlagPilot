@@ -437,3 +437,148 @@ export function connectToWorkflow(
     cleanup?.();
   };
 }
+
+// =============================================================================
+// Workflow Execution History API
+// =============================================================================
+
+export interface WorkflowExecution {
+  id: string;
+  user_id: string;
+  status: 'running' | 'completed' | 'failed' | 'interrupted';
+  created_at: string;
+  completed_at?: string;
+  plan_snapshot: {
+    id: string;
+    nodes: Array<{
+      id: string;
+      agent: string;
+      instruction: string;
+      status?: string;
+    }>;
+    edges: Array<{
+      source: string;
+      target: string;
+    }>;
+  };
+  results?: Record<string, unknown>;
+}
+
+export const historyApi = {
+  /**
+   * Get all workflow executions for the current user
+   */
+  list: async (): Promise<WorkflowExecution[]> => {
+    return apiFetch<WorkflowExecution[]>('/api/v1/history/user/current');
+  },
+
+  /**
+   * Get workflow executions for a specific user
+   */
+  listByUser: async (userId: string): Promise<WorkflowExecution[]> => {
+    return apiFetch<WorkflowExecution[]>(`/api/v1/history/user/${userId}`);
+  },
+
+  /**
+   * Get a specific workflow execution by ID
+   */
+  get: async (executionId: string): Promise<WorkflowExecution> => {
+    return apiFetch<WorkflowExecution>(`/api/v1/history/${executionId}`);
+  },
+};
+
+// =============================================================================
+// Custom Workflow Template API
+// =============================================================================
+
+export interface WorkflowNode {
+  id: string;
+  agent: string;
+  instruction: string;
+  dependsOn?: string[];
+}
+
+export interface WorkflowEdge {
+  source: string;
+  target: string;
+}
+
+export interface WorkflowTemplate {
+  id: string;
+  name: string;
+  description?: string;
+  nodes: WorkflowNode[];
+  edges: WorkflowEdge[];
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+  is_public: boolean;
+}
+
+export interface CreateWorkflowTemplateRequest {
+  name: string;
+  description?: string;
+  nodes: WorkflowNode[];
+  edges: WorkflowEdge[];
+  is_public?: boolean;
+}
+
+export const workflowTemplateApi = {
+  /**
+   * List all workflow templates for the current user
+   */
+  list: async (): Promise<WorkflowTemplate[]> => {
+    return apiFetch<WorkflowTemplate[]>('/api/v1/workflows/templates');
+  },
+
+  /**
+   * Get a specific workflow template
+   */
+  get: async (templateId: string): Promise<WorkflowTemplate> => {
+    return apiFetch<WorkflowTemplate>(`/api/v1/workflows/templates/${templateId}`);
+  },
+
+  /**
+   * Create a new workflow template
+   */
+  create: async (data: CreateWorkflowTemplateRequest): Promise<WorkflowTemplate> => {
+    return apiFetch<WorkflowTemplate>('/api/v1/workflows/templates', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Update an existing workflow template
+   */
+  update: async (
+    templateId: string,
+    data: Partial<CreateWorkflowTemplateRequest>
+  ): Promise<WorkflowTemplate> => {
+    return apiFetch<WorkflowTemplate>(`/api/v1/workflows/templates/${templateId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Delete a workflow template
+   */
+  delete: async (templateId: string): Promise<void> => {
+    await apiFetch(`/api/v1/workflows/templates/${templateId}`, { method: 'DELETE' });
+  },
+
+  /**
+   * Execute a saved workflow template
+   */
+  execute: async (
+    templateId: string,
+    context?: { variables?: Record<string, string>; fileIds?: string[] }
+  ): Promise<{ executionId: string }> => {
+    return apiFetch(`/api/v1/workflows/templates/${templateId}/execute`, {
+      method: 'POST',
+      body: JSON.stringify(context || {}),
+    });
+  },
+};
+

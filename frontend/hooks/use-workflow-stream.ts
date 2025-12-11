@@ -10,6 +10,61 @@ import { useMissionStore, StreamEvent, AgentId } from '@/stores/mission-store';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
+/**
+ * Helper function to process stream events by type
+ * Used by both standard SSE and Vercel AI SDK format parsers
+ */
+function processEventByType(
+  eventType: string,
+  data: Record<string, unknown>,
+  processStreamEvent: (event: StreamEvent) => void
+) {
+  switch (eventType) {
+    case 'agent_status':
+      processStreamEvent({
+        type: 'agent_status',
+        agentId: data.agentId as AgentId,
+        status: data.status as 'idle' | 'thinking' | 'working' | 'waiting' | 'done' | 'error',
+        action: data.action as string | undefined,
+      });
+      break;
+    case 'agent_thinking':
+      processStreamEvent({
+        type: 'agent_thinking',
+        agentId: data.agentId as AgentId,
+        thought: data.thought as string,
+      });
+      break;
+    case 'workflow_update':
+      processStreamEvent({
+        type: 'workflow_update',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        nodes: data.nodes as any[],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        edges: data.edges as any[],
+      });
+      break;
+    case 'message':
+      processStreamEvent({
+        type: 'message',
+        content: data.content as string,
+        agentId: data.agentId as AgentId,
+      });
+      break;
+    case 'ui_component':
+      processStreamEvent({
+        type: 'ui_component',
+        componentName: data.componentName as string,
+        props: data.props as Record<string, unknown>,
+      });
+      break;
+    case 'workflow_complete':
+    case 'mission_complete':
+      processStreamEvent({ type: 'mission_complete' });
+      break;
+  }
+}
+
 export type TabType = 'visualizer' | 'artifacts' | 'context';
 
 interface UseWorkflowStreamOptions {
@@ -262,7 +317,7 @@ export function useStartWorkflow() {
         throw new Error(`Stream failed: ${response.status}`);
       }
 
-      // Process SSE stream
+      // Process SSE stream - supports both standard SSE and Vercel AI SDK format
       const reader = response.body?.getReader();
       if (!reader) throw new Error('No response body');
 
@@ -281,58 +336,58 @@ export function useStartWorkflow() {
 
             let currentEvent = '';
             for (const line of lines) {
+              // Standard SSE format: "event: xxx"
               if (line.startsWith('event: ')) {
                 currentEvent = line.slice(7).trim();
-              } else if (line.startsWith('data: ') && currentEvent) {
+              }
+              // Standard SSE format: "data: {...}"
+              else if (line.startsWith('data: ') && currentEvent) {
                 try {
                   const data = JSON.parse(line.slice(6));
-
-                  // Map to StreamEvent format and process
-                  switch (currentEvent) {
-                    case 'agent_status':
-                      processStreamEvent({
-                        type: 'agent_status',
-                        agentId: data.agentId,
-                        status: data.status,
-                        action: data.action,
-                      });
-                      break;
-                    case 'agent_thinking':
-                      processStreamEvent({
-                        type: 'agent_thinking',
-                        agentId: data.agentId,
-                        thought: data.thought,
-                      });
-                      break;
-                    case 'workflow_update':
-                      processStreamEvent({
-                        type: 'workflow_update',
-                        nodes: data.nodes,
-                        edges: data.edges,
-                      });
-                      break;
-                    case 'message':
-                      processStreamEvent({
-                        type: 'message',
-                        content: data.content,
-                        agentId: data.agentId,
-                      });
-                      break;
-                    case 'ui_component':
-                      processStreamEvent({
-                        type: 'ui_component',
-                        componentName: data.componentName,
-                        props: data.props,
-                      });
-                      break;
-                    case 'mission_complete':
-                      processStreamEvent({ type: 'mission_complete' });
-                      break;
-                  }
+                  processEventByType(currentEvent, data, processStreamEvent);
                 } catch (e) {
                   console.warn('Failed to parse SSE data:', e);
                 }
                 currentEvent = '';
+              }
+              // Vercel AI SDK format: "2:[{...}]" for custom data
+              else if (line.match(/^2:\[.*\]$/)) {
+                try {
+                  const jsonContent = line.slice(2); // Remove "2:"
+                  const dataArray = JSON.parse(jsonContent);
+                  for (const data of dataArray) {
+                    if (data.type) {
+                      processEventByType(data.type, data, processStreamEvent);
+                    }
+                  }
+                } catch (e) {
+                  console.warn('Failed to parse Vercel data:', e);
+                }
+              }
+              // Vercel AI SDK format: "0:\"text\"" for text content
+              else if (line.match(/^0:".*"$/)) {
+                try {
+                  const textContent = JSON.parse(line.slice(2));
+                  // Process as message event
+                  processStreamEvent({
+                    type: 'message',
+                    content: textContent,
+                    agentId: 'flagpilot' as AgentId,
+                  });
+                } catch (e) {
+                  // Ignore text parse errors
+                }
+              }
+              // Vercel AI SDK format: "d:{...}" for finish
+              else if (line.startsWith('d:')) {
+                try {
+                  const finishData = JSON.parse(line.slice(2));
+                  if (finishData.finishReason) {
+                    processStreamEvent({ type: 'mission_complete' });
+                  }
+                } catch (e) {
+                  // Ignore finish parse errors
+                }
               }
             }
           }

@@ -442,6 +442,155 @@ export function useChat(missionId: string): UseChatReturn {
   };
 }
 
+// =============================================================================
+// Workflow History Hook
+// =============================================================================
+
+import {
+  historyApi,
+  workflowTemplateApi,
+  type WorkflowExecution,
+  type WorkflowTemplate,
+  type CreateWorkflowTemplateRequest,
+} from '@/lib/api-client';
+
+export interface UseWorkflowHistoryReturn {
+  executions: WorkflowExecution[];
+  isLoading: boolean;
+  error: Error | null;
+  refetch: () => Promise<void>;
+}
+
+export function useWorkflowHistory(): UseWorkflowHistoryReturn {
+  const [executions, setExecutions] = useState<WorkflowExecution[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchHistory = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await historyApi.list();
+      setExecutions(data);
+    } catch (err) {
+      console.warn('Failed to fetch workflow history:', err);
+      setExecutions([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchHistory();
+  }, [fetchHistory]);
+
+  return {
+    executions,
+    isLoading,
+    error,
+    refetch: fetchHistory,
+  };
+}
+
+// =============================================================================
+// Workflow Templates Hook
+// =============================================================================
+
+export interface UseWorkflowTemplatesReturn {
+  templates: WorkflowTemplate[];
+  isLoading: boolean;
+  error: Error | null;
+  refetch: () => Promise<void>;
+  createTemplate: (data: CreateWorkflowTemplateRequest) => Promise<WorkflowTemplate | null>;
+  updateTemplate: (id: string, data: Partial<CreateWorkflowTemplateRequest>) => Promise<WorkflowTemplate | null>;
+  deleteTemplate: (id: string) => Promise<void>;
+  executeTemplate: (id: string, context?: { variables?: Record<string, string>; fileIds?: string[] }) => Promise<string | null>;
+}
+
+export function useWorkflowTemplates(): UseWorkflowTemplatesReturn {
+  const [templates, setTemplates] = useState<WorkflowTemplate[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchTemplates = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await workflowTemplateApi.list();
+      setTemplates(data);
+    } catch (err) {
+      console.warn('Failed to fetch workflow templates:', err);
+      setTemplates([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  const createTemplate = useCallback(async (data: CreateWorkflowTemplateRequest) => {
+    try {
+      const newTemplate = await workflowTemplateApi.create(data);
+      setTemplates((prev) => [newTemplate, ...prev]);
+      toast.success('Workflow template saved');
+      return newTemplate;
+    } catch (err) {
+      toast.error('Failed to save workflow template');
+      console.error('Failed to create template:', err);
+      return null;
+    }
+  }, []);
+
+  const updateTemplate = useCallback(async (id: string, data: Partial<CreateWorkflowTemplateRequest>) => {
+    try {
+      const updated = await workflowTemplateApi.update(id, data);
+      setTemplates((prev) => prev.map((t) => (t.id === id ? updated : t)));
+      toast.success('Workflow template updated');
+      return updated;
+    } catch (err) {
+      toast.error('Failed to update workflow template');
+      console.error('Failed to update template:', err);
+      return null;
+    }
+  }, []);
+
+  const deleteTemplate = useCallback(async (id: string) => {
+    try {
+      await workflowTemplateApi.delete(id);
+      setTemplates((prev) => prev.filter((t) => t.id !== id));
+      toast.success('Workflow template deleted');
+    } catch (err) {
+      toast.error('Failed to delete workflow template');
+      console.error('Failed to delete template:', err);
+    }
+  }, []);
+
+  const executeTemplate = useCallback(async (id: string, context?: { variables?: Record<string, string>; fileIds?: string[] }) => {
+    try {
+      const { executionId } = await workflowTemplateApi.execute(id, context);
+      toast.success('Workflow started');
+      return executionId;
+    } catch (err) {
+      toast.error('Failed to start workflow');
+      console.error('Failed to execute template:', err);
+      return null;
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchTemplates();
+  }, [fetchTemplates]);
+
+  return {
+    templates,
+    isLoading,
+    error,
+    refetch: fetchTemplates,
+    createTemplate,
+    updateTemplate,
+    deleteTemplate,
+    executeTemplate,
+  };
+}
+
 // Export all hooks
 export {
   type Mission,
@@ -449,4 +598,7 @@ export {
   type CreditBalance,
   type CreditTransaction,
   type UserProfile,
+  type WorkflowExecution,
+  type WorkflowTemplate,
 };
+

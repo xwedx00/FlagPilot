@@ -47,9 +47,15 @@ async def verify_token(
     # Try Header
     if credentials:
         token = credentials.credentials
-    # Try Cookie
-    elif request.cookies.get("better-auth.session_token"):
-        token = request.cookies.get("better-auth.session_token")
+    # Try Cookie (Better Auth with flagpilot prefix)
+    # Cookie format: "token.signature" - we need just the token part
+    elif request.cookies.get("flagpilot.session_token"):
+        raw_cookie = request.cookies.get("flagpilot.session_token")
+        # Better Auth signs cookies: "actualToken.signature" - extract token
+        if "." in raw_cookie:
+            token = raw_cookie.split(".")[0]
+        else:
+            token = raw_cookie
         
     if not token:
         raise HTTPException(
