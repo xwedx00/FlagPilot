@@ -19,11 +19,10 @@ class CreditTransactionSchema(BaseModel):
     id: str
     amount: int
     description: str
-    referenceId: str | None = None
-    createdAt: datetime
+    reference_id: str | None = None  # Match ORM field name
+    created_at: datetime  # Match ORM field name
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}  # Pydantic v2 style
 
 class PurchaseResponse(BaseModel):
     checkoutUrl: str
