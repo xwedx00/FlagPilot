@@ -1,0 +1,49 @@
+FREELANCE SERVICE AGREEMENT
+===========================
+
+Client: TechStartup Solutions LLC ("Client")
+Contractor: [YOUR NAME] ("Contractor")
+Date: December 1, 2025
+Project: Full-Stack Web Application Development
+
+1. SCOPE OF WORK
+----------------
+Contractor agrees to develop a complete web application including:
+- Frontend React/Next.js application
+- Backend API with Python/FastAPI
+- Database design and implementation (PostgreSQL)
+- User authentication system
+- Payment integration (Stripe)
+- Admin dashboard
+
+2. TIMELINE
+-----------
+Project Start: December 5, 2025
+Milestone 1 (MVP): January 15, 2025 - $5,000 upon completion
+Milestone 2 (Beta): February 15, 2025 - $5,000 upon completion
+Final Delivery: March 1, 2025 - $5,000 upon completion
+
+3. PAYMENT TERMS
+----------------
+Total Project Value: $15,000 USD
+Payment Schedule: 50% upfront ($7,500), 50% upon completion ($7,500)
+Payment Method: Bank transfer within 30 days of invoice
+
+IMPORTANT: No late fees specified.
+IMPORTANT: Client has right to delay payment pending "satisfaction review" - timeline undefined.
+IMPORTANT: IP transfer occurs immediately upon signature, not upon final payment.
+
+4. TERMINATION
+--------------
+Either party may terminate with 7 days notice.
+Upon termination by Client, Contractor receives payment only for "approved deliverables."
+"Approved" status determined solely by Client.
+
+5. INTELLECTUAL PROPERTY
+------------------------
+All work product, including code, designs, and documentation, becomes Client property
+upon creation (not upon payment).
+
+SIGNATURE:
+Client: _________________________ Date: _____
+Contractor: _____________________ Date: _____

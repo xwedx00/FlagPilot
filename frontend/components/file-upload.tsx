@@ -76,69 +76,40 @@ export function FileUpload({
         setFiles(prev => [...prev, uploadedFile]);
 
         try {
-            // Step 1: Get presigned upload URL
-            const presignResponse = await fetch(`${API_BASE_URL}/api/v1/files/upload-url`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({
-                    filename: file.name,
-                    content_type: file.type,
-                }),
-            });
-
-            if (!presignResponse.ok) {
-                throw new Error('Failed to get upload URL');
-            }
-
-            const { url, file_id } = await presignResponse.json();
-
-            // Update progress
+            // Update progress - starting upload
             setFiles(prev => prev.map(f =>
-                f.id === fileId ? { ...f, progress: 30 } : f
+                f.id === fileId ? { ...f, progress: 10 } : f
             ));
 
-            // Step 2: Upload directly to MinIO
-            const uploadResponse = await fetch(url, {
-                method: 'PUT',
-                headers: { 'Content-Type': file.type },
-                body: file,
+            // Direct upload to backend (which sends to RAGFlow)
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('doc_type', 'document');
+
+            const uploadResponse = await fetch(`${API_BASE_URL}/api/v1/files/upload`, {
+                method: 'POST',
+                credentials: 'include',
+                body: formData,
             });
 
-            if (!uploadResponse.ok) {
-                throw new Error('Upload to storage failed');
-            }
-
-            // Update progress
+            // Update progress - upload complete, processing
             setFiles(prev => prev.map(f =>
                 f.id === fileId ? { ...f, progress: 70, status: 'processing' } : f
             ));
 
-            // Step 3: Trigger vectorization if enabled
-            if (vectorize) {
-                try {
-                    await fetch(`${API_BASE_URL}/api/v1/moat/ingest`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        credentials: 'include',
-                        body: JSON.stringify({
-                            file_id: file_id || fileId,
-                            filename: file.name,
-                        }),
-                    });
-                } catch (e) {
-                    console.warn('Vectorization request failed:', e);
-                    // Don't fail the upload if vectorization fails
-                }
+            if (!uploadResponse.ok) {
+                const error = await uploadResponse.json().catch(() => ({ detail: 'Upload failed' }));
+                throw new Error(error.detail || 'Upload failed');
             }
 
-            // Complete
+            const result = await uploadResponse.json();
+
+            // Complete - file is now in RAGFlow for vectorization
             const completedFile: UploadedFile = {
                 ...uploadedFile,
-                id: file_id || fileId,
+                id: result.filename || fileId,
                 status: 'complete',
                 progress: 100,
-                url,
             };
 
             setFiles(prev => prev.map(f =>

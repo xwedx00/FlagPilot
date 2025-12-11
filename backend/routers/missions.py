@@ -107,9 +107,12 @@ async def list_missions(
     offset: int = 0,
 ):
     """List all missions for the current user"""
+    from sqlalchemy.orm import selectinload  # Eager-load to avoid lazy-load errors
+    
     query = (
         select(Mission)
         .where(Mission.user_id == user.id)
+        .options(selectinload(Mission.messages))  # Eager-load messages
         .order_by(Mission.created_at.desc())
         .offset(offset)
         .limit(limit)
