@@ -39,24 +39,24 @@ const defaultEdgeOptions = {
 // Generate initial layout for all agents
 function generateInitialLayout(): { nodes: Node[]; edges: Edge[] } {
   const agentIds = Object.keys(AGENTS) as AgentId[];
-  
+
   // Position agents in squads
   const squadPositions = {
     orchestrator: { x: 50, y: 50 },
     risk: { x: 400, y: 50 },
     growth: { x: 750, y: 50 },
   };
-  
+
   const nodes: Node[] = [];
   const squadCounts: Record<string, number> = { orchestrator: 0, risk: 0, growth: 0 };
-  
+
   agentIds.forEach((agentId) => {
     const agent = AGENTS[agentId];
     const squad = agent.squad;
     const position = squadPositions[squad as keyof typeof squadPositions];
     const index = squadCounts[squad];
     squadCounts[squad]++;
-    
+
     nodes.push({
       id: agentId,
       type: 'agent',
@@ -70,14 +70,10 @@ function generateInitialLayout(): { nodes: Node[]; edges: Edge[] } {
       },
     });
   });
-  
-  // Default edges showing orchestrator connections
-  const edges: Edge[] = [
-    { id: 'e-flagpilot-scribe', source: 'flagpilot', target: 'scribe' },
-    { id: 'e-flagpilot-connector', source: 'flagpilot', target: 'connector' },
-    { id: 'e-scribe-vault-keeper', source: 'scribe', target: 'vault-keeper' },
-  ];
-  
+
+  // Start with empty edges - backend provides real connections via SSE
+  const edges: Edge[] = [];
+
   return { nodes, edges };
 }
 
@@ -88,28 +84,28 @@ interface VisualizerProps {
 
 export function Visualizer({ className, minimal = false }: VisualizerProps) {
   const { nodes: storeNodes, edges: storeEdges, selectAgent } = useMissionStore();
-  
+
   // Use store nodes if available, otherwise generate initial layout
   const initialLayout = useMemo(() => generateInitialLayout(), []);
-  
+
   const displayNodes = storeNodes.length > 0 ? storeNodes : initialLayout.nodes;
   const displayEdges = storeEdges.length > 0 ? storeEdges : initialLayout.edges;
-  
+
   const [nodes, setNodes, onNodesChange] = useNodesState(displayNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(displayEdges);
-  
+
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
     [setEdges]
   );
-  
+
   const onNodeClick = useCallback(
     (_: React.MouseEvent, node: Node) => {
       selectAgent(node.id as AgentId);
     },
     [selectAgent]
   );
-  
+
   return (
     <div className={cn('h-full w-full bg-slate-950', className)}>
       <ReactFlow
@@ -127,16 +123,16 @@ export function Visualizer({ className, minimal = false }: VisualizerProps) {
         maxZoom={1.5}
         proOptions={{ hideAttribution: true }}
       >
-        <Background 
-          variant={BackgroundVariant.Dots} 
-          gap={20} 
+        <Background
+          variant={BackgroundVariant.Dots}
+          gap={20}
           size={1}
-          color="#334155" 
+          color="#334155"
         />
         {!minimal && (
           <>
-            <Controls 
-              className="!bg-slate-900 !border-slate-700 !shadow-lg"
+            <Controls
+              className="!bg-slate-900/90 !border-slate-600 !shadow-xl [&>button]:!bg-slate-800 [&>button]:!border-slate-600 [&>button]:!text-white [&>button:hover]:!bg-slate-700 [&>button>svg]:!fill-white"
               showInteractive={false}
             />
             <MiniMap

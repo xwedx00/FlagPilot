@@ -211,10 +211,10 @@ export function WarRoom({ className, workflowId }: WarRoomProps) {
 
   return (
     <div className={cn('flex flex-col h-full bg-slate-950', className)}>
-      {/* Header */}
-      <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-800 bg-slate-900/50">
+      {/* Header - Enhanced with purple accents */}
+      <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-800/80 bg-gradient-to-r from-slate-900/80 to-slate-900/50">
         <div className="flex items-center gap-4">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-purple-600/20 border border-primary/20">
             <Sparkles className="h-4 w-4 text-primary" />
           </div>
           <div>
@@ -224,14 +224,14 @@ export function WarRoom({ className, workflowId }: WarRoomProps) {
             <div className="flex items-center gap-2 text-xs text-slate-400">
               {currentMission ? (
                 <>
-                  <Badge variant="outline" className="h-5 px-1.5 text-[10px]">
+                  <Badge variant="outline" className="h-5 px-1.5 text-[10px] border-primary/30 text-primary">
                     {currentMission.status}
                   </Badge>
-                  <span className="mx-1">•</span>
+                  <span className="text-slate-600">•</span>
                   <span>{activeAgents.size} agents active</span>
                   {isStreaming && (
                     <>
-                      <span className="mx-1">•</span>
+                      <span className="text-slate-600">•</span>
                       <span className="flex items-center gap-1 text-primary">
                         <Activity className="h-3 w-3 animate-pulse" />
                         Streaming
@@ -240,7 +240,7 @@ export function WarRoom({ className, workflowId }: WarRoomProps) {
                   )}
                 </>
               ) : (
-                <span>Start a new mission</span>
+                <span className="text-slate-500">Start a new mission</span>
               )}
             </div>
           </div>
@@ -446,12 +446,37 @@ export function WarRoom({ className, workflowId }: WarRoomProps) {
               </TabsContent>
 
               <TabsContent value="context" className="flex-1 m-0 p-4 overflow-auto">
-                <div className="flex flex-col items-center justify-center h-full text-center">
-                  <Database className="h-12 w-12 text-slate-600 mb-4" />
-                  <p className="text-sm text-slate-400">
-                    Your uploaded files and context will be available here.
-                  </p>
-                </div>
+                {pendingUploads.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-center">
+                    <Database className="h-12 w-12 text-slate-600 mb-4" />
+                    <p className="text-sm text-slate-400 mb-2">
+                      No files uploaded yet
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      Upload contracts, documents, or context files to enhance AI analysis
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-xs text-slate-400 font-medium mb-3">Uploaded Files ({pendingUploads.length})</p>
+                    {pendingUploads.map((file) => (
+                      <div key={file.id} className="flex items-center gap-3 p-3 rounded-lg bg-slate-900 border border-slate-800">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                          <FileText className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-white truncate">{file.name}</p>
+                          <p className="text-xs text-slate-500">
+                            {file.size ? `${(file.size / 1024).toFixed(1)} KB` : 'Uploaded'} • Ready for RAG
+                          </p>
+                        </div>
+                        <Badge variant="outline" className="text-primary border-primary/30">
+                          Indexed
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </TabsContent>
             </Tabs>
           </div>

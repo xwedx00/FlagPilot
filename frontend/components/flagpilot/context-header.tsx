@@ -46,22 +46,22 @@ export function ContextHeader({
 }: ContextHeaderProps) {
   return (
     <div className={cn('flex items-center justify-between flex-1', className)}>
-      {/* Breadcrumbs */}
+      {/* Breadcrumbs with purple theme */}
       <Breadcrumb>
         <BreadcrumbList>
           {breadcrumbs.map((item, index) => (
             <React.Fragment key={index}>
               <BreadcrumbItem className="hidden md:block">
                 {item.href ? (
-                  <BreadcrumbLink asChild>
+                  <BreadcrumbLink asChild className="text-slate-400 hover:text-primary transition-colors">
                     <Link href={item.href}>{item.label}</Link>
                   </BreadcrumbLink>
                 ) : (
-                  <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                  <BreadcrumbPage className="text-primary font-medium">{item.label}</BreadcrumbPage>
                 )}
               </BreadcrumbItem>
               {index < breadcrumbs.length - 1 && (
-                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbSeparator className="hidden md:block text-slate-500" />
               )}
             </React.Fragment>
           ))}
