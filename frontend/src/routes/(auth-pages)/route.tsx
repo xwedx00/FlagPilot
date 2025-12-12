@@ -1,4 +1,5 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { ShaderRipple } from "~/components/shader-ripple";
 import { authQueryOptions } from "~/lib/auth/queries";
 
 export const Route = createFileRoute("/(auth-pages)")({
@@ -24,10 +25,11 @@ export const Route = createFileRoute("/(auth-pages)")({
 
 function RouteComponent() {
   return (
-    <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
-      <div className="w-full max-w-sm">
+    <div className="h-screen flex items-center justify-center relative">
+      <div className="w-full z-10 relative max-w-sm p-6">
         <Outlet />
       </div>
+      <ShaderRipple className="absolute -z-0 inset-0 h-screen" />
     </div>
   );
 }
