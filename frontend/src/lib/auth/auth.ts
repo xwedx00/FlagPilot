@@ -9,6 +9,19 @@ import { db } from "~/lib/db";
 const getAuthConfig = createServerOnlyFn(() =>
   betterAuth({
     baseURL: env.VITE_BASE_URL,
+    trustedOrigins: [
+      env.VITE_BASE_URL,
+      "http://127.0.0.1:3000",
+      "http://localhost:3000",
+      "http://127.0.0.1:*",
+      "http://localhost:*",
+    ],
+    advanced: {
+      crossSubDomainCookies: {
+        enabled: false,
+      },
+      cookiePrefix: "flagpilot",
+    },
     telemetry: {
       enabled: false,
     },
