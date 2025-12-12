@@ -169,7 +169,7 @@ export const Navbar = () => {
 
                     {/* Desktop Actions */}
                     <div className="hidden items-center gap-2 lg:flex">
-                    <Button
+                        <Button
                             asChild
                             variant="outline"
                             size="icon"
@@ -184,7 +184,7 @@ export const Navbar = () => {
                             </Link>
                         </Button>
                         <ModeToggle />
-                        
+
                         <SignedOut>
                             <Button
                                 asChild

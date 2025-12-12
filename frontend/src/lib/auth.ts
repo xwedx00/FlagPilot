@@ -1,72 +1,8 @@
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
-import { stripe } from "@better-auth/stripe"
-import Stripe from "stripe"
 import { headers } from "next/headers"
-import { Resend } from "resend"
-import { EmailTemplate } from "@daveyplate/better-auth-ui/server"
-import React from "react"
 import { db } from "@/database/db"
 import * as schema from "@/database/schema"
-import { type Plan, plans } from "@/lib/payments/plans"
-import { site } from "@/config/site"
-
-// Only initialize Stripe if we have a valid key (not placeholder)
-const hasValidStripeKey = process.env.STRIPE_SECRET_KEY &&
-    !process.env.STRIPE_SECRET_KEY.includes('placeholder') &&
-    process.env.STRIPE_SECRET_KEY.startsWith('sk_')
-
-const stripeClient = hasValidStripeKey
-    ? new Stripe(process.env.STRIPE_SECRET_KEY!, {
-        apiVersion: "2025-06-30.basil",
-        typescript: true
-    })
-    : null
-
-// Only initialize Resend if we have a valid API key
-const resend = process.env.RESEND_API_KEY
-    ? new Resend(process.env.RESEND_API_KEY)
-    : null
-
-// Build plugins array conditionally
-const plugins: Parameters<typeof betterAuth>[0]['plugins'] = []
-
-// Only add stripe plugin if we have a valid client
-if (stripeClient && process.env.STRIPE_WEBHOOK_SECRET) {
-    plugins.push(stripe({
-        stripeClient,
-        stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
-        createCustomerOnSignUp: true,
-        subscription: {
-            enabled: true,
-            plans: plans,
-            getCheckoutSessionParams: async ({ user, plan }) => {
-                const checkoutSession: {
-                    params: {
-                        subscription_data?: {
-                            trial_period_days: number
-                        }
-                    }
-                } = {
-                    params: {}
-                }
-
-                if (user.trialAllowed) {
-                    checkoutSession.params.subscription_data = {
-                        trial_period_days: (plan as Plan).trialDays
-                    }
-                }
-
-                return checkoutSession
-            },
-            onSubscriptionComplete: async ({ event }) => {
-                const eventDataObject = event.data
-                    .object as Stripe.Checkout.Session
-                const userId = eventDataObject.metadata?.userId
-            }
-        }
-    }))
-}
 
 export const auth = betterAuth({
     database: drizzleAdapter(db, {
@@ -76,39 +12,7 @@ export const auth = betterAuth({
     }),
     emailAndPassword: {
         enabled: true,
-        sendResetPassword: resend ? async ({ user, url, token }, request) => {
-            const name = user.name || user.email.split("@")[0]
-
-            await resend.emails.send({
-                from: site.mailFrom,
-                to: user.email,
-                subject: "Reset your password",
-                react: EmailTemplate({
-                    heading: "Reset your password",
-                    content: React.createElement(
-                        React.Fragment,
-                        null,
-                        React.createElement("p", null, `Hi ${name},`),
-                        React.createElement(
-                            "p",
-                            null,
-                            "Someone requested a password reset for your account. If this was you, ",
-                            "click the button below to reset your password."
-                        ),
-                        React.createElement(
-                            "p",
-                            null,
-                            "If you didn't request this, you can safely ignore this email."
-                        )
-                    ),
-                    action: "Reset Password",
-                    url,
-                    siteName: site.name,
-                    baseUrl: site.url,
-                    imageUrl: `${site.url}/logo.png` // svg are not supported by resend
-                })
-            })
-        } : undefined
+        // Note: Password reset emails disabled - add Resend API key to enable
     },
     socialProviders: {
         github: {
@@ -118,23 +22,7 @@ export const auth = betterAuth({
         google: {
             clientId: process.env.GOOGLE_CLIENT_ID as string,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET as string
-        },
-        twitter: {
-            clientId: process.env.TWITTER_CLIENT_ID as string,
-            clientSecret: process.env.TWITTER_CLIENT_SECRET as string
         }
-    },
-    plugins
-})
-
-export async function getActiveSubscription() {
-    if (!hasValidStripeKey) {
-        return null // No Stripe, no subscriptions
     }
-    const nextHeaders = await headers()
-    // @ts-ignore - listActiveSubscriptions only exists when stripe plugin is loaded
-    const subscriptions = await auth.api.listActiveSubscriptions?.({
-        headers: nextHeaders
-    })
-    return subscriptions?.find((s: { status: string }) => s.status === "active")
-}
+    // Note: Stripe integration removed - will use Polar instead
+})
