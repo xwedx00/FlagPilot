@@ -1,83 +1,132 @@
-# [React TanStarter](https://github.com/dotnize/react-tanstarter)
+<div align="center">
+  <img src="public/logo.svg" alt="IndieSaas Starter Logo" width="80" height="80">
+  <h1 style="color: #6d28d9; font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 42px; text-align: center; margin: 20px 0 0 0;">
+    IndieSaas Starter
+  </h1>
+</div>
 
-A minimal starter template for 🏝️ TanStack Start. [→ Preview here](https://tanstarter.nize.ph/)
 
-- [React 19](https://react.dev) + [React Compiler](https://react.dev/learn/react-compiler)
-- TanStack [Start](https://tanstack.com/start/latest) + [Router](https://tanstack.com/router/latest) + [Query](https://tanstack.com/query/latest)
-- [Tailwind CSS](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/)
-- [Vite 8](https://vite.dev/blog/announcing-vite8-beta) (beta) + [Nitro v3](https://v3.nitro.build/) (alpha)
-- [Drizzle ORM](https://orm.drizzle.team/) + PostgreSQL
-- [Better Auth](https://www.better-auth.com/)
+A modern, Next.js Saas boilerplate with comprehensive authentication built on Better Auth, featuring a beautiful UI with shadcn/ui components and a robust tech stack.
 
-## Getting Started
+## Tech Stack
 
-1. [Use this template](https://github.com/new?template_name=react-tanstarter&template_owner=dotnize) or clone this repository with gitpick:
+- **Better Auth UI** - Pre-built authentication components
+- **shadcn/ui** - Beautiful, accessible component library
+- **Stripe** - Payment Provider
+- **Biome** - Fast linter and formatter
+- **Turborepo** - Monorepo build system
+- **PostgreSQL** - Robust, production-ready database
+- **Drizzle ORM** - Type-safe database queries
+- **UploadThing** - Modern file uploads with built-in storage
+- **Resend** - Transactional email service
 
-   ```bash
-   npx gitpick dotnize/react-tanstarter myapp
-   cd myapp
-   ```
 
-2. Install dependencies:
+## Roadmap
 
-   ```bash
-   pnpm install
-   ```
+- [x] landing page
+- [x] Authentication with Better Auth
+- [x] Dashboard
+- [x] Stripe Payment
 
-3. Create a `.env` file based on [`.env.example`](./.env.example).
 
-4. Push the schema to your database with drizzle-kit:
 
-   ```bash
-   pnpm db push
-   ```
 
-   https://orm.drizzle.team/docs/migrations
+##  Quick start
 
-5. Run the development server:
+### 1. Clone the Repository
+```bash
+git clone https://github.com/indieceo/Indiesaas
+cd indiesaas
+```
 
-   ```bash
-   pnpm dev
-   ```
+### 2. Install Dependencies
+```bash
+npm install
+# or
+pnpm install
+```
 
-   The development server should now be running at [http://localhost:3000](http://localhost:3000).
+### 3. Environment Setup
+Copy `.env.example` to `.env.local` and update the variables.
 
-## Deploying to production
+```bash
+cp .env.example .env.local
+```
 
-The [vite config](./vite.config.ts#L12-L13) is currently configured to use [Nitro v3](https://v3.nitro.build) (alpha) to deploy on Vercel, but can be easily switched to other providers.
+### 4. Database Setup
+Generate the authentication schema and run migrations:
 
-Refer to the [TanStack Start hosting docs](https://tanstack.com/start/latest/docs/framework/react/guide/hosting) for deploying to other platforms.
+```bash
+# Generate Better Auth schema
+npx @better-auth/cli generate
 
-## Issue watchlist
+# Generate Drizzle migrations
+npx drizzle-kit generate
 
-- [Router/Start issues](https://github.com/TanStack/router/issues) - TanStack Start is in RC.
-- [Devtools releases](https://github.com/TanStack/devtools/releases) - TanStack Devtools is in alpha and may still have breaking changes.
-- [Vite 8 beta](https://vite.dev/blog/announcing-vite8-beta) - We're using Vite 8 beta which is powered by Rolldown.
-- [Nitro v3 alpha](https://v3.nitro.build/) - The template is configured with Nitro v3 alpha by default.
+# Run migrations
+npx drizzle-kit migrate
+```
 
-## Goodies
+### 5. Start Development Server
+```bash
+npm run dev
+# or
+pnpm dev
+```
 
-#### Scripts
+##  Project Structure
 
-We use **pnpm** by default, but you can modify these scripts in [package.json](./package.json) to use your preferred package manager.
+Key configuration and structure files:
 
-- **`auth:generate`** - Regenerate the [auth db schema](./src/lib/db/schema/auth.schema.ts) if you've made changes to your Better Auth [config](./src/lib/auth/auth.ts).
-- **`db`** - Run [drizzle-kit](https://orm.drizzle.team/docs/kit-overview) commands. (e.g. `pnpm db generate`, `pnpm db studio`)
-- **`ui`** - The shadcn/ui CLI. (e.g. `pnpm ui add button`)
-- **`format`**, **`lint`**, **`check-types`** - Run Prettier, ESLint, and check TypeScript types respectively.
-  - **`check`** - Run all three above. (e.g. `pnpm check`)
-- **`deps`** - Selectively upgrade dependencies via taze.
+```
+src/
+├── app/                    # Next.js app directory
+│   ├── (marketing)/       # Marketing pages
+│   ├── auth/              # Authentication pages
+│   ├── dashboard/         # Dashboard pages
+│   └── api/               # API routes
+├── components/            # React components
+│   ├── layout/           # Layout components
+│   └── ui/               # shadcn/ui components
+├── config/
+│   └── site.ts           # Site configuration
+├── lib/
+│   ├── auth.ts           # Better Auth configuration
+│   └── payments/         # Stripe payment logic
+├── database/
+│   ├── db.ts             # Database connection
+│   └── schema.ts         # Database schema
+└── styles/               # Global styles
 
-#### Utilities
+drizzle.config.ts         # Drizzle ORM configuration
+next.config.ts            # Next.js configuration
+biome.json                # Biome linter/formatter config
+```
 
-- [`auth/middleware.ts`](./src/lib/auth/middleware.ts) - Sample middleware for forcing authentication on server functions. (see [#5](https://github.com/dotnize/react-tanstarter/issues/5#issuecomment-2615905686) and [#17](https://github.com/dotnize/react-tanstarter/issues/17#issuecomment-2853482062))
-- [`theme-toggle.tsx`](./src/components/theme-toggle.tsx), [`theme-provider.tsx`](./src/components/theme-provider.tsx) - A theme toggle and provider for toggling between light and dark mode. ([#7](https://github.com/dotnize/react-tanstarter/issues/7#issuecomment-3141530412))
+
+## Usage
+
+Feel free to use and customize this template as per your requirements. You can modify the components, styles, and content to create your unique website.
 
 ## License
 
-Code in this template is public domain via [Unlicense](./LICENSE). Feel free to remove or replace for your own project.
+This project is licensed under the MIT License. You are free to use, modify, and distribute it as you wish.
 
-## Also check out
+## 🙏 Credits
 
-- [@tanstack/create-start](https://github.com/TanStack/create-tsrouter-app/blob/main/cli/ts-create-start/README.md) - The official CLI tool from the TanStack team to create Start projects.
-- [awesome-tanstack-start](https://github.com/Balastrong/awesome-tanstack-start) - A curated list of awesome resources for TanStack Start.
+
+- [Better Auth Ui](https://better-auth-ui.com) - Pre-built authentication components
+- [shadcn landing page](https://github.com/nobruf/shadcn-landing-page) - landing page used for this project
+
+
+
+---
+
+<div align="center">
+  <a href="https://indietech.dev/?utm_source=github&utm_campaign=indiesaas" target="_blank">
+    <img src="https://indietech.dev/logo.svg" alt="IndieTech Logo" width="32" height="32">
+  </a>
+  <p>
+    Visit <strong><a href="https://indietech.dev/?utm_source=github&utm_campaign=indiesaas">IndieTech.dev</a></strong> <br/> for more on our products and services.
+  </p>
+</div>
