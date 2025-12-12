@@ -4,7 +4,7 @@ import { Menu, X } from "lucide-react"
 import { RiGithubFill } from "@remixicon/react"
 import Image from "next/image"
 import Link from "next/link"
-import React from "react"
+import React, { useEffect, useState } from "react"
 import { ModeToggle } from "./mode-toggle"
 import { Button } from "../ui/button"
 import {
@@ -76,6 +76,12 @@ const featureList: FeatureProps[] = [
 
 export const Navbar = () => {
     const [isOpen, setIsOpen] = React.useState(false)
+    // Prevent hydration mismatch - auth state differs between SSR and client
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        setMounted(true)
+    }, [])
 
     return (
         <div className="sticky top-2 z-50 mx-auto w-[98%] max-w-7xl px-4">
@@ -117,7 +123,7 @@ export const Navbar = () => {
                                                     width={300}
                                                     height={200}
                                                 />
-                                                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                                                <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent" />
                                             </div>
                                             <ul className="flex flex-col gap-3">
                                                 {featureList.map(
@@ -185,37 +191,41 @@ export const Navbar = () => {
                         </Button>
                         <ModeToggle />
 
-                        <SignedOut>
-                            <Button
-                                asChild
-                                size="sm"
-                                variant="outline"
-                                className="ml-2"
-                            >
-                                <Link href="/auth/sign-in?redirectTo=/dashboard">
-                                    Sign In
-                                </Link>
-                            </Button>
-                            <Button
-                                asChild
-                                size="sm"
-                                className="bg-primary hover:bg-primary/90"
-                            >
-                                <Link href="/auth/sign-up?redirectTo=/dashboard">
-                                    Get Started
-                                </Link>
-                            </Button>
-                        </SignedOut>
-                        <SignedIn>
-                            <Button
-                                asChild
-                                size="sm"
-                                variant="outline"
-                                className="ml-2"
-                            >
-                                <Link href="/dashboard">Dashboard</Link>
-                            </Button>
-                        </SignedIn>
+                        {mounted && (
+                            <>
+                                <SignedOut>
+                                    <Button
+                                        asChild
+                                        size="sm"
+                                        variant="outline"
+                                        className="ml-2"
+                                    >
+                                        <Link href="/auth/sign-in?redirectTo=/dashboard">
+                                            Sign In
+                                        </Link>
+                                    </Button>
+                                    <Button
+                                        asChild
+                                        size="sm"
+                                        className="bg-primary hover:bg-primary/90"
+                                    >
+                                        <Link href="/auth/sign-up?redirectTo=/dashboard">
+                                            Get Started
+                                        </Link>
+                                    </Button>
+                                </SignedOut>
+                                <SignedIn>
+                                    <Button
+                                        asChild
+                                        size="sm"
+                                        variant="outline"
+                                        className="ml-2"
+                                    >
+                                        <Link href="/dashboard">Dashboard</Link>
+                                    </Button>
+                                </SignedIn>
+                            </>
+                        )}
                     </div>
 
                     {/* Mobile Menu Button */}
@@ -303,42 +313,46 @@ export const Navbar = () => {
 
                                     {/* Mobile Actions */}
                                     <SheetFooter className="flex-row gap-2 border-border/50 border-t pt-4">
-                                        <SignedOut>
-                                            <Button
-                                                asChild
-                                                variant="outline"
-                                                className="w-full"
-                                                onClick={() => setIsOpen(false)}
-                                            >
-                                                <Link href="/auth/sign-in?redirectTo=/dashboard">
-                                                    Sign In
-                                                </Link>
-                                            </Button>
-                                            <Button
-                                                asChild
-                                                className="w-full bg-primary hover:bg-primary/90"
-                                                onClick={() => setIsOpen(false)}
-                                            >
-                                                <Link href="/auth/sign-up?redirectTo=/dashboard">
-                                                    Get Started
-                                                </Link>
-                                            </Button>
-                                        </SignedOut>
-                                        <SignedIn>
-                                            <Button
-                                                asChild
-                                                variant="outline"
-                                                className="w-full"
-                                                onClick={() => setIsOpen(false)}
-                                            >
-                                                <Link href="/dashboard">
-                                                    Dashboard
-                                                </Link>
-                                            </Button>
-                                            <div className="flex justify-end pt-2">
-                                                <UserButton size="icon" />
-                                            </div>
-                                        </SignedIn>
+                                        {mounted && (
+                                            <>
+                                                <SignedOut>
+                                                    <Button
+                                                        asChild
+                                                        variant="outline"
+                                                        className="w-full"
+                                                        onClick={() => setIsOpen(false)}
+                                                    >
+                                                        <Link href="/auth/sign-in?redirectTo=/dashboard">
+                                                            Sign In
+                                                        </Link>
+                                                    </Button>
+                                                    <Button
+                                                        asChild
+                                                        className="w-full bg-primary hover:bg-primary/90"
+                                                        onClick={() => setIsOpen(false)}
+                                                    >
+                                                        <Link href="/auth/sign-up?redirectTo=/dashboard">
+                                                            Get Started
+                                                        </Link>
+                                                    </Button>
+                                                </SignedOut>
+                                                <SignedIn>
+                                                    <Button
+                                                        asChild
+                                                        variant="outline"
+                                                        className="w-full"
+                                                        onClick={() => setIsOpen(false)}
+                                                    >
+                                                        <Link href="/dashboard">
+                                                            Dashboard
+                                                        </Link>
+                                                    </Button>
+                                                    <div className="flex justify-end pt-2">
+                                                        <UserButton size="icon" />
+                                                    </div>
+                                                </SignedIn>
+                                            </>
+                                        )}
                                     </SheetFooter>
                                 </div>
                             </SheetContent>

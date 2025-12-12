@@ -28,13 +28,14 @@ export function Providers({ children }: { children: ReactNode }) {
                 onSessionChange={() => {
                     router.refresh()
                 }}
-                settings={{
-                    url: "/dashboard/settings"
+                account={{
+                    basePath: "/dashboard"
                 }}
                 social={{
-                    providers: ["github", "google", "twitter"]
+                    providers: ["github", "google"]
                 }}
-                
+                credentials={false}
+
                 avatar={{
                     upload: async (file: File) => {
                         const uploadRes = await startUpload([file])

@@ -1,6 +1,5 @@
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
-import { headers } from "next/headers"
 import { db } from "@/database/db"
 import * as schema from "@/database/schema"
 
@@ -10,10 +9,7 @@ export const auth = betterAuth({
         usePlural: false, // Our schema uses singular table names (user, session, account)
         schema
     }),
-    emailAndPassword: {
-        enabled: true,
-        // Note: Password reset emails disabled - add Resend API key to enable
-    },
+    // OAuth-only authentication - no email/password
     socialProviders: {
         github: {
             clientId: process.env.GITHUB_CLIENT_ID as string,
@@ -24,5 +20,5 @@ export const auth = betterAuth({
             clientSecret: process.env.GOOGLE_CLIENT_SECRET as string
         }
     }
-    // Note: Stripe integration removed - will use Polar instead
 })
+

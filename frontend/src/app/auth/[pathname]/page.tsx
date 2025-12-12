@@ -1,8 +1,7 @@
-import { AuthCard, AuthLoading } from "@daveyplate/better-auth-ui"
+import { AuthView } from "@daveyplate/better-auth-ui"
 import { authViewPaths } from "@daveyplate/better-auth-ui/server"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import { WelcomeToast } from "@/components/layout/auth-loading-toast"
 import { Button } from "@/components/ui/button"
 import type { Metadata } from "next"
 
@@ -10,8 +9,10 @@ export const metadata: Metadata = {
     title: "Authentication"
 }
 
+export const dynamicParams = false
+
 export function generateStaticParams() {
-    return Object.values(authViewPaths).map((pathname) => ({ pathname }))
+    return Object.values(authViewPaths).map((path) => ({ pathname: path }))
 }
 
 export default async function AuthPage({
@@ -20,8 +21,6 @@ export default async function AuthPage({
     params: Promise<{ pathname: string }>
 }) {
     const { pathname } = await params
-
-   
 
     return (
         <main className="container mx-auto flex grow flex-col items-center justify-center gap-4 self-center bg-background py-18 sm:py-22">
@@ -36,13 +35,7 @@ export default async function AuthPage({
                 </Button>
             </Link>
 
-            <AuthLoading>
-                <WelcomeToast />
-            </AuthLoading>
-
-            <AuthCard
-                pathname={pathname}
-            />
+            <AuthView path={pathname} />
 
             {["sign-up"].includes(pathname) && (
                 <div className="text-center text-muted-foreground text-sm">
@@ -67,3 +60,4 @@ export default async function AuthPage({
         </main>
     )
 }
+
