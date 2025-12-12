@@ -1,244 +1,83 @@
-# FlagPilot Frontend
+# [React TanStarter](https://github.com/dotnize/react-tanstarter)
 
-**MGX.dev-Inspired Multi-Agent UI with War Room Interface**
+A minimal starter template for 🏝️ TanStack Start. [→ Preview here](https://tanstarter.nize.ph/)
 
-Next.js 16 frontend for the FlagPilot freelancer protection platform. Features real-time agent workflow visualization, streaming chat, and Personal Data Moat management.
+- [React 19](https://react.dev) + [React Compiler](https://react.dev/learn/react-compiler)
+- TanStack [Start](https://tanstack.com/start/latest) + [Router](https://tanstack.com/router/latest) + [Query](https://tanstack.com/query/latest)
+- [Tailwind CSS](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/)
+- [Vite 8](https://vite.dev/blog/announcing-vite8-beta) (beta) + [Nitro v3](https://v3.nitro.build/) (alpha)
+- [Drizzle ORM](https://orm.drizzle.team/) + PostgreSQL
+- [Better Auth](https://www.better-auth.com/)
 
-## ✨ Core Features
+## Getting Started
 
-### 🎯 War Room Interface
-- **Resizable Panels** - Chat + Visualizer/Artifacts/Data Moat
-- **React Flow DAG** - Real-time workflow visualization with custom AgentNode
-- **Live Console** - Streaming agent logs with color-coded output
-- **Generative UI** - Dynamic RiskAssessmentCard, ClientDossierCard components
+1. [Use this template](https://github.com/new?template_name=react-tanstarter&template_owner=dotnize) or clone this repository with gitpick:
 
-### 🔐 Authentication & Billing
-- **Better Auth** - Session management with PostgreSQL
-- **Polar.sh Credits** - Pay-per-agent-use billing
-- **Credit Balance UI** - Real-time credit display and top-up
+   ```bash
+   npx gitpick dotnize/react-tanstarter myapp
+   cd myapp
+   ```
 
-### 🛡️ Personal Data Moat
-- **File Uploader** - Drag & drop with MinIO presigned URLs
-- **File Browser** - Tree view with RAG embedding status
-- **GDPR Compliance** - Data export and right to erasure page
+2. Install dependencies:
 
-### 🤖 AI Chat Integration
-- **Vercel AI SDK** - Streaming chat with tool support
-- **OpenRouter** - Claude/GPT model switching
-- **Zustand Store** - Mission state management with stream event processing
+   ```bash
+   pnpm install
+   ```
 
-### 🎨 MGX.dev Design System
-- **Dark Industrial Theme** - Zinc 950 bg, emerald accents
-- **Monospace Typography** - Geist Mono for terminal feel
-- **Console-First UI** - Agent logs, code blocks, status badges
+3. Create a `.env` file based on [`.env.example`](./.env.example).
 
-## 🚀 Tech Stack
+4. Push the schema to your database with drizzle-kit:
 
-- **Framework**: Next.js 15.3.1 with App Router
-- **Language**: TypeScript with strict mode
-- **Styling**: Tailwind CSS v4 + shadcn/ui
-- **Database**: Neon PostgreSQL + Drizzle ORM
-- **Authentication**: Better Auth v1.2.8
-- **Payments**: Polar.sh
-- **AI**: OpenAI SDK
-- **Storage**: Cloudflare R2
-- **Analytics**: PostHog
-- **Deployment**: Vercel (recommended)
+   ```bash
+   pnpm db push
+   ```
 
-## 📁 Project Structure
+   https://orm.drizzle.team/docs/migrations
 
-```
-frontend/
-├── app/
-│   ├── page.tsx                 # Landing/Login page
-│   ├── mission/page.tsx         # War Room interface
-│   ├── compliance/page.tsx      # GDPR compliance page
-│   └── api/
-│       ├── auth/[...all]/       # Better Auth endpoints
-│       ├── chat/route.ts        # AI chat streaming
-│       ├── mission/             # Mission SSE endpoints
-│       └── files/               # File upload proxy
-├── components/
-│   ├── mission/                 # War Room components
-│   │   ├── war-room.tsx         # Main container with panels
-│   │   ├── visualizer.tsx       # React Flow DAG
-│   │   ├── agent-node.tsx       # Custom node component
-│   │   ├── live-console.tsx     # Agent log stream
-│   │   └── index.ts
-│   ├── billing/                 # Credit system UI
-│   │   ├── credit-balance.tsx   # Balance display
-│   │   ├── pricing-cards.tsx    # Subscription tiers
-│   │   └── usage-history.tsx    # Transaction log
-│   ├── moat/                    # Data Moat UI
-│   │   ├── file-uploader.tsx    # Dropzone upload
-│   │   └── file-tree.tsx        # File browser
-│   ├── generative-ui/           # Agent output cards
-│   │   ├── risk-assessment-card.tsx
-│   │   ├── client-dossier-card.tsx
-│   │   ├── contract-redline.tsx
-│   │   └── negotiation-script.tsx
-│   └── ui/                      # shadcn/ui components
-├── stores/
-│   └── mission-store.ts         # Zustand state management
-├── lib/
-│   ├── auth.ts                  # Better Auth config
-│   ├── auth-client.ts           # Client-side auth
-│   └── utils.ts                 # Utilities
-└── db/
-    ├── schema.ts                # Drizzle schema
-    └── drizzle.ts               # Database connection
-```
+5. Run the development server:
 
-## 🛠️ Quick Start
+   ```bash
+   pnpm dev
+   ```
 
-### Prerequisites
-- Node.js 18+
-- PostgreSQL database (Neon recommended)
-- Cloudflare R2 bucket for file storage
-- Polar.sh account for subscriptions
-- OpenAI API key for AI features
-- Google OAuth credentials (optional)
+   The development server should now be running at [http://localhost:3000](http://localhost:3000).
 
-### Installation
+## Deploying to production
 
-1. **Clone the repository**
-```bash
-git clone <repository-url>
-cd next-starter-2.0
-```
+The [vite config](./vite.config.ts#L12-L13) is currently configured to use [Nitro v3](https://v3.nitro.build) (alpha) to deploy on Vercel, but can be easily switched to other providers.
 
-2. **Install dependencies**
-```bash
-pnpm install
-```
+Refer to the [TanStack Start hosting docs](https://tanstack.com/start/latest/docs/framework/react/guide/hosting) for deploying to other platforms.
 
-3. **Environment Setup**
-Create a `.env.local` file with:
-```env
-# Database
-DATABASE_URL="your-neon-database-url"
+## Issue watchlist
 
-# Authentication
-BETTER_AUTH_SECRET="your-secret-key"
-GOOGLE_CLIENT_ID="your-google-client-id"
-GOOGLE_CLIENT_SECRET="your-google-client-secret"
+- [Router/Start issues](https://github.com/TanStack/router/issues) - TanStack Start is in RC.
+- [Devtools releases](https://github.com/TanStack/devtools/releases) - TanStack Devtools is in alpha and may still have breaking changes.
+- [Vite 8 beta](https://vite.dev/blog/announcing-vite8-beta) - We're using Vite 8 beta which is powered by Rolldown.
+- [Nitro v3 alpha](https://v3.nitro.build/) - The template is configured with Nitro v3 alpha by default.
 
-# Polar.sh
-POLAR_ACCESS_TOKEN="your-polar-access-token"
-POLAR_WEBHOOK_SECRET="your-webhook-secret"
+## Goodies
 
-# OpenAI
-OPENAI_API_KEY="your-openai-api-key"
+#### Scripts
 
-# Cloudflare R2 Storage
-CLOUDFLARE_ACCOUNT_ID="your-cloudflare-account-id"
-R2_UPLOAD_IMAGE_ACCESS_KEY_ID="your-r2-access-key-id"
-R2_UPLOAD_IMAGE_SECRET_ACCESS_KEY="your-r2-secret-access-key"
-R2_UPLOAD_IMAGE_BUCKET_NAME="your-r2-bucket-name"
+We use **pnpm** by default, but you can modify these scripts in [package.json](./package.json) to use your preferred package manager.
 
-# Polar.sh Pricing Tiers
-NEXT_PUBLIC_STARTER_TIER="your-starter-product-id"
-NEXT_PUBLIC_STARTER_SLUG="your-starter-slug"
-```
+- **`auth:generate`** - Regenerate the [auth db schema](./src/lib/db/schema/auth.schema.ts) if you've made changes to your Better Auth [config](./src/lib/auth/auth.ts).
+- **`db`** - Run [drizzle-kit](https://orm.drizzle.team/docs/kit-overview) commands. (e.g. `pnpm db generate`, `pnpm db studio`)
+- **`ui`** - The shadcn/ui CLI. (e.g. `pnpm ui add button`)
+- **`format`**, **`lint`**, **`check-types`** - Run Prettier, ESLint, and check TypeScript types respectively.
+  - **`check`** - Run all three above. (e.g. `pnpm check`)
+- **`deps`** - Selectively upgrade dependencies via taze.
 
-4. **Database Setup**
-```bash
-# Generate and run migrations
-npx drizzle-kit generate
-npx drizzle-kit push
-```
+#### Utilities
 
-5. **Cloudflare R2 Setup**
-- Create a Cloudflare account and set up R2 storage
-- Create a bucket for file uploads
-- Generate API tokens with R2 permissions
-- Configure CORS settings for your domain
+- [`auth/middleware.ts`](./src/lib/auth/middleware.ts) - Sample middleware for forcing authentication on server functions. (see [#5](https://github.com/dotnize/react-tanstarter/issues/5#issuecomment-2615905686) and [#17](https://github.com/dotnize/react-tanstarter/issues/17#issuecomment-2853482062))
+- [`theme-toggle.tsx`](./src/components/theme-toggle.tsx), [`theme-provider.tsx`](./src/components/theme-provider.tsx) - A theme toggle and provider for toggling between light and dark mode. ([#7](https://github.com/dotnize/react-tanstarter/issues/7#issuecomment-3141530412))
 
-6. **Polar.sh Setup**
-- Create products for your pricing tiers
-- Set up webhook endpoints for subscription events
-- Configure your pricing structure
+## License
 
-7. **Start Development Server**
-```bash
-pnpm run dev
-```
+Code in this template is public domain via [Unlicense](./LICENSE). Feel free to remove or replace for your own project.
 
-Open [http://localhost:3000](http://localhost:3000) to see your application.
+## Also check out
 
-## 🎯 Key Features Explained
-
-### Subscription Management
-- Automatic subscription status checking
-- Payment gating for premium features
-- Integration with Polar.sh customer portal
-- Webhook handling for real-time updates
-
-### AI Chat Integration
-- Built-in chatbot with OpenAI
-- Markdown rendering for rich responses
-- Conversation history and context
-
-### File Upload System
-- **Cloudflare R2 integration** with S3-compatible API
-- **Drag & drop interface** with visual feedback
-- **File validation** - Type checking and size limits
-- **Progress tracking** - Real-time upload progress
-- **Image gallery** - View uploaded files with metadata
-- **Copy URLs** - Easy sharing and integration
-
-### Analytics & Tracking
-- PostHog event tracking
-- User behavior monitoring
-- Custom analytics dashboard
-
-## 🔧 Customization
-
-### Adding New Features
-1. Create components in `components/`
-2. Add API routes in `app/api/`
-3. Update database schema in `db/schema.ts`
-4. Run `npx drizzle-kit generate` and `npx drizzle-kit push`
-
-### Styling
-- Modify `app/globals.css` for global styles
-- Use Tailwind classes for component styling
-- Customize theme in `tailwind.config.ts`
-
-### Authentication
-- Configure providers in `lib/auth/auth.ts`
-- Add new OAuth providers as needed
-- Customize user profile fields in database schema
-
-## 📚 Learn More
-
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Better Auth Documentation](https://better-auth.com)
-- [Polar.sh Documentation](https://docs.polar.sh)
-- [Drizzle ORM Documentation](https://orm.drizzle.team)
-- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
-
-## 🚀 Deployment
-
-### Vercel (Recommended)
-1. Connect your GitHub repository to Vercel
-2. Add environment variables in Vercel dashboard
-3. Deploy automatically on every push
-
-### Manual Deployment
-```bash
-pnpm run build
-pnpm start
-```
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
----
-
-Built with ❤️ using Next.js and modern web technologies.
+- [@tanstack/create-start](https://github.com/TanStack/create-tsrouter-app/blob/main/cli/ts-create-start/README.md) - The official CLI tool from the TanStack team to create Start projects.
+- [awesome-tanstack-start](https://github.com/Balastrong/awesome-tanstack-start) - A curated list of awesome resources for TanStack Start.
