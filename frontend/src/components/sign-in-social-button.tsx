@@ -2,12 +2,14 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import authClient from "~/lib/auth/auth-client";
+import { cn } from "~/lib/utils";
 
 interface SocialLoginButtonProps {
   provider: string;
   icon: React.ReactNode;
   disabled?: boolean;
   callbackURL: string;
+  className?: string;
 }
 
 export function SignInSocialButton(props: SocialLoginButtonProps) {
@@ -36,7 +38,7 @@ export function SignInSocialButton(props: SocialLoginButtonProps) {
   return (
     <Button
       variant="outline"
-      className="w-full"
+      className={cn("w-full", props.className)}
       type="button"
       disabled={mutation.isSuccess || mutation.isPending || props.disabled}
       onClick={() => mutation.mutate()}
@@ -46,3 +48,4 @@ export function SignInSocialButton(props: SocialLoginButtonProps) {
     </Button>
   );
 }
+

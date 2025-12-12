@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
 import {
@@ -11,50 +12,102 @@ import {
 } from "~/components/ui/card";
 import { SignInSocialButton } from "~/components/sign-in-social-button";
 import { Link } from "@tanstack/react-router";
+import { Shield, Github, Sparkles, ArrowRight, CheckCircle2 } from "lucide-react";
 
 interface LoginFormProps extends React.ComponentProps<"div"> {
   redirectUrl?: string;
 }
+
+const benefits = [
+  "AI-powered scam detection",
+  "Smart contract analysis",
+  "Client verification tools",
+  "24/7 protection",
+];
 
 export function LoginForm({
   className,
   redirectUrl = "/dashboard",
   ...props
 }: LoginFormProps) {
+  const [hoveredProvider, setHoveredProvider] = useState<string | null>(null);
+
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="backdrop-blur-md bg-card/80">
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-2">
-            <div className="h-12 w-12 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-2xl">F</span>
+    <div className={cn("flex flex-col gap-8", className)} {...props}>
+      <Card className="backdrop-blur-2xl bg-card/70 border-white/10 shadow-2xl rounded-3xl overflow-hidden">
+        <CardHeader className="text-center pb-2 pt-8">
+          {/* Animated Logo */}
+          <div className="flex justify-center mb-4">
+            <div className="relative group">
+              <div className="absolute -inset-2 bg-gradient-to-r from-violet-500 to-purple-600 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity duration-500" />
+              <div className="relative h-16 w-16 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg">
+                <Shield className="h-8 w-8 text-white" />
+              </div>
             </div>
           </div>
-          <CardTitle className="text-2xl">Welcome to FlagPilot</CardTitle>
-          <CardDescription>
-            Sign in to protect your freelance career
+
+          <CardTitle className="text-3xl font-bold tracking-tight">
+            Welcome to FlagPilot
+          </CardTitle>
+          <CardDescription className="text-base mt-2">
+            Your AI-powered freelance protection starts here
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-6">
-            <div className="grid gap-4">
+
+        <CardContent className="px-8 pb-8">
+          {/* Benefits List */}
+          <div className="mb-6 p-4 rounded-2xl bg-violet-500/5 border border-violet-500/10">
+            <div className="grid grid-cols-2 gap-2">
+              {benefits.map((benefit) => (
+                <div key={benefit} className="flex items-center gap-2 text-sm">
+                  <CheckCircle2 className="h-4 w-4 text-violet-500 flex-shrink-0" />
+                  <span className="text-muted-foreground">{benefit}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            {/* GitHub Button */}
+            <div
+              onMouseEnter={() => setHoveredProvider("github")}
+              onMouseLeave={() => setHoveredProvider(null)}
+              className="relative group"
+            >
+              <div className={cn(
+                "absolute -inset-0.5 bg-gradient-to-r from-gray-800 to-gray-600 rounded-xl blur-sm opacity-0 transition-opacity duration-300",
+                hoveredProvider === "github" && "opacity-50"
+              )} />
               <SignInSocialButton
                 provider="github"
                 callbackURL={redirectUrl}
-                className="w-full"
+                className={cn(
+                  "relative w-full h-14 text-base rounded-xl transition-all duration-300",
+                  "hover:scale-[1.02] active:scale-[0.98]"
+                )}
                 icon={
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-5 w-5">
-                    <path
-                      d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"
-                      fill="currentColor"
-                    />
-                  </svg>
+                  <Github className="h-5 w-5" />
                 }
               />
+            </div>
+
+            {/* Google Button */}
+            <div
+              onMouseEnter={() => setHoveredProvider("google")}
+              onMouseLeave={() => setHoveredProvider(null)}
+              className="relative group"
+            >
+              <div className={cn(
+                "absolute -inset-0.5 bg-gradient-to-r from-red-500 to-yellow-500 rounded-xl blur-sm opacity-0 transition-opacity duration-300",
+                hoveredProvider === "google" && "opacity-50"
+              )} />
               <SignInSocialButton
                 provider="google"
                 callbackURL={redirectUrl}
-                className="w-full"
+                className={cn(
+                  "relative w-full h-14 text-base rounded-xl transition-all duration-300",
+                  "hover:scale-[1.02] active:scale-[0.98]"
+                )}
                 icon={
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-5 w-5">
                     <path
@@ -65,23 +118,50 @@ export function LoginForm({
                 }
               />
             </div>
-            <div className="text-center text-sm text-muted-foreground">
+
+            {/* Divider */}
+            <div className="relative my-2">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-white/10" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-3 text-muted-foreground">
+                  Secure & encrypted
+                </span>
+              </div>
+            </div>
+
+            {/* Terms */}
+            <p className="text-center text-xs text-muted-foreground leading-relaxed">
               By continuing, you agree to our{" "}
-              <a href="#" className="underline underline-offset-4 hover:text-primary">
+              <a href="#" className="underline underline-offset-4 hover:text-violet-500 transition-colors">
                 Terms of Service
               </a>{" "}
               and{" "}
-              <a href="#" className="underline underline-offset-4 hover:text-primary">
+              <a href="#" className="underline underline-offset-4 hover:text-violet-500 transition-colors">
                 Privacy Policy
               </a>
-            </div>
+            </p>
           </div>
         </CardContent>
       </Card>
-      <div className="text-center text-sm text-muted-foreground">
-        <Link to="/" className="underline underline-offset-4 hover:text-foreground">
-          ← Back to home
+
+      {/* Back to Home */}
+      <div className="text-center">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group"
+        >
+          <ArrowRight className="h-4 w-4 rotate-180 group-hover:-translate-x-1 transition-transform" />
+          Back to home
         </Link>
+      </div>
+
+      {/* Floating particles effect */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <Sparkles className="absolute top-10 right-10 h-4 w-4 text-violet-500/30 animate-pulse" />
+        <Sparkles className="absolute bottom-20 left-10 h-3 w-3 text-purple-500/30 animate-pulse delay-300" />
+        <Sparkles className="absolute top-1/3 left-5 h-2 w-2 text-violet-500/20 animate-pulse delay-500" />
       </div>
     </div>
   );

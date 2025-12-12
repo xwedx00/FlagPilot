@@ -26,7 +26,7 @@ export const Route = createFileRoute("/(auth-pages)")({
 function RouteComponent() {
   return (
     <div className="h-screen flex items-center justify-center relative">
-      <div className="w-full z-10 relative max-w-sm p-6">
+      <div className="w-full z-10 relative max-w-md p-6 md:p-8">
         <Outlet />
       </div>
       <ShaderRipple className="absolute -z-0 inset-0 h-screen" />
