@@ -11,12 +11,62 @@ import * as schema from "@/database/schema"
 import { type Plan, plans } from "@/lib/payments/plans"
 import { site } from "@/config/site"
 
-const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: "2025-06-30.basil",
-    typescript: true
-})
+// Only initialize Stripe if we have a valid key (not placeholder)
+const hasValidStripeKey = process.env.STRIPE_SECRET_KEY &&
+    !process.env.STRIPE_SECRET_KEY.includes('placeholder') &&
+    process.env.STRIPE_SECRET_KEY.startsWith('sk_')
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+const stripeClient = hasValidStripeKey
+    ? new Stripe(process.env.STRIPE_SECRET_KEY!, {
+        apiVersion: "2025-06-30.basil",
+        typescript: true
+    })
+    : null
+
+// Only initialize Resend if we have a valid API key
+const resend = process.env.RESEND_API_KEY
+    ? new Resend(process.env.RESEND_API_KEY)
+    : null
+
+// Build plugins array conditionally
+const plugins: Parameters<typeof betterAuth>[0]['plugins'] = []
+
+// Only add stripe plugin if we have a valid client
+if (stripeClient && process.env.STRIPE_WEBHOOK_SECRET) {
+    plugins.push(stripe({
+        stripeClient,
+        stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+        createCustomerOnSignUp: true,
+        subscription: {
+            enabled: true,
+            plans: plans,
+            getCheckoutSessionParams: async ({ user, plan }) => {
+                const checkoutSession: {
+                    params: {
+                        subscription_data?: {
+                            trial_period_days: number
+                        }
+                    }
+                } = {
+                    params: {}
+                }
+
+                if (user.trialAllowed) {
+                    checkoutSession.params.subscription_data = {
+                        trial_period_days: (plan as Plan).trialDays
+                    }
+                }
+
+                return checkoutSession
+            },
+            onSubscriptionComplete: async ({ event }) => {
+                const eventDataObject = event.data
+                    .object as Stripe.Checkout.Session
+                const userId = eventDataObject.metadata?.userId
+            }
+        }
+    }))
+}
 
 export const auth = betterAuth({
     database: drizzleAdapter(db, {
@@ -26,7 +76,7 @@ export const auth = betterAuth({
     }),
     emailAndPassword: {
         enabled: true,
-        sendResetPassword: async ({ user, url, token }, request) => {
+        sendResetPassword: resend ? async ({ user, url, token }, request) => {
             const name = user.name || user.email.split("@")[0]
 
             await resend.emails.send({
@@ -58,7 +108,7 @@ export const auth = betterAuth({
                     imageUrl: `${site.url}/logo.png` // svg are not supported by resend
                 })
             })
-        }
+        } : undefined
     },
     socialProviders: {
         github: {
@@ -74,47 +124,17 @@ export const auth = betterAuth({
             clientSecret: process.env.TWITTER_CLIENT_SECRET as string
         }
     },
-    plugins: [
-        stripe({
-            stripeClient,
-            stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET!,
-            createCustomerOnSignUp: true,
-            subscription: {
-                enabled: true,
-                plans: plans,
-                getCheckoutSessionParams: async ({ user, plan }) => {
-                    const checkoutSession: {
-                        params: {
-                            subscription_data?: {
-                                trial_period_days: number
-                            }
-                        }
-                    } = {
-                        params: {}
-                    }
-
-                    if (user.trialAllowed) {
-                        checkoutSession.params.subscription_data = {
-                            trial_period_days: (plan as Plan).trialDays
-                        }
-                    }
-
-                    return checkoutSession
-                },
-                onSubscriptionComplete: async ({ event }) => {
-                    const eventDataObject = event.data
-                        .object as Stripe.Checkout.Session
-                    const userId = eventDataObject.metadata?.userId
-                }
-            }
-        })
-    ]
+    plugins
 })
 
 export async function getActiveSubscription() {
+    if (!hasValidStripeKey) {
+        return null // No Stripe, no subscriptions
+    }
     const nextHeaders = await headers()
-    const subscriptions = await auth.api.listActiveSubscriptions({
+    // @ts-ignore - listActiveSubscriptions only exists when stripe plugin is loaded
+    const subscriptions = await auth.api.listActiveSubscriptions?.({
         headers: nextHeaders
     })
-    return subscriptions.find((s) => s.status === "active")
+    return subscriptions?.find((s: { status: string }) => s.status === "active")
 }

@@ -1,4 +1,4 @@
-@plugin "tailwindcss-safe-area";
+/* tailwindcss-safe-area removed due to Tailwind v4 incompatibility */
 @source "../../node_modules/@daveyplate/better-auth-ui";
 
 
@@ -10,34 +10,37 @@ html {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
 }
+
 @layer base {
-	button:not(:disabled),
-		[role="button"]:not(:disabled) {
-		cursor: pointer;
-	}
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
 }
 
 [role="menuitem"]:not(:disabled) {
-	cursor: pointer;
+  cursor: pointer;
 }
 
 :root {
-	--warning: hsl(38 92% 50%);
-	--warning-foreground: hsl(48 96% 89%);
+  --warning: hsl(38 92% 50%);
+  --warning-foreground: hsl(48 96% 89%);
 }
 
 .dark {
-	--warning: hsl(48 96% 89%);
-	--warning-foreground: hsl(38 92% 50%);
+  --warning: hsl(48 96% 89%);
+  --warning-foreground: hsl(38 92% 50%);
 }
 
 @theme inline {
-	--color-warning: var(--warning);
-	--color-warning-foreground: var(--warning-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
 }
 
 
@@ -61,23 +64,27 @@ html {
   from {
     transform: translateX(0%);
   }
+
   to {
     transform: translateX(-100%);
   }
 }
+
 @keyframes marquee-vertical {
   from {
     transform: translateY(0%);
   }
+
   to {
     transform: translateY(-100%);
   }
 }
+
 @layer utilities {
   .animate-marquee {
     animation: marquee var(--duration) linear infinite;
   }
-  
+
   .animate-marquee-vertical {
     animation: marquee-vertical var(--duration) linear infinite;
   }
