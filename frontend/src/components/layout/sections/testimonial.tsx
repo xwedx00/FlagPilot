@@ -26,7 +26,7 @@ interface ReviewProps {
 
 const reviewList: ReviewProps[] = [
     {
-        image: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=580&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        image: "https://ui-avatars.com/api/?name=John+Doe&background=6366f1&color=fff&size=128",
         name: "John Doe",
         userName: "Product Manager",
         comment:
@@ -34,7 +34,7 @@ const reviewList: ReviewProps[] = [
         rating: 5.0
     },
     {
-        image: "https://images.unsplash.com/photo-1658281097220-eb7672eed00b?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDN8fHByb2ZpbGUlMjBwaG90b3xlbnwwfDJ8MHx8fDA%3D",
+        image: "https://ui-avatars.com/api/?name=Sophia+Collins&background=8b5cf6&color=fff&size=128",
         name: "Sophia Collins",
         userName: "Cybersecurity Analyst",
         comment:
@@ -43,7 +43,7 @@ const reviewList: ReviewProps[] = [
     },
 
     {
-        image: "https://images.unsplash.com/photo-1618018352910-72bdafdc82a6?q=80&w=580&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        image: "https://ui-avatars.com/api/?name=Adam+Johnson&background=ec4899&color=fff&size=128",
         name: "Adam Johnson",
         userName: "Chief Technology Officer",
         comment:
@@ -51,7 +51,7 @@ const reviewList: ReviewProps[] = [
         rating: 4.9
     },
     {
-        image: "https://images.unsplash.com/photo-1584999734482-0361aecad844?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTV8fHByb2ZpbGV8ZW58MHwyfDB8fHww",
+        image: "https://ui-avatars.com/api/?name=Ethan+Parker&background=14b8a6&color=fff&size=128",
         name: "Ethan Parker",
         userName: "Data Scientist",
         comment:
@@ -59,7 +59,7 @@ const reviewList: ReviewProps[] = [
         rating: 5.0
     },
     {
-        image: "https://images.unsplash.com/photo-1586297135537-94bc9ba060aa?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mjh8fHByb2ZpbGUlMjBwaG90b3xlbnwwfDJ8MHx8fDA%3D",
+        image: "https://ui-avatars.com/api/?name=Ava+Mitchell&background=f59e0b&color=fff&size=128",
         name: "Ava Mitchell",
         userName: "IT Project Manager",
         comment:
@@ -67,7 +67,7 @@ const reviewList: ReviewProps[] = [
         rating: 5.0
     },
     {
-        image: "https://images.unsplash.com/photo-1623517006691-00db997b4c58?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTUwfHxwcm9maWxlJTIwcGhvdG98ZW58MHwyfDB8fHww",
+        image: "https://ui-avatars.com/api/?name=Isabella+Reed&background=3b82f6&color=fff&size=128",
         name: "Isabella Reed",
         userName: "DevOps Engineer",
         comment:

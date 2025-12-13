@@ -41,7 +41,21 @@ export const ourFileRouter = {
                 console.error("Error in onUploadComplete:", error)
                 throw new UploadThingError("Failed to complete upload")
             }
+        }),
+
+    // Define text/document upload router for RAG
+    textUploader: f({
+        text: { maxFileSize: "4MB" },
+        pdf: { maxFileSize: "4MB" },
+    })
+        .middleware(async ({ req }) => {
+            const user = { id: "user-via-frontend" };
+            return { userId: user.id };
         })
+        .onUploadComplete(async ({ metadata, file }) => {
+            console.log("Upload complete for userId:", metadata.userId);
+            return { uploadedBy: metadata.userId, url: file.url, name: file.name };
+        }),
 } satisfies FileRouter
 
 export type OurFileRouter = typeof ourFileRouter

@@ -25,7 +25,7 @@ export const TeamSection = () => {
             lastName: "CEO",
             positions: ["Fullstack Developer", "Creator Of This Website"],
             socialNetworks: [
-                
+
                 {
                     name: "Github",
                     url: "https://github.com/indieceo"
@@ -38,7 +38,7 @@ export const TeamSection = () => {
         },
         {
             imageUrl:
-                "https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1528&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                "https://ui-avatars.com/api/?name=Elizabeth+Moore&background=6366f1&color=fff&size=300",
             firstName: "Elizabeth",
             lastName: "Moore",
             positions: ["UI/UX Designer"],
@@ -55,7 +55,7 @@ export const TeamSection = () => {
         },
         {
             imageUrl:
-                "https://images.unsplash.com/photo-1527980965255-d3b416303d12?q=80&w=1760&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                "https://ui-avatars.com/api/?name=David+Diaz&background=8b5cf6&color=fff&size=300",
             firstName: "David",
             lastName: "Diaz",
             positions: ["Machine Learning Engineer", "TensorFlow Tinkerer"],
@@ -72,7 +72,7 @@ export const TeamSection = () => {
         },
         {
             imageUrl:
-                "https://images.unsplash.com/photo-1573497161161-c3e73707e25c?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                "https://ui-avatars.com/api/?name=Sarah+Robinson&background=ec4899&color=fff&size=300",
             firstName: "Sarah",
             lastName: "Robinson",
             positions: ["Cloud Native Developer", "Kubernetes Orchestrator"],
@@ -93,7 +93,7 @@ export const TeamSection = () => {
         },
         {
             imageUrl:
-                "https://images.unsplash.com/photo-1616805765352-beedbad46b2a?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                "https://ui-avatars.com/api/?name=Michael+Holland&background=14b8a6&color=fff&size=300",
             firstName: "Michael",
             lastName: "Holland",
             positions: ["DevOps Engineer", "CI/CD Pipeline Mastermind"],
@@ -106,7 +106,7 @@ export const TeamSection = () => {
         },
         {
             imageUrl:
-                "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?q=80&w=1587&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                "https://ui-avatars.com/api/?name=Zoe+Garcia&background=f59e0b&color=fff&size=300",
             firstName: "Zoe",
             lastName: "Garcia",
             positions: ["JavaScript Evangelist", "Deno Champion"],
@@ -123,7 +123,7 @@ export const TeamSection = () => {
         },
         {
             imageUrl:
-                "https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=1480&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                "https://ui-avatars.com/api/?name=Evan+James&background=3b82f6&color=fff&size=300",
             firstName: "Evan",
             lastName: "James",
             positions: ["Backend Developer"],
@@ -144,7 +144,7 @@ export const TeamSection = () => {
         },
         {
             imageUrl:
-                "https://images.unsplash.com/photo-1573497019236-17f8177b81e8?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                "https://ui-avatars.com/api/?name=Pam+Taylor&background=ef4444&color=fff&size=300",
             firstName: "Pam",
             lastName: "Taylor",
             positions: ["Fullstack Developer", "UX Researcher"],

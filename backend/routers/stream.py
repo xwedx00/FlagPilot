@@ -21,9 +21,11 @@ from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 from lib.database import get_session as get_db
 
-# Import new modules
+# Import streaming formatters (both v1 and v6 for compatibility)
 from stream.protocol import SSEFormatter as SSE, VercelStreamFormatter as VSF
+from stream.protocol_v6 import VercelStreamFormatterV6 as VSF_V6, AISDKv6Formatter as V6
 from dag import generate_workflow_plan, DAGExecutor, WorkflowPlan
+from lib.context import current_user_id
 
 router = APIRouter(prefix="/api/v1/stream", tags=["Streaming"])
 
@@ -330,27 +332,28 @@ async def stream_workflow(request: WorkflowRequest):
                      return
             # ------------------------
 
-            # --- CREDIT CHECK ---
+            # --- CREDIT CHECK (INITIAL) ---
             if request.user_id and request.user_id != "anonymous":
                  try:
                      from lib.credits import CreditService
-                     from models.base import get_db as get_domain_db
                      
+                     # 1. Set Context for deep billing
+                     token = current_user_id.set(request.user_id)
+                     
+                     # 2. Check Balance (No deduction yet, just ensure > 0)
+                     from models.base import get_db as get_domain_db
                      async for db in get_domain_db():
-                         # Cost: 10 Credits
-                         paid = await CreditService.deduct_credits(db, request.user_id, 10, f"Mission: {request.message[:30]}")
-                         if not paid:
+                         has_credits = await CreditService.check_balance(db, request.user_id, 1)
+                         if not has_credits:
                              yield VSF.error("Insufficient Credits. Please recharge.")
                              yield VSF.finish("error")
                              return
                          break
                  except Exception as e:
                      logger.error(f"Credit Check Error: {e}")
-                     # Optionally fail open or closed? Safest is warn.
-                     # yield VSF.text(f"⚠️ Credit check failed: {e}\n\n")
             # --------------------
 
-            yield VSF.agent_status("flagpilot", "thinking", "Planning workflow...")
+            yield VSF_V6.agent_status("flagpilot", "thinking", "Planning workflow...")
             
             # Inject RAG Context if User ID is present
             if request.context:
@@ -363,11 +366,11 @@ async def stream_workflow(request: WorkflowRequest):
                         if rag_context_str:
                             logger.info(f"Stream: Injected RAG context for user {user_id}")
                             request.context["RAG_CONTEXT"] = rag_context_str
-                            yield VSF.agent_status("flagpilot", "thinking", "Analyzing knowledge base...")
+                            yield VSF_V6.agent_status("flagpilot", "thinking", "Analyzing knowledge base...")
                     except Exception as e:
                         logger.warning(f"Stream: Failed to inject RAG context: {e}")
 
-            yield VSF.text(f"🎯 **Planning your mission...**\n\n")
+            yield VSF_V6.text(f"🎯 **Planning your mission...**\n\n")
             
             plan = await generate_workflow_plan(
                 user_request=request.message,
@@ -376,8 +379,8 @@ async def stream_workflow(request: WorkflowRequest):
             
             # --- FAST PATH: DIRECT RESPONSE ---
             if plan.outcome == "direct_response":
-                yield VSF.text(f"\n{plan.direct_response_content}\n")
-                yield VSF.agent_status("flagpilot", "done", "Responded directly")
+                yield VSF_V6.text(f"\n{plan.direct_response_content}\n")
+                yield VSF_V6.agent_status("flagpilot", "done", "Responded directly")
                 
                 # PERSIST DIRECT RESPONSE
                 try:
@@ -422,18 +425,18 @@ async def stream_workflow(request: WorkflowRequest):
                 except Exception as e:
                     logger.error(f"Persistence (Direct Response) Failed: {e}")
 
-                yield VSF.finish("stop")
+                yield VSF_V6.finish("stop")
                 return # Exit generator
             # ----------------------------------
             
-            yield VSF.workflow_update(**plan.to_react_flow())
-            yield VSF.text(f"📋 Created workflow **{plan.id}** with {len(plan.nodes)} tasks:\n\n")
+            yield VSF_V6.workflow_update(**plan.to_react_flow())
+            yield VSF_V6.text(f"📋 Created workflow **{plan.id}** with {len(plan.nodes)} tasks:\n\n")
             
             for node in plan.nodes:
-                yield VSF.text(f"- **{node.agent}**: {node.instruction[:60]}...\n")
+                yield VSF_V6.text(f"- **{node.agent}**: {node.instruction[:60]}...\n")
             
-            yield VSF.text(f"\n")
-            yield VSF.agent_status("flagpilot", "done", "Plan ready")
+            yield VSF_V6.text(f"\n")
+            yield VSF_V6.agent_status("flagpilot", "done", "Plan ready")
             
             # --- PERSISTENCE START ---
             execution_id = None
@@ -453,7 +456,7 @@ async def stream_workflow(request: WorkflowRequest):
                     await db.commit()
                     await db.refresh(exec_record)
                     execution_id = exec_record.id
-                    yield VSF.text(f"\n*Persistence: Execution ID {execution_id} created.*\n")
+                    yield VSF_V6.text(f"\n*Persistence: Execution ID {execution_id} created.*\n")
                     break # Get session and exit generator, but we need to keep session? 
                     # Actually get_db yields and then closes on exit.
                     # So we cannot easily keep it open across the long streaming yield.
@@ -482,7 +485,7 @@ async def stream_workflow(request: WorkflowRequest):
                         await db.commit()
                         await db.refresh(new_mission)
                         mission_id = str(new_mission.id)
-                        # yield VSF.text(f"DEBUG: Created mission {mission_id}\n")
+                        # yield VSF_V6.text(f"DEBUG: Created mission {mission_id}\n")
 
                     # 2. Save User Message
                     user_msg = ChatMessage(
@@ -504,14 +507,14 @@ async def stream_workflow(request: WorkflowRequest):
                 event_type = event.get("type")
                 
                 if event_type == "agent_start":
-                    yield VSF.agent_status(event["agent"], "working", event.get("instruction", "")[:50])
-                    yield VSF.text(f"\n🤖 **{event['agent']}** working...\n")
+                    yield VSF_V6.agent_status(event["agent"], "working", event.get("instruction", "")[:50])
+                    yield VSF_V6.text(f"\n🤖 **{event['agent']}** working...\n")
                 
                 elif event_type == "agent_finish":
-                    yield VSF.agent_status(event["agent"], "done")
+                    yield VSF_V6.agent_status(event["agent"], "done")
                     output = event.get("output", "")
                     if output:
-                        yield VSF.text(f"\n{output[:500]}\n")
+                        yield VSF_V6.text(f"\n{output[:500]}\n")
                         final_results[event["agent"]] = output # Collect results
                         
                         # PERSIST AGENT MESSAGE
@@ -532,18 +535,18 @@ async def stream_workflow(request: WorkflowRequest):
 
                 
                 elif event_type == "agent_error":
-                    yield VSF.agent_status(event["agent"], "error")
-                    yield VSF.text(f"\n⚠️ **{event['agent']}** error: {event.get('error', 'Unknown')}\n")
+                    yield VSF_V6.agent_status(event["agent"], "error")
+                    yield VSF_V6.text(f"\n⚠️ **{event['agent']}** error: {event.get('error', 'Unknown')}\n")
                 
                 elif event_type == "workflow_update":
-                    yield VSF.workflow_update(event.get("nodes", []), event.get("edges", []))
+                    yield VSF_V6.workflow_update(event.get("nodes", []), event.get("edges", []))
                 
                 elif event_type == "ui_component":
-                    yield VSF.ui_component(event.get("componentName", ""), event.get("props", {}))
+                    yield VSF_V6.ui_component(event.get("componentName", ""), event.get("props", {}))
                 
                 elif event_type == "message":
                     content = event.get("content", "")
-                    yield VSF.message(content, event.get("agent"))
+                    yield VSF_V6.message(content, event.get("agent"))
                     # PERSIST GENERAL MESSAGE
                     if mission_id and content:
                         try:
@@ -583,11 +586,16 @@ async def stream_workflow(request: WorkflowRequest):
                                  break
                         except Exception as db_e:
                             logger.error(f"Persistence Update Failed: {db_e}")
+                    
+                    # Reset Context
+                    if 'token' in locals():
+                        current_user_id.reset(token)
                     # -----------------------
-                    yield VSF.text("\n\n✅ **Mission Complete!**\n")
-                    yield VSF.workflow_complete(plan.id)
+                    # -----------------------
+                    yield VSF_V6.text("\n\n✅ **Mission Complete!**\n")
+                    yield VSF_V6.workflow_complete(plan.id)
             
-            yield VSF.finish("stop")
+            yield VSF_V6.finish("stop")
             
         except Exception as e:
             logger.error(f"Workflow error: {e}")
@@ -595,16 +603,16 @@ async def stream_workflow(request: WorkflowRequest):
             if 'execution_id' in locals() and execution_id:
                  # ... (Omitted for brevity, but ideally we update on error too)
                  pass
-            yield VSF.error(str(e))
-            yield VSF.finish("error")
+            yield VSF_V6.error(str(e))
+            yield VSF_V6.finish("error")
     
     return StreamingResponse(
         generate(),
-        media_type="text/plain",
+        media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",
-            "X-Vercel-AI-Data-Stream": "v1",
+            "X-Vercel-AI-UI-Message-Stream": "v1",
         }
     )
 
@@ -681,23 +689,19 @@ async def execute_saved_workflow(
                      return
             # ------------------------
 
-            # --- CREDIT CHECK ---
+            # --- CREDIT CHECK (INITIAL) ---
             if request.user_id and request.user_id != "anonymous":
                  try:
                      from lib.credits import CreditService
                      
-                     # Deduct 10 Credits
-                     # We can reuse the 'db' dependency passed to the parent function if we want,
-                     # but 'generate' is async generator.
-                     # The parent 'execute_saved_workflow' has 'db'.
-                     # But we are inside 'generate'. DB session might be closed if we await?
-                     # Ideally we use a fresh session or manage it carefully.
-                     # Let's use get_domain_db inside to be safe.
-                     from models.base import get_db as get_domain_db
+                     # 1. Set Context
+                     token = current_user_id.set(request.user_id)
                      
+                     # 2. Check Balance
+                     from models.base import get_db as get_domain_db
                      async for db_session in get_domain_db():
-                         paid = await CreditService.deduct_credits(db_session, request.user_id, 10, f"Workflow: {workflow.name}")
-                         if not paid:
+                         has_credits = await CreditService.check_balance(db_session, request.user_id, 1)
+                         if not has_credits:
                              yield VSF.error("Insufficient Credits. Please recharge.")
                              yield VSF.finish("error")
                              return

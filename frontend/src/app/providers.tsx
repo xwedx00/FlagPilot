@@ -9,6 +9,7 @@ import NextTopLoader from 'nextjs-toploader';
 import { Toaster } from "sonner"
 import { authClient } from "@/lib/auth-client"
 import { useUploadThing } from "@/lib/uploadthing"
+import { ChatStoreProvider } from "@/lib/chat-store"
 
 export function Providers({ children }: { children: ReactNode }) {
     const router = useRouter()
@@ -45,10 +46,13 @@ export function Providers({ children }: { children: ReactNode }) {
                 }}
                 Link={Link}
             >
-                <NextTopLoader color="var(--primary)" showSpinner={false} />
-                {children}
-                <Toaster />
+                <ChatStoreProvider>
+                    <NextTopLoader color="var(--primary)" showSpinner={false} />
+                    {children}
+                    <Toaster />
+                </ChatStoreProvider>
             </AuthUIProvider>
         </ThemeProvider>
     )
 }
+

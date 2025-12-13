@@ -2,10 +2,8 @@
 import { Button } from "@/components/ui/button"
 import type { Plan } from "@/lib/payments/plans"
 import { authClient } from "@/lib/auth-client"
-import { updateExistingSubscription } from "@/lib/payments/actions"
 import { toast } from "sonner"
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 
 interface SubscriptionButtonProps {
     buttonText: string
@@ -20,52 +18,33 @@ export default function SubscriptionButton({
     activeSub,
     subId
 }: SubscriptionButtonProps) {
-    const router = useRouter()
     const [isPending, setIsPending] = useState(false)
 
     const handleSubscription = async () => {
         try {
             setIsPending(true)
 
-            if (activeSub && subId) {
-                // Update existing subscription
-                const loadingToast = toast.loading("Updating subscription...")
-                
-                const result = await updateExistingSubscription(subId, plan.priceId)
-                console.log({ result })
+            // Polar Billing Integration
+            // Use slug if available for prettier URLs, otherwise use priceId (productId)
+            const checkoutProps = plan.slug
+                ? { slug: plan.slug }
+                : { products: [plan.priceId] };
 
-                toast.dismiss(loadingToast)
+            await authClient.checkout(checkoutProps)
 
-                if (result.status) {
-                    toast.success(
-                        result.message || "Subscription updated successfully"
-                    )
-                    setTimeout(() => {
-                        router.refresh()
-                    }, 3000)
-                } else {
-                    toast.error(result.message || "Failed to update subscription")
-                }
-            } else {
-                // Create new subscription
-                const { error } = await authClient.subscription.upgrade({
-                    plan: plan.name,
-                    successUrl: "/dashboard/billing",
-                    cancelUrl: "/dashboard/billing"
-                })
-                
-                if (error) {
-                    console.log(error)
-                    toast.error("Failed to create subscription")
-                }
-            }
+            // Checkout handles redirect, but just in case
         } catch (err) {
             console.log(err)
-            toast.error("An unexpected error occurred")
-        } finally {
+            toast.error("Failed to initiate checkout")
             setIsPending(false)
         }
     }
+
+    // Determine if this is the current plan
+    // Note: This logic depends on activeSub structure, which is passed from parent.
+    // If activeSub.plan === plan.name, we are on this plan.
+    // But parent handles rendering "Current Plan" text or button. 
+    // This button implies we want to switch TO this plan or subscribe.
 
     return (
         <Button
@@ -75,4 +54,4 @@ export default function SubscriptionButton({
             {isPending ? "Processing..." : buttonText}
         </Button>
     )
-} 
+}

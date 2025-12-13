@@ -13,8 +13,7 @@ import {
 import { type Plan } from "@/lib/billingsdk-config";
 import { cn } from "@/lib/utils";
 import { X, Circle } from "lucide-react";
-import { useTheme } from "@/contexts/theme-context";
-import { getThemeStyles } from "@/lib/themes";
+import { useTheme } from "next-themes";
 
 export interface CancelSubscriptionDialogProps {
   title: string;
@@ -61,8 +60,7 @@ export function CancelSubscriptionDialog({
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { currentTheme, previewDarkMode } = useTheme();
-  const themeStyles = getThemeStyles(currentTheme, previewDarkMode);
+  const { theme } = useTheme();
 
   const handleContinueCancellation = () => {
     setShowConfirmation(true);
@@ -151,7 +149,6 @@ export function CancelSubscriptionDialog({
           leftPanelImageUrl ? "" : "sm:max-w-[500px]",
           className,
         )}
-        style={themeStyles}
       >
         <DialogTitle className="sr-only">{title}</DialogTitle>
         <DialogClose
@@ -295,6 +292,6 @@ export function CancelSubscriptionDialog({
           )}
         </div>
       </DialogContent>
-    </Dialog>
+    </Dialog >
   );
 }

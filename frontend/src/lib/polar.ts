@@ -45,20 +45,21 @@ export function formatPrice(amount: number, currency: string = "USD"): string {
 }
 
 // Helper to get checkout URL
-export async function createCheckoutSession(options: {
-    productPriceId: string
-    customerId?: string
-    successUrl: string
-    customerEmail?: string
-}): Promise<string> {
-    const checkout = await polar.checkouts.create({
-        productPriceId: options.productPriceId,
-        successUrl: options.successUrl,
-        customerEmail: options.customerEmail
-    })
-
-    return checkout.url
-}
+// Helper to get checkout URL
+// export async function createCheckoutSession(options: {
+//     productPriceId: string
+//     customerId?: string
+//     successUrl: string
+//     customerEmail?: string
+// }): Promise<string> {
+//     const checkout = await polar.checkouts.create({
+//         productPriceId: options.productPriceId,
+//         successUrl: options.successUrl,
+//         customerEmail: options.customerEmail
+//     })
+// 
+//     return checkout.url
+// }
 
 // Helper to get customer portal URL
 export async function getCustomerPortalUrl(customerId: string): Promise<string> {
