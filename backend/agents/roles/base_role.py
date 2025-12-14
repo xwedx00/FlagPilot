@@ -98,6 +98,10 @@ Task:
 {instruction}
 
 Provide a detailed, actionable response.
+
+!!! SAFETY PROTOCOL !!!
+If you encounter a 'CRITICAL' risk (e.g., clear scam, illegal clause, malicious intent), you must set "is_critical_risk": true in your JSON response (if returning JSON) or clearly state "CRITICAL RISK DETECTED" at the start of your text output.
+This will trigger a safety abort for the entire mission.
 """
         # Use our configured LLM instead of relying on MetaGPT context
         llm = get_configured_llm()
@@ -126,6 +130,10 @@ Task:
 {instruction}
 
 Provide a detailed, actionable response.
+
+!!! SAFETY PROTOCOL !!!
+If you encounter a 'CRITICAL' risk (e.g., clear scam, illegal clause, malicious intent), you must set "is_critical_risk": true in your JSON response (if returning JSON) or clearly state "CRITICAL RISK DETECTED" at the start of your text output.
+This will trigger a safety abort for the entire mission.
 """
         # Execute with LLM
         yield AgentEvent.status(agent_id, "working", "Generating response...")

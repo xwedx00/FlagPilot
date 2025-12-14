@@ -144,8 +144,32 @@ class FlagPilotTeam:
         try:
             # Step 1: Orchestrator analyzes and plans
             logger.info("Step 1: Orchestrator analyzing task...")
-            plan = await self.orchestrator.analyze(task, context)
+            plan_str = await self.orchestrator.analyze(task, context)
+            
+            # PARSE PLAN JSON SAFEGUARD
+            import json
+            try:
+                plan = json.loads(plan_str)
+            except json.JSONDecodeError:
+                # Fallback if valid JSON isn't returned, treat as raw plan text
+                logger.warning("Orchestrator output is not valid JSON. Using fallback logic.")
+                plan = {"outcome": "plan", "nodes": [], "raw": plan_str}
+
             results["orchestrator_analysis"] = plan
+            
+            # --- FEATURE: FAST-FAIL / DIRECT RESPONSE ---
+            if plan.get("outcome") == "direct_response":
+                logger.info("⚡ Fast-Fail Triggered: Direct Response identified.")
+                direct_content = plan.get("direct_response_content", "No content provided.")
+                return {
+                    "task": task,
+                    "context": context,
+                    "orchestrator_analysis": plan,
+                    "agent_outputs": {},
+                    "final_synthesis": direct_content,
+                    "status": "COMPLETED_FAST"
+                }
+            # ---------------------------------------------
             
             # Step 2: Identify relevant agents based on task
             relevant_agents = self._identify_relevant_agents(task)
@@ -181,11 +205,36 @@ class FlagPilotTeam:
             
             if agent_tasks:
                 agent_results = await asyncio.gather(*agent_tasks, return_exceptions=True)
+                
+                # --- FEATURE: RISK AGGREGATOR ---
+                critical_risks = []
+                # --------------------------------
+                
                 for agent_id, result in zip(relevant_agents, agent_results):
                     if isinstance(result, Exception):
                         results["agent_outputs"][agent_id] = f"Error: {str(result)}"
                     else:
                         results["agent_outputs"][agent_id] = result
+                        
+                        # Check for CRITICAL RISK signals in JSON-like agent output
+                        # We try to parse agent output if it looks like JSON, or check for specific keywords
+                        try:
+                            # Heuristic: Check if output contains "is_critical_risk": true
+                            # Note: Agents might not always return clean JSON, so we treat it robustly
+                            if '"is_critical_risk": true' in str(result) or "'is_critical_risk': True" in str(result):
+                                critical_risks.append(f"CRITICAL RISK detected by {agent_id}")
+                                logger.warning(f"🚨 CRITICAL RISK SIGNAL received from {agent_id}")
+                        except Exception:
+                            pass
+
+                # If Critical Risks detected, Force Abort/Synthesis on risks
+                if critical_risks:
+                    logger.warning("🚨 ABORTING MISSION: Critical Risks Detected.")
+                    abort_message = f"**MISSION ABORTED DUE TO CRITICAL RISKS**\n\n{'; '.join(critical_risks)}\n\nPlease review the warnings above immediately. Do not proceed."
+                    results["final_synthesis"] = abort_message
+                    results["status"] = "ABORTED_ON_RISK"
+                    return results
+                # --------------------------------
             
             # Step 4: Synthesize results
             logger.info("Step 4: Synthesizing results...")
