@@ -46,7 +46,7 @@ class AuthenticateJob(FlagPilotAction):
         # 1. Native Tool Use: Search for similar scams or company reputation
         rag_context = "No internal context found."
         try:
-            rag_context = RAGSearch.search_knowledge_base(query="common job scams " + instruction[:50], top_k=3)
+            rag_context = await RAGSearch.search_knowledge_base(query="common job scams " + instruction[:50], top_k=3)
         except Exception:
             pass
 

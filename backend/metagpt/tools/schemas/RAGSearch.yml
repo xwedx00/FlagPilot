@@ -3,7 +3,7 @@ description: Search internal knowledge base (RAG) for relevant documents, contra
   and resumes.
 methods:
   search_knowledge_base:
-    type: function
+    type: async_function
     description: 'Search the knowledge base for documents relevant to the query. '
     signature: '(query: str, user_id: str = None, top_k: int = 5) -> str'
     parameters: 'Args: query: The search query (e.g., "candidate experience", "non-compete

@@ -157,8 +157,12 @@ class FlagPilotTeam:
 
             results["orchestrator_analysis"] = plan
             
-            # --- FEATURE: FAST-FAIL / DIRECT RESPONSE ---
-            if plan.get("outcome") == "direct_response":
+            outcome = plan.get("outcome")
+
+            # --- 🛡️ EXPANDED FAST-FAIL GATEKEEPER ---
+            
+            # Case A: Happy Path Short-Circuit (Greeting)
+            if outcome == "direct_response":
                 logger.info("⚡ Fast-Fail Triggered: Direct Response identified.")
                 direct_content = plan.get("direct_response_content", "No content provided.")
                 return {
@@ -168,6 +172,30 @@ class FlagPilotTeam:
                     "agent_outputs": {},
                     "final_synthesis": direct_content,
                     "status": "COMPLETED_FAST"
+                }
+
+            # Case B: Security/Safety Abort
+            if outcome == "interrupted":
+                logger.warning("⛔ Fast-Fail: Workflow Interrupted by Orchestrator")
+                return {
+                    "task": task,
+                    "context": context,
+                    "orchestrator_analysis": plan,
+                    "agent_outputs": {},
+                    "final_synthesis": "I cannot fulfill this request. The Orchestrator has interrupted the process due to safety, security, or context violations.",
+                    "status": "BLOCKED",
+                    "risk_level": "CRITICAL"
+                }
+                
+            # Case C: Ambiguity Trap
+            if outcome == "clarification_needed":
+                return {
+                    "task": task,
+                    "context": context,
+                    "orchestrator_analysis": plan,
+                    "agent_outputs": {},
+                    "final_synthesis": f"I need clarification: {plan.get('clarification_question')}",
+                    "status": "WAITING_FOR_USER"
                 }
             # ---------------------------------------------
             

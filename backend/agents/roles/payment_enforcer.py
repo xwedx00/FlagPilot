@@ -35,7 +35,7 @@ class EnforcePayment(FlagPilotAction):
         # 1. Native Tool: Search for payment templates or legal demand letter examples
         rag_context = "No templates found."
         try:
-            rag_context = RAGSearch.search_knowledge_base(
+            rag_context = await RAGSearch.search_knowledge_base(
                 query=f"payment collection templates overdue invoice {instruction[:50]}", 
                 top_k=2
             )

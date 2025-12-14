@@ -11,8 +11,19 @@ async def test_patch_deduces_credits():
     """Test that the patched aask method calls track_and_deduct"""
     
     # Setup
-    from metagpt.config2 import Config
-    llm = OpenAILLM(config=Config.default())
+    # from metagpt.config2 import Config
+    # llm = OpenAILLM(config=Config.default())
+    
+    # Use MagicMock to avoid strict Config shape issues
+    mock_config = MagicMock()
+    mock_config.model = "gpt-4"
+    mock_config.api_key = "sk-mock"
+    mock_config.base_url = "https://api.openai.com/v1"
+    mock_config.timeout = 60
+    mock_config.proxy = None
+    mock_config.proxies = None
+    
+    llm = OpenAILLM(config=mock_config)
     # Mock the original aask logic inside our patch wrapper
     # Since we replaced OpenAILLM.aask globally in the app, 
     # but here in test we need to be careful.

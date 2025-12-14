@@ -1,5 +1,5 @@
 === GLOBAL WISDOM STRESS TEST LOG ===
-Date: Sun Dec 14 13:06:38 2025
+Date: Sun Dec 14 13:37:58 2025
 
 
 ==================================================
@@ -20,7 +20,7 @@ STEP A & B: Seeding Global Wisdom (Bob vs Charlie)
 STEP C: Uploading Contract (Real User Auth)
 ==================================================
 >> Verifying Credit Balance & Auth...
-✅ [AUTH] Success. Balance: 381
+✅ [AUTH] Success. Balance: 364
 [UPLOAD] Contract uploaded successfully.
 [RAG] Waiting 10s for User Indexing...
 
@@ -39,23 +39,23 @@ DEBUG STEP: Verifying RAG Retrieval
 STEP D: The Trigger Prompt & Verifications
 ==================================================
 [STREAM] Watching Orchestrator Thinking (capturing output)...
-RAW: data: {"type": "start", "messageId": "6e36c152-100c-4d66-abec-38924f6ec1b8"}
-RAW: data: {"type": "text-start", "id": "6e36c152-100c-4d66-abec-38924f6ec1b8"}
-RAW: data: {"type": "text-delta", "id": "6e36c152-100c-4d66-abec-38924f6ec1b8", "delta": "\ud83c\udfaf **Planning your mission...**\n\n"}
-RAW: data: {"type": "text-delta", "id": "6e36c152-100c-4d66-abec-38924f6ec1b8", "delta": "\ud83d\udccb Created workflow **workflow-1a09873c** with 3 tasks:\n\n"}
-RAW: data: {"type": "text-delta", "id": "6e36c152-100c-4d66-abec-38924f6ec1b8", "delta": "- **contract-guardian**: Review the provided freelance agreement for SketchyCorp. Ide...\n"}
-RAW: data: {"type": "text-delta", "id": "6e36c152-100c-4d66-abec-38924f6ec1b8", "delta": "- **profile-analyzer**: Research SketchyCorp's reputation and history of payment iss...\n"}
-RAW: data: {"type": "text-delta", "id": "6e36c152-100c-4d66-abec-38924f6ec1b8", "delta": "- **payment-enforcer**: Based on the contract weaknesses identified, create a paymen...\n"}
-RAW: data: {"type": "text-delta", "id": "6e36c152-100c-4d66-abec-38924f6ec1b8", "delta": "\n"}
-RAW: data: {"type": "text-delta", "id": "6e36c152-100c-4d66-abec-38924f6ec1b8", "delta": "\n*Persistence: Execution ID 47530b0d-7151-4844-9564-51397397da54 created.*\n"}
-RAW: data: {"type": "text-delta", "id": "6e36c152-100c-4d66-abec-38924f6ec1b8", "delta": "\n\ud83e\udd16 **contract-guardian** working...\n"}
-RAW: data: {"type": "text-delta", "id": "6e36c152-100c-4d66-abec-38924f6ec1b8", "delta": "\n\ud83e\udd16 **profile-analyzer** working...\n"}
-RAW: data: {"type": "text-delta", "id": "6e36c152-100c-4d66-abec-38924f6ec1b8", "delta": "\n{\n  \"is_critical_risk\": false,\n  \"risk_level\": \"MEDIUM\",\n  \"risk_summary\": \"The agreement lacks enforceable payment security, clear payment schedule, and has an overly broad non-compete clause.\",\n  \"override_instruction\": \"\",\n  \"analysis\": \"# Contract Analysis Report: SketchyCorp Freelance Agreement\\n\\n## Executive Summary\\n\\nThe provided freelance agreement contains several weaknesses that increase payment risk and reduce enforceability. While not immediately critical, these issues should be ad\n"}
-RAW: data: {"type": "text-delta", "id": "6e36c152-100c-4d66-abec-38924f6ec1b8", "delta": "\n# Profile Analysis Report\n\n## 1. VISIBILITY SCORE: 2/10\n\n**Risk Assessment: HIGH RISK**\n\nBased on the available information, SketchyCorp presents significant red flags:\n\n- **Vague Payment Terms**: \"Eventually, when we feel like it\" indicates unreliable payment practices\n- **No Payment Schedule**: Lack of defined payment milestones or deadlines\n- **Unenforceable Dispute Resolution**: Attempting to prevent contractors from legal recourse is a major warning sign\n- **Missing Contract Details**: No c\n"}
-RAW: data: {"type": "text-delta", "id": "6e36c152-100c-4d66-abec-38924f6ec1b8", "delta": "\n\ud83e\udd16 **payment-enforcer** working...\n"}
-RAW: data: {"type": "text-delta", "id": "6e36c152-100c-4d66-abec-38924f6ec1b8", "delta": "\n# Payment Protection Strategy\n\n## 1. SITUATION ASSESSMENT\n\n**Severity Level:** HIGH RISK\n- **Contract Weaknesses Identified:**\n  - No clear payment terms or deadlines\n  - No penalty clauses for late payments\n  - No dispute resolution mechanism\n  - No clear scope of work definition\n  - No payment security measures (escrow, deposits, etc.)\n\n**Your Leverage:**\n- **Strengths:** You've delivered work, which gives you moral and legal standing\n- **Weaknesses:** Poor contract terms limit your legal reco\n"}
-RAW: data: {"type": "text-delta", "id": "6e36c152-100c-4d66-abec-38924f6ec1b8", "delta": "\n\n\u2705 **Mission Complete!**\n"}
-RAW: data: {"type": "text-end", "id": "6e36c152-100c-4d66-abec-38924f6ec1b8"}
+RAW: data: {"type": "start", "messageId": "0ae8f6d1-59ab-48be-aa86-957042015f6c"}
+RAW: data: {"type": "text-start", "id": "0ae8f6d1-59ab-48be-aa86-957042015f6c"}
+RAW: data: {"type": "text-delta", "id": "0ae8f6d1-59ab-48be-aa86-957042015f6c", "delta": "\ud83c\udfaf **Planning your mission...**\n\n"}
+RAW: data: {"type": "text-delta", "id": "0ae8f6d1-59ab-48be-aa86-957042015f6c", "delta": "\ud83d\udccb Created workflow **workflow-9e19b5af** with 3 tasks:\n\n"}
+RAW: data: {"type": "text-delta", "id": "0ae8f6d1-59ab-48be-aa86-957042015f6c", "delta": "- **contract-guardian**: Review the provided freelance agreement for SketchyCorp. Ide...\n"}
+RAW: data: {"type": "text-delta", "id": "0ae8f6d1-59ab-48be-aa86-957042015f6c", "delta": "- **profile-analyzer**: Research SketchyCorp's reputation and payment history. Look ...\n"}
+RAW: data: {"type": "text-delta", "id": "0ae8f6d1-59ab-48be-aa86-957042015f6c", "delta": "- **payment-enforcer**: Based on the contract weaknesses identified, create a compre...\n"}
+RAW: data: {"type": "text-delta", "id": "0ae8f6d1-59ab-48be-aa86-957042015f6c", "delta": "\n"}
+RAW: data: {"type": "text-delta", "id": "0ae8f6d1-59ab-48be-aa86-957042015f6c", "delta": "\n*Persistence: Execution ID 285ad1f2-c99c-4730-94a9-f777f6738bcb created.*\n"}
+RAW: data: {"type": "text-delta", "id": "0ae8f6d1-59ab-48be-aa86-957042015f6c", "delta": "\n\ud83e\udd16 **contract-guardian** working...\n"}
+RAW: data: {"type": "text-delta", "id": "0ae8f6d1-59ab-48be-aa86-957042015f6c", "delta": "\n\ud83e\udd16 **profile-analyzer** working...\n"}
+RAW: data: {"type": "text-delta", "id": "0ae8f6d1-59ab-48be-aa86-957042015f6c", "delta": "\n{\n  \"is_critical_risk\": false,\n  \"risk_level\": \"MEDIUM\",\n  \"risk_summary\": \"The agreement lacks enforceable payment security, late fees, and a clear payment schedule, creating moderate risk of delayed or disputed payments.\",\n  \"override_instruction\": \"\",\n  \"analysis\": \"# Contract Analysis Report: SketchyCorp Freelance Agreement\\n\\n## Executive Summary\\n\\nThe provided freelance agreement contains several moderate to high-risk weaknesses that could compromise payment security and enforceability. W\n"}
+RAW: data: {"type": "text-delta", "id": "0ae8f6d1-59ab-48be-aa86-957042015f6c", "delta": "\n# Profile Analysis Report\n\n## 1. VISIBILITY SCORE: 2/10\n\n**Risk Assessment: HIGH RISK**\n\nBased on the available information, SketchyCorp presents significant red flags:\n\n- **Non-standard payment terms**: \"Eventually, when we feel like it\" is not a legitimate payment schedule\n- **No defined payment structure**: Missing payment schedule, late fees, or clear compensation terms\n- **Unfair contract terms**: \"Contractor cannot sue\" clause is highly unusual and concerning\n- **Lack of transparency**: No\n"}
+RAW: data: {"type": "text-delta", "id": "0ae8f6d1-59ab-48be-aa86-957042015f6c", "delta": "\n\ud83e\udd16 **payment-enforcer** working...\n"}
+RAW: data: {"type": "text-delta", "id": "0ae8f6d1-59ab-48be-aa86-957042015f6c", "delta": "\n# Payment Protection Strategy for SketchyCorp\n\n## 1. SITUATION ASSESSMENT\n\n**Severity Level: HIGH RISK**\n- Contract weaknesses identified: No clear payment terms, no late fees, no dispute resolution process\n- SketchyCorp has demonstrated payment delays\n- Limited legal protections currently in place\n- High potential for continued non-payment without intervention\n\n**Leverage Analysis:**\n- **Your leverage:** Completed work deliverables, documented communications, professional reputation\n- **Their l\n"}
+RAW: data: {"type": "text-delta", "id": "0ae8f6d1-59ab-48be-aa86-957042015f6c", "delta": "\n\n\u2705 **Mission Complete!**\n"}
+RAW: data: {"type": "text-end", "id": "0ae8f6d1-59ab-48be-aa86-957042015f6c"}
 RAW: data: {"type": "finish", "finishReason": "stop"}
 
 

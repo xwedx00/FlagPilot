@@ -35,7 +35,7 @@ class CoachCommunication(FlagPilotAction):
         # 1. Native Tool: Search for communication templates
         rag_context = "General professional standards."
         try:
-            rag_context = RAGSearch.search_knowledge_base(
+            rag_context = await RAGSearch.search_knowledge_base(
                 query=f"email template client communication {instruction[:50]}", 
                 top_k=2
             )
