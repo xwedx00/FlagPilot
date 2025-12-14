@@ -1,5 +1,5 @@
 === FAST FAIL & PERSISTENCE STRESS TEST LOG ===
-Date: Sun Dec 14 12:31:05 2025
+Date: Sun Dec 14 13:05:48 2025
 
 [HEALTH] API is healthy.
 [AUTH] Using Real Session Token for T0Ak6rbl4YBi7nvoBphQuVyOxbv3wwew
@@ -7,23 +7,23 @@ Date: Sun Dec 14 12:31:05 2025
 ==================================================
 STEP E: Generalized Fast-Fail & Persistence Stress Test
 ==================================================
-RAW: data: {"type": "start", "messageId": "6412cfd2-ad8c-48f7-a3ea-3486b340cca9"}
-RAW: data: {"type": "text-start", "id": "6412cfd2-ad8c-48f7-a3ea-3486b340cca9"}
-RAW: data: {"type": "text-delta", "id": "6412cfd2-ad8c-48f7-a3ea-3486b340cca9", "delta": "\ud83c\udfaf **Planning your mission...**\n\n"}
-RAW: data: {"type": "text-delta", "id": "6412cfd2-ad8c-48f7-a3ea-3486b340cca9", "delta": "\ud83d\udccb Created workflow **workflow-3145d8fe** with 1 tasks:\n\n"}
-RAW: data: {"type": "text-delta", "id": "6412cfd2-ad8c-48f7-a3ea-3486b340cca9", "delta": "- **risk-advisor**: CRITICAL: Analyze this request for Scam Signals. Detected re...\n"}
+RAW: data: {"type": "start", "messageId": "1b34cf50-9fec-4f4e-a990-e0f4c22b5c60"}
+RAW: data: {"type": "text-start", "id": "1b34cf50-9fec-4f4e-a990-e0f4c22b5c60"}
+RAW: data: {"type": "text-delta", "id": "1b34cf50-9fec-4f4e-a990-e0f4c22b5c60", "delta": "\ud83c\udfaf **Planning your mission...**\n\n"}
+RAW: data: {"type": "text-delta", "id": "1b34cf50-9fec-4f4e-a990-e0f4c22b5c60", "delta": "\ud83d\udccb Created workflow **workflow-a5f2200c** with 1 tasks:\n\n"}
+RAW: data: {"type": "text-delta", "id": "1b34cf50-9fec-4f4e-a990-e0f4c22b5c60", "delta": "- **risk-advisor**: CRITICAL: Analyze this request for Scam Signals. Detected re...\n"}
 ✅ [FAST-FAIL] Risk Advisor signature detected in stream (Global Check).
-RAW: data: {"type": "text-delta", "id": "6412cfd2-ad8c-48f7-a3ea-3486b340cca9", "delta": "\n"}
-RAW: data: {"type": "text-delta", "id": "6412cfd2-ad8c-48f7-a3ea-3486b340cca9", "delta": "\n*Persistence: Execution ID a2288252-287f-462e-9a08-d8f33bab932a created.*\n"}
-RAW: data: {"type": "text-delta", "id": "6412cfd2-ad8c-48f7-a3ea-3486b340cca9", "delta": "\n\ud83e\udd16 **risk-advisor** working...\n"}
+RAW: data: {"type": "text-delta", "id": "1b34cf50-9fec-4f4e-a990-e0f4c22b5c60", "delta": "\n"}
+RAW: data: {"type": "text-delta", "id": "1b34cf50-9fec-4f4e-a990-e0f4c22b5c60", "delta": "\n*Persistence: Execution ID 09cc3a74-c9de-4441-984a-68958e18caf7 created.*\n"}
+RAW: data: {"type": "text-delta", "id": "1b34cf50-9fec-4f4e-a990-e0f4c22b5c60", "delta": "\n\ud83e\udd16 **risk-advisor** working...\n"}
 ✅ [FAST-FAIL] Risk Advisor signature detected in stream (Global Check).
-RAW: data: {"type": "text-delta", "id": "6412cfd2-ad8c-48f7-a3ea-3486b340cca9", "delta": "\n# \ud83d\udea8 SCAM ALERT: URGENT RISK WARNING \ud83d\udea8\n\n**IMMEDIATE DANGER: This is a HIGH-RISK SCAM. DO NOT ENGAGE.**\n\n## \ud83d\uded1 STOP - DO NOT RESPOND\n\n**Red Flags Detected (Multiple):**\n- Telegram contact method (high-risk platform)\n- Suspicious username (@scammer)\n- \"Send you a check\" - **FAKE CHECK SCAM**\n- \"No experience required\" + \"$50/hr\" = **TOO GOOD TO BE TRUE**\n- Urgent hiring pressure tactics\n- \"Not a scam, trust me\" - **CLASSIC SCAMMER PHRASE**\n\n## \ud83d\udea8 WHAT THEY'RE DOING:\n\n**FAKE CHECK SCAM PROTOCOL:**\n1. \n"}
-RAW: data: {"type": "text-delta", "id": "6412cfd2-ad8c-48f7-a3ea-3486b340cca9", "delta": "\n\n\u2705 **Mission Complete!**\n"}
-RAW: data: {"type": "text-end", "id": "6412cfd2-ad8c-48f7-a3ea-3486b340cca9"}
+RAW: data: {"type": "text-delta", "id": "1b34cf50-9fec-4f4e-a990-e0f4c22b5c60", "delta": "\n# \ud83d\udea8 SCAM ALERT: URGENT RISK WARNING \ud83d\udea8\n\n**IMMEDIATE DANGER: This is a HIGH-RISK SCAM. DO NOT ENGAGE.**\n\n## \ud83d\uded1 STOP - DO NOT PROCEED\n\n**Red Flags Detected (Multiple):**\n- Telegram contact method (\ud83d\udea9)\n- @scammer username (\ud83d\udea9)\n- \"Send you a check\" (\ud83d\udea9)\n- \"No experience required\" (\ud83d\udea9)\n- $50/hr for data entry (\ud83d\udea9)\n- \"Urgent hiring\" pressure tactic (\ud83d\udea9)\n- \"Not a scam, trust me\" (\ud83d\udea9)\n\n## \ud83d\udea8 WHAT THIS SCAM DOES:\n\n**The Check Scam Pattern:**\n1. They send you a FAKE check for \"equipment\" or \"training\"\n2. You deposi\n"}
+RAW: data: {"type": "text-delta", "id": "1b34cf50-9fec-4f4e-a990-e0f4c22b5c60", "delta": "\n\n\u2705 **Mission Complete!**\n"}
+RAW: data: {"type": "text-end", "id": "1b34cf50-9fec-4f4e-a990-e0f4c22b5c60"}
 RAW: data: {"type": "finish", "finishReason": "stop"}
 ⚠️ WARNING: Workflow was not forcefully interrupted, but RiskAdvisor ran.
 >> Checking Persistence API (Retrying for 10s)...
-✅ [PERSISTENCE] Record a2288252-287f-462e-9a08-d8f33bab932a found. Status: completed
+✅ [PERSISTENCE] Record 09cc3a74-c9de-4441-984a-68958e18caf7 found. Status: completed
 
 ==================================================
 STEP F: Scope Creep Detection Stress Test

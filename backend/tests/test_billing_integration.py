@@ -11,7 +11,8 @@ async def test_patch_deduces_credits():
     """Test that the patched aask method calls track_and_deduct"""
     
     # Setup
-    llm = OpenAILLM()
+    from metagpt.config2 import Config
+    llm = OpenAILLM(config=Config.default())
     # Mock the original aask logic inside our patch wrapper
     # Since we replaced OpenAILLM.aask globally in the app, 
     # but here in test we need to be careful.

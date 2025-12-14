@@ -18,19 +18,25 @@ class AnalyzeContract(FlagPilotAction):
     PROMPT_TEMPLATE: ClassVar[str] = """
     You are Contract Guardian, a legal AI expert.
     
-    Context from Knowledge Base:
+    Context from Knowledge Base (HIGHEST PRIORITY):
     {rag_context}
     
-    Analyze the following contract section or document:
+    Task:
+    Analyze the contract-related query below. You MUST base your analysis heavily on the "Context from Knowledge Base" provided above.
+    
+    Query:
     {content}
     
-    Focus on:
-    1. Red Flags (Risks)
-    2. Non-compete clauses (Enforceability)
-    3. IP Ownership (Work for hire vs Retained rights)
-    4. Salary/Payment terms
+    Instructions:
+    1. EXTRACT EXACT NUMBERS: Look for specific values like "50% upfront", "$15,000", "30 days" in the Context. Quote them exactly.
+    2. SCAM DETECTION: If the context identifies "Scam" or "Risk", echo that warning.
+    3. If the "Context" contains specific payment terms (e.g. $15,000 project value), USE THEM. Do not hallucinate generic terms like "$120,000/year" unless explicitly in the context.
     
-    Provide a structured Markdown report.
+    Structure your answer as:
+    1. Red Flags & Risks
+    2. Payment Terms (Quote exact numbers from Context)
+    3. Late Fees/Penalties (Based on Context)
+    4. Recommendations
     
     Output strictly in VALID JSON format:
     {{
@@ -50,7 +56,7 @@ class AnalyzeContract(FlagPilotAction):
             # Extract user_id from runtime_context if available
             user_id = runtime_context.get("id") or runtime_context.get("user_id") if runtime_context else None
             
-            rag_context = RAGSearch.search_knowledge_base(
+            rag_context = await RAGSearch.search_knowledge_base(
                 query=instruction[:100], 
                 user_id=user_id,
                 top_k=3

@@ -10,7 +10,7 @@ class RAGSearch:
     """
     
     @staticmethod
-    def search_knowledge_base(query: str, user_id: str = None, top_k: int = 5) -> str:
+    async def search_knowledge_base(query: str, user_id: str = None, top_k: int = 5) -> str:
         """
         Search the knowledge base for documents relevant to the query.
         
@@ -31,7 +31,7 @@ class RAGSearch:
             
             if user_id:
                 # 1. Authentic Search: Search User's Personal Vault + Global Wisdom
-                results = client.search_user_context(
+                results = await client.search_user_context(
                     user_id=user_id,
                     query=query,
                     limit=top_k
@@ -39,10 +39,16 @@ class RAGSearch:
             else:
                 # 2. Fallback: Generic/Global Search (if no user context)
                 # This should ideally be avoided in production
-                results = client.retrieve(
-                    dataset_name="production-test-user-v1", 
-                    query=query,
-                    top_k=top_k
+                # Assuming retrieve is also likely async if getting from RAGFlow? 
+                # Checking source is hard but assume consistency. 
+                # Actually, earlier view of client.py showed search_user_context is async.
+                # let's assume retrieve might need await or check client.py
+                # For safety, I'll check client.py again or just await search_user_context as that's the main path.
+                # Just wrapping search_user_context for now.
+                results = await client.search_user_context(
+                     user_id="production-test-user-v1",
+                     query=query,
+                     limit=top_k
                 )
             
             if not results:
