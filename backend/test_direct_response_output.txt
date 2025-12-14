@@ -1,5 +1,5 @@
 === DIRECT RESPONSE TEST LOG ===
-Date: Sun Dec 14 10:16:18 2025
+Date: Sun Dec 14 12:30:57 2025
 
 ============================================================
 TEST: test_direct_response_trivial
@@ -21,16 +21,19 @@ TEST: test_plan_response_complex
 [INPUT] Request: 'Analyze this contract for me. It looks suspicious.'
 
 [LLM OUTPUT] Plan Outcome: plan
-[LLM OUTPUT] Number of Nodes: 1
+[LLM OUTPUT] Number of Nodes: 2
 [LLM OUTPUT] Number of Edges: N/A
 
 [LLM OUTPUT] Workflow Nodes:
   Node 1:
+    Agent: risk-advisor
+    Instruction: Analyze this contract for Scam Signals (Telegram, Check Fraud, No Experience Required, High Pay, Data Entry) and Warn the User....
+  Node 2:
     Agent: contract-guardian
-    Instruction: Analyze the provided contract for legal risks, unfavorable clauses, and potential red flags. Focus on payment terms, scope of work, termination clause...
+    Instruction: Review the contract clauses for legal risks, unfair terms, and compliance with standard freelance agreements....
 
 ✅ PASS: Complex request generated proper DAG plan
-[RESULT] 1 nodes generated
+[RESULT] 2 nodes generated
 
 ============================================================
 TEST SUITE COMPLETE
