@@ -1,5 +1,5 @@
 === DIRECT RESPONSE TEST LOG ===
-Date: Fri Dec 12 13:37:01 2025
+Date: Sun Dec 14 10:16:18 2025
 
 ============================================================
 TEST: test_direct_response_trivial
@@ -27,7 +27,7 @@ TEST: test_plan_response_complex
 [LLM OUTPUT] Workflow Nodes:
   Node 1:
     Agent: contract-guardian
-    Instruction: Analyze the provided contract for suspicious elements, focusing on legal risks, unfavorable clauses, payment terms, confidentiality, and any red flags...
+    Instruction: Analyze the provided contract for legal risks, unfavorable clauses, and potential red flags. Focus on payment terms, scope of work, termination clause...
 
 ✅ PASS: Complex request generated proper DAG plan
 [RESULT] 1 nodes generated

@@ -1,0 +1,120 @@
+============================= test session starts ==============================
+platform linux -- Python 3.11.14, pytest-8.4.2, pluggy-1.6.0
+rootdir: /app
+plugins: asyncio-1.1.1, anyio-4.12.0
+asyncio: mode=Mode.STRICT, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collected 2 items
+
+tests/metagpt/test_registry.py EE                                        [100%]
+
+==================================== ERRORS ====================================
+____________________ ERROR at setup of test_auto_discovery _____________________
+
+obj = <module 'lib.tools.tool_registry' from '/app/lib/tools/tool_registry.py'>
+name = 'TOOL_LIBS_PATH', ann = 'lib.tools.tool_registry'
+
+    def annotated_getattr(obj: object, name: str, ann: str) -> object:
+        try:
+>           obj = getattr(obj, name)
+                  ^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'lib.tools.tool_registry' has no attribute 'TOOL_LIBS_PATH'
+
+/usr/local/lib/python3.11/site-packages/_pytest/monkeypatch.py:90: AttributeError
+
+The above exception was the direct cause of the following exception:
+
+temp_tool_dir = PosixPath('/tmp/pytest-of-root/pytest-1/test_auto_discovery0/libs')
+
+    @pytest.fixture
+    def setup_registry(temp_tool_dir):
+        # Initialize registry pointing to temp dir
+        # We assume ToolRegistry can accept a path, OR we patch the default path
+        from metagpt.const import TOOL_LIBS_PATH
+    
+        # Since constants are hard to patch if already imported,
+        # we might need to subclass or relies on registry's method if it accepts path.
+        # Checking source... Ported registry usually iterates TOOL_LIBS_PATH.
+    
+        # Let's Patch TOOL_LIBS_PATH in the module
+        with pytest.MonkeyPatch.context() as m:
+>           m.setattr("lib.tools.tool_registry.TOOL_LIBS_PATH", temp_tool_dir)
+
+tests/metagpt/test_registry.py:48: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.11/site-packages/_pytest/monkeypatch.py:104: in derive_importpath
+    annotated_getattr(target, attr, ann=module)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+obj = <module 'lib.tools.tool_registry' from '/app/lib/tools/tool_registry.py'>
+name = 'TOOL_LIBS_PATH', ann = 'lib.tools.tool_registry'
+
+    def annotated_getattr(obj: object, name: str, ann: str) -> object:
+        try:
+            obj = getattr(obj, name)
+        except AttributeError as e:
+>           raise AttributeError(
+                f"{type(obj).__name__!r} object at {ann} has no attribute {name!r}"
+            ) from e
+E           AttributeError: 'module' object at lib.tools.tool_registry has no attribute 'TOOL_LIBS_PATH'
+
+/usr/local/lib/python3.11/site-packages/_pytest/monkeypatch.py:92: AttributeError
+___________________ ERROR at setup of test_schema_generation ___________________
+
+obj = <module 'lib.tools.tool_registry' from '/app/lib/tools/tool_registry.py'>
+name = 'TOOL_LIBS_PATH', ann = 'lib.tools.tool_registry'
+
+    def annotated_getattr(obj: object, name: str, ann: str) -> object:
+        try:
+>           obj = getattr(obj, name)
+                  ^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'lib.tools.tool_registry' has no attribute 'TOOL_LIBS_PATH'
+
+/usr/local/lib/python3.11/site-packages/_pytest/monkeypatch.py:90: AttributeError
+
+The above exception was the direct cause of the following exception:
+
+temp_tool_dir = PosixPath('/tmp/pytest-of-root/pytest-1/test_schema_generation0/libs')
+
+    @pytest.fixture
+    def setup_registry(temp_tool_dir):
+        # Initialize registry pointing to temp dir
+        # We assume ToolRegistry can accept a path, OR we patch the default path
+        from metagpt.const import TOOL_LIBS_PATH
+    
+        # Since constants are hard to patch if already imported,
+        # we might need to subclass or relies on registry's method if it accepts path.
+        # Checking source... Ported registry usually iterates TOOL_LIBS_PATH.
+    
+        # Let's Patch TOOL_LIBS_PATH in the module
+        with pytest.MonkeyPatch.context() as m:
+>           m.setattr("lib.tools.tool_registry.TOOL_LIBS_PATH", temp_tool_dir)
+
+tests/metagpt/test_registry.py:48: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/local/lib/python3.11/site-packages/_pytest/monkeypatch.py:104: in derive_importpath
+    annotated_getattr(target, attr, ann=module)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+obj = <module 'lib.tools.tool_registry' from '/app/lib/tools/tool_registry.py'>
+name = 'TOOL_LIBS_PATH', ann = 'lib.tools.tool_registry'
+
+    def annotated_getattr(obj: object, name: str, ann: str) -> object:
+        try:
+            obj = getattr(obj, name)
+        except AttributeError as e:
+>           raise AttributeError(
+                f"{type(obj).__name__!r} object at {ann} has no attribute {name!r}"
+            ) from e
+E           AttributeError: 'module' object at lib.tools.tool_registry has no attribute 'TOOL_LIBS_PATH'
+
+/usr/local/lib/python3.11/site-packages/_pytest/monkeypatch.py:92: AttributeError
+=============================== warnings summary ===============================
+../usr/local/lib/python3.11/site-packages/pydantic/_internal/_config.py:272
+  /usr/local/lib/python3.11/site-packages/pydantic/_internal/_config.py:272: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.6/migration/
+    warnings.warn(DEPRECATION_MESSAGE, DeprecationWarning)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+ERROR tests/metagpt/test_registry.py::test_auto_discovery - AttributeError: '...
+ERROR tests/metagpt/test_registry.py::test_schema_generation - AttributeError...
+========================= 1 warning, 2 errors in 0.69s =========================

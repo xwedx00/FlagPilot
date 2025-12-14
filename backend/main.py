@@ -90,12 +90,14 @@ from routers.feedback import router as feedback_router
 from routers.history import router as history_router
 from routers.workflows import router as workflows_router
 from routers.credits import router as credits_router
-from routers import rag # Added rag import
+from routers import rag
+from routers.persistence import router as persistence_router # Added persistenced persistence router
 
 app.include_router(health.router)
 app.include_router(stream_router)    # Main SSE chat endpoint
 app.include_router(files_router)      # File upload to MinIO/RAGFlow
 app.include_router(missions_router)   # Chat persistence
+app.include_router(persistence_router) # Thread/Message persistence
 app.include_router(rag.router)        # RAGFlow integration
 app.include_router(feedback_router)   # RLHF feedback → Global Wisdom
 app.include_router(history_router)    # Workflow History

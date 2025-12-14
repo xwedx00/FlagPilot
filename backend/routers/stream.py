@@ -9,7 +9,7 @@ Supports two streaming formats:
 2. Standard SSE (for EventSource)
 """
 
-from fastapi import APIRouter, HTTPException, Query, Depends
+from fastapi import APIRouter, HTTPException, Query, Depends, Header
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Dict, Any, Optional, List, AsyncGenerator
@@ -48,6 +48,7 @@ class MissionResponse(BaseModel):
 
 # Import centralized AGENT_ID_MAP from agents module
 from agents import AGENT_REGISTRY, AGENT_ID_MAP, get_frontend_agent_id
+from auth import get_current_user, UserData
 
 
 def format_sse(event: str, data: Any) -> str:
@@ -474,18 +475,35 @@ async def stream_workflow(request: WorkflowRequest):
                 import uuid
                 
                 async for db in get_domain_db():
-                    # 1. Create Mission if needed
-                    if not mission_id:
+                    # 1. Get or Create Mission
+                    if mission_id:
+                        # Check if exists
+                        query = select(Mission).where(Mission.id == uuid.UUID(mission_id))
+                        result = await db.execute(query)
+                        existing_mission = result.scalar_one_or_none()
+                        
+                        if not existing_mission:
+                            # Create with provided ID
+                            new_mission = Mission(
+                                id=uuid.UUID(mission_id),
+                                user_id=request.user_id if request.user_id != "anonymous" else "anonymous",
+                                title=request.message[:50] or "New Chat",
+                                status=MissionStatus.ACTIVE.value
+                            )
+                            db.add(new_mission)
+                            await db.commit()
+                            await db.refresh(new_mission)
+                    else:
+                        # Create with new ID
                         new_mission = Mission(
-                            user_id=request.user_id if request.user_id != "anonymous" else None, # Support auth
-                            title=request.message[:50],
+                            user_id=request.user_id if request.user_id != "anonymous" else "anonymous", # Support auth
+                            title=request.message[:50] or "New Chat",
                             status=MissionStatus.ACTIVE.value
                         )
                         db.add(new_mission)
                         await db.commit()
                         await db.refresh(new_mission)
                         mission_id = str(new_mission.id)
-                        # yield VSF_V6.text(f"DEBUG: Created mission {mission_id}\n")
 
                     # 2. Save User Message
                     user_msg = ChatMessage(
@@ -637,21 +655,45 @@ async def generate_plan(request: WorkflowRequest):
 
 
 class ChatRequest(BaseModel):
-    """Simple chat request"""
-    message: str
-    context: Optional[Dict[str, Any]] = None
-
+    """Standard AI SDK Chat Request"""
+    messages: List[Dict[str, Any]]
+    data: Optional[Dict[str, Any]] = None # Extra data
 
 @router.post("/chat")
-async def stream_chat(request: ChatRequest):
+async def stream_chat(
+    request: ChatRequest,
+    thread_id: Optional[str] = Header(None, alias="X-Thread-Id"),
+    user: UserData = Depends(get_current_user)
+):
     """
-    Chat endpoint enforcing MetaGPT execution.
-    Wraps the request as a workflow/mission to ensure agentic processing.
+    Chat endpoint for AI SDK v6.
+    Accepts `messages` and `X-Thread-Id`.
+    Requires Authentication.
     """
-    # Reuse stream_workflow logic for consistency
+    # Extract latest message text
+    latest_msg = ""
+    if request.messages:
+        last = request.messages[-1]
+        latest_msg = last.get("content", "")
+        if isinstance(latest_msg, list):
+             # Handle multimodal content array if needed
+             text_parts = [p.get("text", "") for p in latest_msg if p.get("type") == "text"]
+             latest_msg = "".join(text_parts)
+    
+    # Context wrapper
+    context = {"thread_id": thread_id} if thread_id else {}
+    if request.data:
+        context.update(request.data)
+
+    # Convert thread_id to mission_id for internal logic
+    if thread_id:
+        context["mission_id"] = thread_id
+
+    # Execute workflow with Authenticated User ID
     return await stream_workflow(WorkflowRequest(
-        message=request.message,
-        context=request.context
+        message=latest_msg,
+        context=context,
+        user_id=user.id
     ))
 
 @router.post("/workflow/{workflow_id}/run")

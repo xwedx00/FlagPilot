@@ -289,6 +289,14 @@ class DAGExecutor:
             
             # --- TIERED RAG CONTEXT INJECTION ---
             execution_context = context.copy() if context else {}
+            
+            # Ensure user_id is passed to agent
+            if user_id:
+                if "id" not in execution_context:
+                    execution_context["id"] = user_id
+                if "user_id" not in execution_context:
+                    execution_context["user_id"] = user_id
+            
             if task.rag_data_for_agent:
                 # Inject specific guidance from Orchestrator as a high-priority system note
                 rag_guidance = (

@@ -1,5 +1,5 @@
 === GLOBAL WISDOM STRESS TEST LOG ===
-Date: Fri Dec 12 13:38:59 2025
+Date: Sun Dec 14 10:18:01 2025
 
 
 ==================================================
@@ -20,7 +20,7 @@ STEP A & B: Seeding Global Wisdom (Bob vs Charlie)
 STEP C: Uploading Contract (Real User Auth)
 ==================================================
 >> Verifying Credit Balance & Auth...
-✅ [AUTH] Success. Balance: 420
+✅ [AUTH] Success. Balance: 397
 [UPLOAD] Contract uploaded successfully.
 [RAG] Waiting 10s for User Indexing...
 
@@ -34,98 +34,39 @@ DEBUG STEP: Verifying RAG Retrieval
 STEP D: The Trigger Prompt & Verifications
 ==================================================
 [STREAM] Watching Orchestrator Thinking (capturing output)...
-RAW: 2:[{"type": "agent_status", "agentId": "flagpilot", "status": "thinking", "action": "Planning workflow..."}]
-RAW: 0:"\ud83c\udfaf **Planning your mission...**\n\n"
-RAW: 2:[{"type": "workflow_update", "nodes": [{"id": "task-1", "type": "agent", "position": {"x": 100, "y": 80}, "data": {"agentId": "profile-analyzer", "status": "pending", "currentAction": "Research SketchyCorp's reputation and payment hist...", "priority": "high"}}, {"id": "task-2", "type": "agent", "position": {"x": 100, "y": 240}, "data": {"agentId": "contract-guardian", "status": "pending", "currentAction": "Analyze the user's existing contract with SketchyC...", "priority": "high"}}, {"id": "task-3", "type": "agent", "position": {"x": 100, "y": 400}, "data": {"agentId": "payment-enforcer", "status": "pending", "currentAction": "Based on the contract analysis, create a payment p...", "priority": "high"}}], "edges": [{"id": "e-task-1-task-2", "source": "task-1", "target": "task-2", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-2-task-3", "source": "task-2", "target": "task-3", "animated": false, "style": {"stroke": "#475569"}}]}]
-RAW: 0:"\ud83d\udccb Created workflow **workflow-1e5b124c** with 3 tasks:\n\n"
-RAW: 0:"- **profile-analyzer**: Research SketchyCorp's reputation and payment history. Check...\n"
-RAW: 0:"- **contract-guardian**: Analyze the user's existing contract with SketchyCorp for pa...\n"
-RAW: 0:"- **payment-enforcer**: Based on the contract analysis, create a payment protection ...\n"
-RAW: 0:"\n"
-RAW: 2:[{"type": "agent_status", "agentId": "flagpilot", "status": "done", "action": "Plan ready"}]
-RAW: 0:"\n*Persistence: Execution ID adb748e7-23bb-44a2-9b08-6823ef06eab5 created.*\n"
-RAW: 2:[{"type": "workflow_update", "nodes": [{"id": "task-1", "type": "agent", "position": {"x": 100, "y": 80}, "data": {"agentId": "profile-analyzer", "status": "pending", "currentAction": "Research SketchyCorp's reputation and payment hist...", "priority": "high"}}, {"id": "task-2", "type": "agent", "position": {"x": 100, "y": 240}, "data": {"agentId": "contract-guardian", "status": "pending", "currentAction": "Analyze the user's existing contract with SketchyC...", "priority": "high"}}, {"id": "task-3", "type": "agent", "position": {"x": 100, "y": 400}, "data": {"agentId": "payment-enforcer", "status": "pending", "currentAction": "Based on the contract analysis, create a payment p...", "priority": "high"}}], "edges": [{"id": "e-task-1-task-2", "source": "task-1", "target": "task-2", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-2-task-3", "source": "task-2", "target": "task-3", "animated": false, "style": {"stroke": "#475569"}}]}]
-RAW: 2:[{"type": "agent_status", "agentId": "profile-analyzer", "status": "working", "action": "Research SketchyCorp's reputation and payment hist"}]
-RAW: 0:"\n\ud83e\udd16 **profile-analyzer** working...\n"
-RAW: 2:[{"type": "workflow_update", "nodes": [{"id": "task-1", "type": "agent", "position": {"x": 100, "y": 80}, "data": {"agentId": "profile-analyzer", "status": "running", "currentAction": "Research SketchyCorp's reputation and payment hist...", "priority": "high"}}, {"id": "task-2", "type": "agent", "position": {"x": 100, "y": 240}, "data": {"agentId": "contract-guardian", "status": "pending", "currentAction": "Analyze the user's existing contract with SketchyC...", "priority": "high"}}, {"id": "task-3", "type": "agent", "position": {"x": 100, "y": 400}, "data": {"agentId": "payment-enforcer", "status": "pending", "currentAction": "Based on the contract analysis, create a payment p...", "priority": "high"}}], "edges": [{"id": "e-task-1-task-2", "source": "task-1", "target": "task-2", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-2-task-3", "source": "task-2", "target": "task-3", "animated": false, "style": {"stroke": "#475569"}}]}]
-RAW: 2:[{"type": "agent_status", "agentId": "profile-analyzer", "status": "done"}]
-RAW: 0:"\nI'll help you analyze this client's profile for maximum freelancer visibility and conversion. Let me start by researching SketchyCorp's reputation and payment history.\n\n\n"
-RAW: 2:[{"type": "workflow_update", "nodes": [{"id": "task-1", "type": "agent", "position": {"x": 100, "y": 80}, "data": {"agentId": "profile-analyzer", "status": "completed", "currentAction": "Research SketchyCorp's reputation and payment hist...", "priority": "high"}}, {"id": "task-2", "type": "agent", "position": {"x": 100, "y": 240}, "data": {"agentId": "contract-guardian", "status": "pending", "currentAction": "Analyze the user's existing contract with SketchyC...", "priority": "high"}}, {"id": "task-3", "type": "agent", "position": {"x": 100, "y": 400}, "data": {"agentId": "payment-enforcer", "status": "pending", "currentAction": "Based on the contract analysis, create a payment p...", "priority": "high"}}], "edges": [{"id": "e-task-1-task-2", "source": "task-1", "target": "task-2", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-2-task-3", "source": "task-2", "target": "task-3", "animated": false, "style": {"stroke": "#475569"}}]}]
-RAW: 2:[{"type": "agent_status", "agentId": "contract-guardian", "status": "working", "action": "Analyze the user's existing contract with SketchyC"}]
-RAW: 0:"\n\ud83e\udd16 **contract-guardian** working...\n"
-RAW: 2:[{"type": "workflow_update", "nodes": [{"id": "task-1", "type": "agent", "position": {"x": 100, "y": 80}, "data": {"agentId": "profile-analyzer", "status": "completed", "currentAction": "Research SketchyCorp's reputation and payment hist...", "priority": "high"}}, {"id": "task-2", "type": "agent", "position": {"x": 100, "y": 240}, "data": {"agentId": "contract-guardian", "status": "running", "currentAction": "Analyze the user's existing contract with SketchyC...", "priority": "high"}}, {"id": "task-3", "type": "agent", "position": {"x": 100, "y": 400}, "data": {"agentId": "payment-enforcer", "status": "pending", "currentAction": "Based on the contract analysis, create a payment p...", "priority": "high"}}], "edges": [{"id": "e-task-1-task-2", "source": "task-1", "target": "task-2", "animated": true, "style": {"stroke": "#6366f1"}}, {"id": "e-task-2-task-3", "source": "task-2", "target": "task-3", "animated": false, "style": {"stroke": "#475569"}}]}]
-RAW: 2:[{"type": "agent_status", "agentId": "contract-guardian", "status": "done"}]
-RAW: 0:"\n{\n  \"is_critical_risk\": false,\n  \"risk_level\": \"MEDIUM\",\n  \"risk_summary\": \"The contract lacks clear payment protection clauses, defined milestones, and robust legal safeguards, creating moderate risk of delayed or disputed payments.\",\n  \"override_instruction\": \"\",\n  \"analysis\": \"# Contract Analysis Report: Payment Protection Clauses for SketchyCorp\\n\\n## Executive Summary\\n\\nThis report analyzes the existing contract with SketchyCorp for payment protection clauses. The analysis identifies sever\n"
-RAW: 2:[{"type": "workflow_update", "nodes": [{"id": "task-1", "type": "agent", "position": {"x": 100, "y": 80}, "data": {"agentId": "profile-analyzer", "status": "completed", "currentAction": "Research SketchyCorp's reputation and payment hist...", "priority": "high"}}, {"id": "task-2", "type": "agent", "position": {"x": 100, "y": 240}, "data": {"agentId": "contract-guardian", "status": "completed", "currentAction": "Analyze the user's existing contract with SketchyC...", "priority": "high"}}, {"id": "task-3", "type": "agent", "position": {"x": 100, "y": 400}, "data": {"agentId": "payment-enforcer", "status": "pending", "currentAction": "Based on the contract analysis, create a payment p...", "priority": "high"}}], "edges": [{"id": "e-task-1-task-2", "source": "task-1", "target": "task-2", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-2-task-3", "source": "task-2", "target": "task-3", "animated": false, "style": {"stroke": "#475569"}}]}]
-RAW: 2:[{"type": "agent_status", "agentId": "payment-enforcer", "status": "working", "action": "Based on the contract analysis, create a payment p"}]
-RAW: 0:"\n\ud83e\udd16 **payment-enforcer** working...\n"
-RAW: 2:[{"type": "workflow_update", "nodes": [{"id": "task-1", "type": "agent", "position": {"x": 100, "y": 80}, "data": {"agentId": "profile-analyzer", "status": "completed", "currentAction": "Research SketchyCorp's reputation and payment hist...", "priority": "high"}}, {"id": "task-2", "type": "agent", "position": {"x": 100, "y": 240}, "data": {"agentId": "contract-guardian", "status": "completed", "currentAction": "Analyze the user's existing contract with SketchyC...", "priority": "high"}}, {"id": "task-3", "type": "agent", "position": {"x": 100, "y": 400}, "data": {"agentId": "payment-enforcer", "status": "running", "currentAction": "Based on the contract analysis, create a payment p...", "priority": "high"}}], "edges": [{"id": "e-task-1-task-2", "source": "task-1", "target": "task-2", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-2-task-3", "source": "task-2", "target": "task-3", "animated": true, "style": {"stroke": "#6366f1"}}]}]
-RAW: 2:[{"type": "agent_status", "agentId": "payment-enforcer", "status": "done"}]
-RAW: 0:"\nI'd be happy to help you create a payment protection strategy, but I need more information about your specific payment situation to provide tailored advice.\n\nCould you please provide:\n\n**Contract Details:**\n- Type of work/services provided\n- Contract value and payment terms\n- Payment schedule and milestones\n- Any escrow or security arrangements\n\n**Current Situation:**\n- How much is owed and for what period\n- How many days/weeks overdue\n- Client's communication status (responsive, ignoring, makin\n"
-RAW: 2:[{"type": "workflow_update", "nodes": [{"id": "task-1", "type": "agent", "position": {"x": 100, "y": 80}, "data": {"agentId": "profile-analyzer", "status": "completed", "currentAction": "Research SketchyCorp's reputation and payment hist...", "priority": "high"}}, {"id": "task-2", "type": "agent", "position": {"x": 100, "y": 240}, "data": {"agentId": "contract-guardian", "status": "completed", "currentAction": "Analyze the user's existing contract with SketchyC...", "priority": "high"}}, {"id": "task-3", "type": "agent", "position": {"x": 100, "y": 400}, "data": {"agentId": "payment-enforcer", "status": "completed", "currentAction": "Based on the contract analysis, create a payment p...", "priority": "high"}}], "edges": [{"id": "e-task-1-task-2", "source": "task-1", "target": "task-2", "animated": false, "style": {"stroke": "#475569"}}, {"id": "e-task-2-task-3", "source": "task-2", "target": "task-3", "animated": false, "style": {"stroke": "#475569"}}]}]
-RAW: 0:"\n\n\u2705 **Mission Complete!**\n"
-RAW: 2:[{"type": "workflow_complete", "workflowId": "workflow-1e5b124c", "status": "completed"}]
-RAW: d:{"finishReason": "stop"}
+RAW: data: {"type": "start", "messageId": "ddbc65fe-379b-4efa-8610-baaa5c8881f5"}
+RAW: data: {"type": "text-start", "id": "ddbc65fe-379b-4efa-8610-baaa5c8881f5"}
+RAW: data: {"type": "text-delta", "id": "ddbc65fe-379b-4efa-8610-baaa5c8881f5", "delta": "\ud83c\udfaf **Planning your mission...**\n\n"}
+RAW: data: {"type": "text-delta", "id": "ddbc65fe-379b-4efa-8610-baaa5c8881f5", "delta": "\ud83d\udccb Created workflow **workflow-60fbcfc3** with 3 tasks:\n\n"}
+RAW: data: {"type": "text-delta", "id": "ddbc65fe-379b-4efa-8610-baaa5c8881f5", "delta": "- **profile-analyzer**: Research SketchyCorp's reputation and payment history. Check...\n"}
+RAW: data: {"type": "text-delta", "id": "ddbc65fe-379b-4efa-8610-baaa5c8881f5", "delta": "- **contract-guardian**: Analyze the user's current contract with SketchyCorp for pay...\n"}
+RAW: data: {"type": "text-delta", "id": "ddbc65fe-379b-4efa-8610-baaa5c8881f5", "delta": "- **payment-enforcer**: Based on the contract analysis, create a payment protection ...\n"}
+RAW: data: {"type": "text-delta", "id": "ddbc65fe-379b-4efa-8610-baaa5c8881f5", "delta": "\n"}
+RAW: data: {"type": "text-delta", "id": "ddbc65fe-379b-4efa-8610-baaa5c8881f5", "delta": "\n*Persistence: Execution ID 1ed84070-1dbb-4750-b357-dea8d5eedc2b created.*\n"}
+RAW: data: {"type": "text-delta", "id": "ddbc65fe-379b-4efa-8610-baaa5c8881f5", "delta": "\n\ud83e\udd16 **profile-analyzer** working...\n"}
+RAW: data: {"type": "text-delta", "id": "ddbc65fe-379b-4efa-8610-baaa5c8881f5", "delta": "\nI understand you want me to analyze a freelancer profile for visibility optimization, but I notice you've provided a client target ID rather than the actual profile content to analyze.\n\nTo provide you with the comprehensive analysis you're requesting (visibility score, SEO gaps, headline variations, summary rewrite, and portfolio tips), I need the actual profile content that needs to be analyzed.\n\nCould you please share:\n- The freelancer's current headline/title\n- Their profile summary/descripti\n"}
+RAW: data: {"type": "text-delta", "id": "ddbc65fe-379b-4efa-8610-baaa5c8881f5", "delta": "\n\ud83e\udd16 **contract-guardian** working...\n"}
+RAW: data: {"type": "text-delta", "id": "ddbc65fe-379b-4efa-8610-baaa5c8881f5", "delta": "\n{\n  \"is_critical_risk\": false,\n  \"risk_level\": \"MEDIUM\",\n  \"risk_summary\": \"The contract lacks explicit payment terms, late fees, and a robust dispute resolution mechanism, creating moderate risk of delayed payments and collection difficulties.\",\n  \"override_instruction\": \"\",\n  \"analysis\": \"# Contract Analysis: Payment Protection Weaknesses in SketchyCorp Agreement\\n\\n## 1. Red Flags (Risks)\\n\\n### High Risk\\n- **Missing Explicit Payment Terms:** The contract does not specify payment schedules, \n"}
+RAW: data: {"type": "text-delta", "id": "ddbc65fe-379b-4efa-8610-baaa5c8881f5", "delta": "\n\ud83e\udd16 **payment-enforcer** working...\n"}
+RAW: data: {"type": "text-delta", "id": "ddbc65fe-379b-4efa-8610-baaa5c8881f5", "delta": "\n# Payment Protection Strategy for Freelancers\n\n## 1. SITUATION ASSESSMENT\n\n**Severity Level:** High Risk\n**Client Leverage:** Low (freelancer has work product control)\n**Your Leverage:** High (deliverables not yet transferred)\n\n## 2. RECOMMENDED APPROACH\n\n**Primary Strategy:** Proactive Prevention + Structured Escalation\n- **Phase 1:** Friendly reminder (if applicable)\n- **Phase 2:** Formal demand with clear consequences\n- **Phase 3:** Legal escalation with documentation\n\n## 3. PAYMENT PROTECTIO\n"}
+RAW: data: {"type": "text-delta", "id": "ddbc65fe-379b-4efa-8610-baaa5c8881f5", "delta": "\n\n\u2705 **Mission Complete!**\n"}
+RAW: data: {"type": "text-end", "id": "ddbc65fe-379b-4efa-8610-baaa5c8881f5"}
+RAW: data: {"type": "finish", "finishReason": "stop"}
 
 
 ==================================================
 FINAL ANALYSIS & ASSERTIONS
 ==================================================
-Full Output Length: 1736 chars
+Full Output Length: 0 chars
 
 --- CAPTURED TEXT CONTENT ---
-🎯 **Planning your mission...**
-
-📋 Created workflow **workflow-1e5b124c** with 3 tasks:
-
-- **profile-analyzer**: Research SketchyCorp's reputation and payment history. Check...
-- **contract-guardian**: Analyze the user's existing contract with SketchyCorp for pa...
-- **payment-enforcer**: Based on the contract analysis, create a payment protection ...
-
-
-*Persistence: Execution ID adb748e7-23bb-44a2-9b08-6823ef06eab5 created.*
-
-🤖 **profile-analyzer** working...
-
-I'll help you analyze this client's profile for maximum freelancer visibility and conversion. Let me start by researching SketchyCorp's reputation and payment history.
-
-
-
-🤖 **contract-guardian** working...
-
-{
-  "is_critical_risk": false,
-  "risk_level": "MEDIUM",
-  "risk_summary": "The contract lacks clear payment protection clauses, defined milestones, and robust legal safeguards, creating moderate risk of delayed or disputed payments.",
-  "override_instruction": "",
-  "analysis": "# Contract Analysis Report: Payment Protection Clauses for SketchyCorp\n\n## Executive Summary\n\nThis report analyzes the existing contract with SketchyCorp for payment protection clauses. The analysis identifies sever
-
-🤖 **payment-enforcer** working...
-
-I'd be happy to help you create a payment protection strategy, but I need more information about your specific payment situation to provide tailored advice.
-
-Could you please provide:
-
-**Contract Details:**
-- Type of work/services provided
-- Contract value and payment terms
-- Payment schedule and milestones
-- Any escrow or security arrangements
-
-**Current Situation:**
-- How much is owed and for what period
-- How many days/weeks overdue
-- Client's communication status (responsive, ignoring, makin
-
-
-✅ **Mission Complete!**
 
 -----------------------------
 >> Check 1: Intelligent Agent Selection
-✅ PASS: Correct agents selected.
+❌ FAIL: Agent selection poor. Found keywords: 0
 >> Check 2: Global Wisdom Retrieval
-✅ PASS: 'Escalation Strategy Beta' (or its key concepts) cited in plan.
-✅ PASS: Wisdom concepts found.
+❌ FAIL: 'Escalation Strategy Beta' key concepts not found in plan.
+❌ FAIL: Global Wisdom ignored.
 >> Check 3: Quality Filter
 ✅ PASS: Bad advice successfully filtered out.
 

@@ -1,5 +1,5 @@
 === FAST FAIL & PERSISTENCE STRESS TEST LOG ===
-Date: Fri Dec 12 13:37:10 2025
+Date: Sun Dec 14 10:16:24 2025
 
 [HEALTH] API is healthy.
 [AUTH] Using Real Session Token for T0Ak6rbl4YBi7nvoBphQuVyOxbv3wwew
@@ -7,45 +7,23 @@ Date: Fri Dec 12 13:37:10 2025
 ==================================================
 STEP E: Generalized Fast-Fail & Persistence Stress Test
 ==================================================
-RAW: 2:[{"type": "agent_status", "agentId": "flagpilot", "status": "thinking", "action": "Planning workflow..."}]
-RAW: 2:[{"type": "agent_status", "agentId": "flagpilot", "status": "thinking", "action": "Analyzing knowledge base..."}]
-RAW: 0:"\ud83c\udfaf **Planning your mission...**\n\n"
-RAW: 2:[{"type": "workflow_update", "nodes": [{"id": "risk-check-1", "type": "agent", "position": {"x": 100, "y": 80}, "data": {"agentId": "risk-advisor", "status": "pending", "currentAction": "CRITICAL: Analyze this request for Scam Signals. D...", "priority": "high"}}], "edges": []}]
+RAW: data: {"type": "start", "messageId": "68f9732a-a14a-4960-ac68-95633ffd8c8d"}
+RAW: data: {"type": "text-start", "id": "68f9732a-a14a-4960-ac68-95633ffd8c8d"}
+RAW: data: {"type": "text-delta", "id": "68f9732a-a14a-4960-ac68-95633ffd8c8d", "delta": "\ud83c\udfaf **Planning your mission...**\n\n"}
+RAW: data: {"type": "text-delta", "id": "68f9732a-a14a-4960-ac68-95633ffd8c8d", "delta": "\ud83d\udccb Created workflow **workflow-a0c79259** with 1 tasks:\n\n"}
+RAW: data: {"type": "text-delta", "id": "68f9732a-a14a-4960-ac68-95633ffd8c8d", "delta": "- **risk-advisor**: CRITICAL: Analyze this request for Scam Signals. Detected re...\n"}
 ✅ [FAST-FAIL] Risk Advisor signature detected in stream (Global Check).
-✅ [FAST-FAIL] Risk Advisor node found in plan.
-RAW: 0:"\ud83d\udccb Created workflow **workflow-ef1ef8c2** with 1 tasks:\n\n"
-RAW: 0:"- **risk-advisor**: CRITICAL: Analyze this request for Scam Signals. Detected re...\n"
+RAW: data: {"type": "text-delta", "id": "68f9732a-a14a-4960-ac68-95633ffd8c8d", "delta": "\n"}
+RAW: data: {"type": "text-delta", "id": "68f9732a-a14a-4960-ac68-95633ffd8c8d", "delta": "\n*Persistence: Execution ID f8efbcc9-fe42-4a44-a1ea-59510d05bdfd created.*\n"}
+RAW: data: {"type": "text-delta", "id": "68f9732a-a14a-4960-ac68-95633ffd8c8d", "delta": "\n\ud83e\udd16 **risk-advisor** working...\n"}
 ✅ [FAST-FAIL] Risk Advisor signature detected in stream (Global Check).
-✅ [FAST-FAIL] Risk Advisor detected in Vercel stream.
-RAW: 0:"\n"
-RAW: 2:[{"type": "agent_status", "agentId": "flagpilot", "status": "done", "action": "Plan ready"}]
-RAW: 0:"\n*Persistence: Execution ID 1acca275-336b-4ca6-9e66-b347cedadca3 created.*\n"
-RAW: 2:[{"type": "workflow_update", "nodes": [{"id": "risk-check-1", "type": "agent", "position": {"x": 100, "y": 80}, "data": {"agentId": "risk-advisor", "status": "pending", "currentAction": "CRITICAL: Analyze this request for Scam Signals. D...", "priority": "high"}}], "edges": []}]
-✅ [FAST-FAIL] Risk Advisor signature detected in stream (Global Check).
-✅ [FAST-FAIL] Risk Advisor node found in plan.
-RAW: 2:[{"type": "agent_status", "agentId": "risk-advisor", "status": "working", "action": "CRITICAL: Analyze this request for Scam Signals. D"}]
-✅ [FAST-FAIL] Risk Advisor signature detected in stream (Global Check).
-✅ [FAST-FAIL] Risk Advisor activity detected (agent_status).
-RAW: 0:"\n\ud83e\udd16 **risk-advisor** working...\n"
-✅ [FAST-FAIL] Risk Advisor signature detected in stream (Global Check).
-✅ [FAST-FAIL] Risk Advisor detected in Vercel stream.
-RAW: 2:[{"type": "workflow_update", "nodes": [{"id": "risk-check-1", "type": "agent", "position": {"x": 100, "y": 80}, "data": {"agentId": "risk-advisor", "status": "running", "currentAction": "CRITICAL: Analyze this request for Scam Signals. D...", "priority": "high"}}], "edges": []}]
-✅ [FAST-FAIL] Risk Advisor signature detected in stream (Global Check).
-✅ [FAST-FAIL] Risk Advisor node found in plan.
-RAW: 2:[{"type": "agent_status", "agentId": "risk-advisor", "status": "done"}]
-✅ [FAST-FAIL] Risk Advisor signature detected in stream (Global Check).
-✅ [FAST-FAIL] Risk Advisor activity detected (agent_status).
-RAW: 0:"\n# \ud83d\udea8 SCAM ALERT: URGENT RISK WARNING \ud83d\udea8\n\n**IMMEDIATE DANGER: This is a HIGH-RISK SCAM. DO NOT ENGAGE.**\n\n## \ud83d\uded1 STOP - DO NOT PROCEED\n\n**Red Flags Detected:**\n- \u274c Telegram contact method (scammer @scammer)\n- \u274c \"Send you a check\" - **FAKE CHECK SCAM**\n- \u274c \"No experience required\" + \"$50/hr\" = **TOO GOOD TO BE TRUE**\n- \u274c \"Urgent hiring\" - **PRESSURE TACTIC**\n- \u274c \"Not a scam, trust me\" - **CLASSIC SCAMMER PHRASE**\n- \u274c Data entry work with upfront payment\n\n## \ud83d\udea8 HOW THIS SCAM WORKS:\n\n1. **They send you a\n"
-✅ [FAST-FAIL] Detected 'WORKFLOW INTERRUPTED' message.
-RAW: 2:[{"type": "workflow_update", "nodes": [{"id": "risk-check-1", "type": "agent", "position": {"x": 100, "y": 80}, "data": {"agentId": "risk-advisor", "status": "completed", "currentAction": "CRITICAL: Analyze this request for Scam Signals. D...", "priority": "high"}}], "edges": []}]
-✅ [FAST-FAIL] Risk Advisor signature detected in stream (Global Check).
-✅ [FAST-FAIL] Risk Advisor node found in plan.
-RAW: 0:"\n\n\u2705 **Mission Complete!**\n"
-RAW: 2:[{"type": "workflow_complete", "workflowId": "workflow-ef1ef8c2", "status": "completed"}]
-RAW: d:{"finishReason": "stop"}
-✅ [FAST-FAIL] Workflow was successfully interrupted.
+RAW: data: {"type": "text-delta", "id": "68f9732a-a14a-4960-ac68-95633ffd8c8d", "delta": "\n# \ud83d\udea8 SCAM ALERT: URGENT RISK WARNING\n\n**IMMEDIATE THREAT DETECTED** - This job offer exhibits **13 confirmed scam indicators**. **DO NOT PROCEED**.\n\n## \ud83d\uded1 CONFIRMED RED FLAGS\n- **Telegram contact** - Scammers avoid email/phone for anonymity\n- **@scammer** - Direct evidence of fraudulent intent\n- **\"Send you a check\"** - Classic overpayment scam\n- **\"No experience required\"** + **\"$50/hr\"** - Too good to be true\n- **\"Urgent hiring\"** - Pressure tactic to bypass your judgment\n- **\"Not a scam, trust \n"}
+RAW: data: {"type": "text-delta", "id": "68f9732a-a14a-4960-ac68-95633ffd8c8d", "delta": "\n\n\u2705 **Mission Complete!**\n"}
+RAW: data: {"type": "text-end", "id": "68f9732a-a14a-4960-ac68-95633ffd8c8d"}
+RAW: data: {"type": "finish", "finishReason": "stop"}
+⚠️ WARNING: Workflow was not forcefully interrupted, but RiskAdvisor ran.
 >> Checking Persistence API (Retrying for 10s)...
-✅ [PERSISTENCE] Record 1acca275-336b-4ca6-9e66-b347cedadca3 found. Status: completed
+✅ [PERSISTENCE] Record f8efbcc9-fe42-4a44-a1ea-59510d05bdfd found. Status: completed
 
 ==================================================
 STEP F: Scope Creep Detection Stress Test
