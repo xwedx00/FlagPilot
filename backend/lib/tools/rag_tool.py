@@ -10,39 +10,56 @@ class RAGSearch:
     """
     
     @staticmethod
-    def search_knowledge_base(query: str, top_k: int = 5) -> str:
+    def search_knowledge_base(query: str, user_id: str = None, top_k: int = 5) -> str:
         """
         Search the knowledge base for documents relevant to the query.
         
         Args:
             query: The search query (e.g., "candidate experience", "non-compete clause")
+            user_id: ID of the user for personal vault search (Optional but recommended)
             top_k: Number of results to return (default: 5)
             
         Returns:
             Formatted string containing relevant document snippets.
         """
-        client = RAGFlowClient(
-            base_url=settings.RAGFLOW_URL,
-            api_key=settings.RAGFLOW_API_KEY
-        )
-        
-        # Determine dataset (Personal + Global logic handled by client)
-        # For now, we search generally. In a real user session, we'd need user_id context.
-        # This basic tool assumes general context or relies on client defaults.
+        # Use singleton client (safer and cleaner)
+        from ragflow.client import get_ragflow_client
+        client = get_ragflow_client()
         
         try:
-            results = client.retrieve(
-                dataset_name="production-test-user-v1", # Default for now, can be dynamic
-                query=query,
-                top_k=top_k
-            )
+            results = []
+            
+            if user_id:
+                # 1. Authentic Search: Search User's Personal Vault + Global Wisdom
+                results = client.search_user_context(
+                    user_id=user_id,
+                    query=query,
+                    limit=top_k
+                )
+            else:
+                # 2. Fallback: Generic/Global Search (if no user context)
+                # This should ideally be avoided in production
+                results = client.retrieve(
+                    dataset_name="production-test-user-v1", 
+                    query=query,
+                    top_k=top_k
+                )
             
             if not results:
                 return "No relevant documents found."
             
             output = []
             for i, res in enumerate(results):
-                output.append(f"Source: {res.get('document_name', 'Unknown')}\nSnippet: {res.get('content', '')[:500]}...\n")
+                # Handle different result formats (dict vs object if applicable)
+                if isinstance(res, dict):
+                    doc_name = res.get('document_name', 'Unknown')
+                    content = res.get('content', '')
+                else: 
+                    # Fallback if client returns objects
+                    doc_name = getattr(res, 'document_name', 'Unknown')
+                    content = getattr(res, 'content', '')
+                    
+                output.append(f"Source: {doc_name}\nSnippet: {content[:500]}...\n")
                 
             return "\n---\n".join(output)
             

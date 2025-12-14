@@ -62,6 +62,13 @@ class FlagPilotTeam:
             self.orchestrator = FlagPilotOrchestrator()
 
         self._init_team()
+        
+        # Initialize Standard MetaGPT Environment
+        from metagpt.environment.base_env import Environment
+        self.env = Environment()
+        # Orchestrator also needs to be part of the environment?
+        if self.orchestrator:
+             self.env.add_role(self.orchestrator)
 
     def _init_team(self):
         """Initialize the MetaGPT Team with roles from Registry"""
@@ -151,7 +158,25 @@ class FlagPilotTeam:
                 if agent_id in self.active_agents:
                     # Instantiate fresh agent for the task
                     agent_cls = self.active_agents[agent_id]
-                    agent = agent_cls()
+                    
+                    agent = agent_cls() 
+                    
+                    # Add agent to environment for message exchange capability
+                    if self.env:
+                        # Update environment context with the request context
+                        # This ensures when add_role is called, the agent inherits THIS context
+                        if context:
+                            for k, v in context.items():
+                                self.env.context.kwargs.set(k, v)
+                        self.env.add_role(agent)
+                    elif context:
+                        # Fallback if no env (should not happen if env initialized in __init__)
+                         from metagpt.context import Context
+                         ctx = Context()
+                         for k, v in context.items():
+                             ctx.kwargs.set(k, v)
+                         agent.context = ctx
+                    
                     agent_tasks.append(self._run_agent(agent_id, agent, task, context))
             
             if agent_tasks:

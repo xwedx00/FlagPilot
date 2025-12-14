@@ -42,12 +42,19 @@ class AnalyzeContract(FlagPilotAction):
     }}
     """
 
-    async def run(self, instruction: str, context: str = "") -> str:
+    async def run(self, instruction: str, context: str = "", runtime_context: dict = None) -> str:
         # 1. Native Tool Use: Search RAG for relevant legal context
         rag_context = "No internal context found."
         try:
             # We search for keywords in the instruction to ground the analysis
-            rag_context = RAGSearch.search_knowledge_base(query=instruction[:100], top_k=3)
+            # Extract user_id from runtime_context if available
+            user_id = runtime_context.get("id") or runtime_context.get("user_id") if runtime_context else None
+            
+            rag_context = RAGSearch.search_knowledge_base(
+                query=instruction[:100], 
+                user_id=user_id,
+                top_k=3
+            )
         except Exception:
             pass # Fallback if RAG fails
 
@@ -85,4 +92,4 @@ class ContractGuardian(FlagPilotRole):
         """Override for direct API usage"""
         action = AnalyzeContract()
         # Direct run
-        return await action.run(instruction=text, context=str(context))
+        return await action.run(instruction=text, context=str(context), runtime_context=context)

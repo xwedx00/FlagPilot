@@ -86,7 +86,7 @@ class FlagPilotAction(Action):
     
     name: str = "FlagPilotAction"
     
-    async def run(self, instruction: str, context: str = "") -> str:
+    async def run(self, instruction: str, context: str = "", runtime_context: Dict[str, Any] = None) -> str:
         """Execute the action with LLM"""
         prompt = f"""
 {self.desc}
@@ -108,6 +108,7 @@ Provide a detailed, actionable response.
         self, 
         instruction: str, 
         context: str = "",
+        runtime_context: Dict[str, Any] = None,
         agent_id: str = "agent",
     ) -> AsyncGenerator[Dict[str, Any], None]:
         """Execute action with streaming events"""
@@ -159,11 +160,17 @@ class FlagPilotRole(Role):
     constraints: str = "Be helpful, accurate, and actionable"
     
     
-    def __init__(self, **kwargs):
+    def __init__(self, runtime_context: Dict[str, Any] = None, **kwargs):
         # Extract actions to prevent parent Role from crashing on non-instantiated classes
         raw_actions = kwargs.pop("actions", [])
         
         super().__init__(**kwargs)
+        
+        # self.rc is already initialized by Role.__init__ (MetaGPT standard)
+        
+        # Handle legacy runtime_context by keeping it for backward compatibility
+        # We will merge it into context during _act
+        self.runtime_context = runtime_context or {}
         
         # Initialize actions with auto-instantiation logic
         instantiated_actions = []
@@ -198,9 +205,26 @@ class FlagPilotRole(Role):
         if self.rc.important_memory:
             instruction = self.rc.important_memory[-1].content
             
+        # Merge runtime_context with standard MetaGPT context (self.context)
+        # This allows hybrid usage: standard Team execution OR manual orchestration
+        final_context = {}
+        
+        # 1. Standard MetaGPT Context (from Team/Env via RoleContext)
+        # self.rc.env might be None if just instantiated
+        if self.rc.env and self.rc.env.context:
+             final_context.update(self.rc.env.context.kwargs)
+        elif hasattr(self, "context") and self.context:
+            # Fallback to standard MetaGPT role.context injection
+            final_context.update(self.context.kwargs)
+            
+        # 2. Runtime Context (Manual Overrides - Deprecated but supported)
+        if self.runtime_context:
+            final_context.update(self.runtime_context)
+            
         result = await todo.run(
             instruction=instruction,
-            context=context_str
+            context=context_str,
+            runtime_context=final_context
         )
         
         msg = Message(
@@ -221,9 +245,12 @@ class FlagPilotRole(Role):
         action = AnalyzeAction()
         action.desc = f"You are {self.name}, {self.profile}. {self.goal}"
         
+        # Ensure action has access to RoleContext if needed (uncommon for ad-hoc analyze)
+        
         result = await action.run(
             instruction=input_text,
-            context=context_str
+            context=context_str,
+            runtime_context=context
         )
         
         return result
@@ -252,6 +279,7 @@ class FlagPilotRole(Role):
         async for event in action.run_streaming(
             instruction=input_text,
             context=context_str,
+            runtime_context=context,
             agent_id=agent_id,
         ):
             yield event
