@@ -20,13 +20,10 @@ ADMIN_EMAIL="${RAGFLOW_ADMIN_EMAIL:-admin@flagpilot.local}"
 ADMIN_PASSWORD="${RAGFLOW_ADMIN_PASSWORD:-FlagPilot_Admin_2024!}"
 MYSQL_HOST="127.0.0.1"
 MYSQL_PORT="${MYSQL_PORT:-5455}"
-MYSQL_USER="${MYSQL_USER:-rag_flow}"
-MYSQL_PASSWORD="${MYSQL_PASSWORD}"
 MYSQL_DATABASE="rag_flow"
 
 echo "=== FlagPilot RAGFlow Admin Setup ==="
 echo "Admin Email: $ADMIN_EMAIL"
-echo "MySQL Host: $MYSQL_HOST:$MYSQL_PORT"
 
 # Wait for MySQL to be ready
 echo "Waiting for MySQL to be ready..."
@@ -39,29 +36,16 @@ for i in {1..30}; do
     sleep 2
 done
 
-# Generate password hash (bcrypt - RAGFlow uses werkzeug)
-# We'll use Python inside the container to generate the hash
+# Delete existing admin user if exists
+echo "Removing existing admin user (if any)..."
+docker exec ragflow-mysql mysql -u root -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE" -e "DELETE FROM user WHERE email = '$ADMIN_EMAIL';" 2>/dev/null || true
+
+# Generate password hash (werkzeug scrypt)
 echo "Generating password hash..."
-PASSWORD_HASH=$(docker exec ragflow-server python3 -c "
-from werkzeug.security import generate_password_hash
-print(generate_password_hash('$ADMIN_PASSWORD'))
-" 2>/dev/null)
+PASSWORD_HASH=$(docker exec ragflow-server python3 -c "from werkzeug.security import generate_password_hash; print(generate_password_hash('$ADMIN_PASSWORD'))" 2>/dev/null)
 
 if [ -z "$PASSWORD_HASH" ]; then
-    echo "Error: Failed to generate password hash"
-    echo "Trying alternative method..."
-    # Fallback - use bcrypt if available
-    PASSWORD_HASH=$(docker exec ragflow-mysql python3 -c "
-import hashlib
-import os
-salt = os.urandom(16).hex()
-h = hashlib.pbkdf2_hmac('sha256', b'$ADMIN_PASSWORD', salt.encode(), 100000).hex()
-print(f'pbkdf2:sha256:100000\${salt}\${h}')
-" 2>/dev/null || echo "")
-fi
-
-if [ -z "$PASSWORD_HASH" ]; then
-    echo "Could not generate password hash. RAGFlow admin may need manual setup."
+    echo "Could not generate password hash."
     echo ""
     echo "Alternative: Enable registration temporarily to create admin account:"
     echo "  1. Set REGISTER_ENABLED=1 in .env"
@@ -72,22 +56,26 @@ if [ -z "$PASSWORD_HASH" ]; then
     exit 1
 fi
 
-# Create admin user in MySQL
+# Generate 32-char hex ID and timestamp
+USER_ID=$(docker exec ragflow-server python3 -c "import uuid; print(uuid.uuid4().hex)" 2>/dev/null)
+TIMESTAMP=$(docker exec ragflow-server python3 -c "import time; print(int(time.time() * 1000))" 2>/dev/null)
+
+# Create admin user in MySQL (all char fields as strings)
 echo "Creating admin user in RAGFlow database..."
 docker exec ragflow-mysql mysql -u root -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE" <<EOF
--- Create admin user if not exists
-INSERT INTO user (id, nickname, email, password, status, is_superuser, create_time, update_time)
-SELECT 
-    UUID() as id,
-    'Admin' as nickname,
-    '$ADMIN_EMAIL' as email,
-    '$PASSWORD_HASH' as password,
-    'active' as status,
-    1 as is_superuser,
-    NOW() as create_time,
-    NOW() as update_time
-WHERE NOT EXISTS (
-    SELECT 1 FROM user WHERE email = '$ADMIN_EMAIL'
+INSERT INTO user (id, create_time, update_time, nickname, password, email, is_authenticated, is_active, is_anonymous, status, is_superuser)
+VALUES (
+    '$USER_ID',
+    $TIMESTAMP,
+    $TIMESTAMP,
+    'Admin',
+    '$PASSWORD_HASH',
+    '$ADMIN_EMAIL',
+    '1',
+    '1',
+    '0',
+    '1',
+    1
 );
 EOF
 

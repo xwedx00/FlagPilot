@@ -39,6 +39,11 @@ for ($i = 1; $i -le 30; $i++) {
     Start-Sleep -Seconds 2
 }
 
+# Delete existing admin user if exists
+Write-Host "Removing existing admin user (if any)..."
+$deleteSql = "DELETE FROM user WHERE email = '$ADMIN_EMAIL';"
+$deleteSql | docker exec -i ragflow-mysql mysql -u root -p"$MYSQL_ROOT_PASSWORD" $MYSQL_DATABASE 2>$null
+
 # Generate password hash using Python in RAGFlow container
 Write-Host "Generating password hash..."
 $PASSWORD_HASH = docker exec ragflow-server python3 -c "from werkzeug.security import generate_password_hash; print(generate_password_hash('$ADMIN_PASSWORD'))" 2>$null
@@ -59,23 +64,21 @@ if (-not $PASSWORD_HASH) {
 $USER_ID = docker exec ragflow-server python3 -c "import uuid; print(uuid.uuid4().hex)" 2>$null
 $TIMESTAMP = docker exec ragflow-server python3 -c "import time; print(int(time.time() * 1000))" 2>$null
 
-# Create SQL command - matching RAGFlow's exact schema
+# Create SQL command - matching RAGFlow's exact schema (all char fields as strings)
 $SQL = @"
 INSERT INTO user (id, create_time, update_time, nickname, password, email, is_authenticated, is_active, is_anonymous, status, is_superuser)
-SELECT 
-    '$USER_ID' as id,
-    $TIMESTAMP as create_time,
-    $TIMESTAMP as update_time,
-    'Admin' as nickname,
-    '$PASSWORD_HASH' as password,
-    '$ADMIN_EMAIL' as email,
-    '1' as is_authenticated,
-    '1' as is_active,
-    '0' as is_anonymous,
-    '1' as status,
-    1 as is_superuser
-WHERE NOT EXISTS (
-    SELECT 1 FROM user WHERE email = '$ADMIN_EMAIL'
+VALUES (
+    '$USER_ID',
+    $TIMESTAMP,
+    $TIMESTAMP,
+    'Admin',
+    '$PASSWORD_HASH',
+    '$ADMIN_EMAIL',
+    '1',
+    '1',
+    '0',
+    '1',
+    1
 );
 "@
 
@@ -93,14 +96,6 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "NOTE: After login, go to Settings -> API to get your API key." -ForegroundColor Yellow
     Write-Host "      Then update RAGFLOW_API_KEY in .env" -ForegroundColor Yellow
 } else {
-    Write-Host "Error creating admin user. Checking if user already exists..." -ForegroundColor Yellow
-    $checkUser = "SELECT email FROM user WHERE email = '$ADMIN_EMAIL';" | docker exec -i ragflow-mysql mysql -u root -p"$MYSQL_ROOT_PASSWORD" $MYSQL_DATABASE 2>$null
-    if ($checkUser -match $ADMIN_EMAIL) {
-        Write-Host "User already exists!" -ForegroundColor Green
-        Write-Host "Email: $ADMIN_EMAIL" -ForegroundColor Cyan
-        Write-Host "URL: http://localhost:9380"
-    } else {
-        Write-Host "Failed to create admin user." -ForegroundColor Red
-        exit 1
-    }
+    Write-Host "Error creating admin user. Please check MySQL logs." -ForegroundColor Red
+    exit 1
 }
