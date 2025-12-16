@@ -33,6 +33,7 @@ Thumbs.db
 # MetaGPT & App Data
 .metagpt/
 backend/workspace/
+backend/metagpt/
 workspace/
 
 # Frontend (if applicable)
