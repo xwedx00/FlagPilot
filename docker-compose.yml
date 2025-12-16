@@ -35,7 +35,7 @@ services:
       redis:
         condition: service_healthy
       ragflow:
-        condition: service_started
+        condition: service_healthy
     networks:
       - flagpilot-network
     healthcheck:
@@ -183,7 +183,7 @@ services:
       - MYSQL_USER=${MYSQL_USER:-rag_flow}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       # Elasticsearch
-      - ES_HOST=es01:9200
+      - ES_HOST=es01
       # MinIO (per RAGFlow docs)
       - MINIO_HOST=minio:9000
       - MINIO_USER=${MINIO_USER:-minioadmin}
@@ -196,7 +196,12 @@ services:
       - REGISTER_ENABLED=${REGISTER_ENABLED:-1}
       # Timezone
       - TZ=${TZ:-UTC}
+      # OpenRouter
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENROUTER_MODEL=${OPENROUTER_MODEL}
+      - OPENROUTER_BASE_URL=${OPENROUTER_BASE_URL:-https://openrouter.ai/api/v1}
     volumes:
+      - ./service_conf.yaml.template:/ragflow/conf/service_conf.yaml.template
       - ragflow_logs:/ragflow/logs
       - ragflow_data:/ragflow/data
     networks:

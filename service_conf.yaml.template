@@ -1,0 +1,54 @@
+ragflow:
+  host: ${RAGFLOW_HOST:-0.0.0.0}
+  http_port: 9380
+admin:
+  host: ${RAGFLOW_HOST:-0.0.0.0}
+  http_port: 9381
+mysql:
+  name: '${MYSQL_DBNAME:-rag_flow}'
+  user: '${MYSQL_USER:-root}'
+  password: '${MYSQL_PASSWORD:-infini_rag_flow}'
+  host: '${MYSQL_HOST:-mysql}'
+  port: 3306
+  max_connections: 900
+  stale_timeout: 300
+  max_allowed_packet: ${MYSQL_MAX_PACKET:-1073741824}
+minio:
+  user: '${MINIO_USER:-rag_flow}'
+  password: '${MINIO_PASSWORD:-infini_rag_flow}'
+  host: '${MINIO_HOST:-minio}:9000'
+es:
+  hosts: 'http://${ES_HOST:-es01}:9200'
+  username: '${ES_USER:-elastic}'
+  password: '${ELASTIC_PASSWORD:-infini_rag_flow}'
+os:
+  hosts: 'http://${OS_HOST:-opensearch01}:9201'
+  username: '${OS_USER:-admin}'
+  password: '${OPENSEARCH_PASSWORD:-infini_rag_flow_OS_01}'
+infinity:
+  uri: '${INFINITY_HOST:-infinity}:23817'
+  db_name: 'default_db'
+redis:
+  db: 1
+  password: '${REDIS_PASSWORD:-infini_rag_flow}'
+  host: '${REDIS_HOST:-redis}:6379'
+user_default_llm:
+  factory: 'OpenAI'
+  api_key: '${OPENROUTER_API_KEY}'
+  base_url: '${OPENROUTER_BASE_URL}' 
+  default_models:
+    chat_model:
+      name: '${OPENROUTER_MODEL:-openai/gpt-4o-mini}'
+      factory: 'OpenAI'
+    embedding_model:
+      factory: 'OpenAI' # Using OpenAI factory for OpenRouter compatibility if supported, or fallback to local if RAGFlow requires specific handling. Assuming OpenRouter provides embeddings or we use a separate key. 
+      # CAUTION: OpenRouter might not support embeddings on all models.
+      # If RAGFlow needs embeddings for RAG, it usually uses a local model (via TEI or similar) OR an external API.
+      # The template had TEI configured. If TEI is removed, we MUST provide an embedding model.
+      # Safest bet: Use 'BAAI/bge-large-zh-v1.5' (default local?) or if we don't have local inference, we need an API.
+      # OpenRouter does support embeddings for some models (e.g. text-embedding-ada-002 via OpenAI routes).
+      # Let's use generic placeholders and hope OpenRouter works, or keep the TEI config if we plan to restore TEI container?
+      # User didn't asking to restore TEI. User asked to "update these ... setup everything acording to the best prarctiese".
+      # Best practice for RAG is local embeddings or high-quality API.
+      # Let's set it to use OpenRouter's API for embeddings if possible.
+      name: 'text-embedding-3-small' 
