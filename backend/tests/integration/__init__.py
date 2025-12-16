@@ -2,5 +2,5 @@
 # -*- coding: utf-8 -*-
 """
 @File    : __init__.py
-@Desc    : Tests package initialization
+@Desc    : Integration tests package
 """

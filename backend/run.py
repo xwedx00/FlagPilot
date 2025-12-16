@@ -52,12 +52,11 @@ print(f"[Bootstrap] Model: {_model}")
 print(f"[Bootstrap] OPENAI_API_KEY in env: {bool(os.environ.get('OPENAI_API_KEY'))}")
 
 # =============================================================================
-# Run uvicorn WITHOUT reload to avoid subprocess env issues
-# In development, use docker-compose restart for code changes
+# Run uvicorn WITH reload for hot-reload development
+# Bind mount in docker-compose.yml allows code changes to trigger reload
 # =============================================================================
 
 if __name__ == "__main__":
     import uvicorn
-    # Disable reload - child process doesn't inherit env vars properly
-    # For development: docker-compose restart backend
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=False)
+    # Enable reload for development with bind mounts
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True, reload_dirs=["/app"])

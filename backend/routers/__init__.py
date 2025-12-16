@@ -1,12 +1,10 @@
 """
-FlagPilot API Routers
+FlagPilot API Routers - Simplified
 
 Core endpoints:
 - health: Health checks
-- stream: Main SSE chat endpoint
-- files: File upload (MinIO → RAGFlow)
-- missions: Chat persistence
-- feedback: RLHF for Global Wisdom
+- agents: Agent chat endpoints (SSE)
+- rag: RAGFlow integration
 """
 
-from . import health, stream, files, missions, feedback
+from . import health, agents, rag

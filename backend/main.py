@@ -1,13 +1,14 @@
 """
-FlagPilot Backend API
-=====================
-Multi-Agent SaaS Platform for Freelancers
+FlagPilot Backend API - Simplified
+==================================
+Pure MetaGPT Agent Server
 
 Core Focus:
-- MetaGPT-based AI agents (13 specialists)
+- MetaGPT-based AI agents (17 specialists)
 - Team orchestration (MGX.dev style)
 - RAGFlow integration for document understanding
-- Chat/Mission persistence
+
+NOTE: Auth, chat persistence, and UI are handled by the frontend (Vercel AI Chatbot).
 """
 
 # =============================================================================
@@ -28,28 +29,19 @@ settings.configure_metagpt_env()
 from lib.patches import apply_metagpt_patches
 apply_metagpt_patches()
 
-from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
 from datetime import datetime
 from loguru import logger
-import os
+import logging
 
 # Configure logging
 os.makedirs("logs", exist_ok=True)
 logger.add("logs/flagpilot.log", rotation="500 MB", level=settings.LOG_LEVEL)
 
-# Optimization: Suppress benign MetaGPT token warnings for custom models
-def token_warning_filter(record):
-    return "usage calculation failed" not in record["message"]
-
-logger.add(lambda msg: None, filter=token_warning_filter)
-# Note: loguru filters apply to handlers. The default handler needs to be filtered or we accept it.
-# Actually, simpler to just log that we are suppressing it or leave it be if it's hard to filter default.
-# Let's try to just use standard logging filter since MetaGPT might use standard logging.
-import logging
+# Suppress benign MetaGPT token warnings for custom models
 class TokenWarningFilter(logging.Filter):
     def filter(self, record):
         return "usage calculation failed" not in record.getMessage()
@@ -57,58 +49,46 @@ class TokenWarningFilter(logging.Filter):
 logging.getLogger("metagpt").addFilter(TokenWarningFilter())
 
 
-
-from lifecycle import lifespan
-
-
-# (Logic moved to config.py)
-
-
+# =============================================================================
+# App Setup
+# =============================================================================
 app = FastAPI(
-    title="FlagPilot Multi-Agent API",
-    description="MetaGPT multi-agent platform for freelancers. 13 AI agents with team orchestration and RAGFlow.",
-    version="3.0.0",
-    lifespan=lifespan
+    title="FlagPilot Agent API",
+    description="Pure MetaGPT multi-agent server. 17 AI agents with team orchestration and RAGFlow.",
+    version="4.0.0",
 )
 
-# CORS (must be explicit for credentials)
+# CORS - Allow frontend origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "https://*.vercel.app",  # Vercel frontend
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],
 )
 
-# Include routers (simplified - core endpoints only)
+# =============================================================================
+# Routers (Simplified)
+# =============================================================================
 from routers import health
-from routers.stream import router as stream_router
-from routers.files import router as files_router
-from routers.missions import router as missions_router
-from routers.feedback import router as feedback_router
-from routers.history import router as history_router
-from routers.workflows import router as workflows_router
-from routers.credits import router as credits_router
+from routers.agents import router as agents_router
 from routers import rag
-from routers.persistence import router as persistence_router # Added persistenced persistence router
 
-app.include_router(health.router)
-app.include_router(stream_router)    # Main SSE chat endpoint
-app.include_router(files_router)      # File upload to MinIO/RAGFlow
-app.include_router(missions_router)   # Chat persistence
-app.include_router(persistence_router) # Thread/Message persistence
-app.include_router(rag.router)        # RAGFlow integration
-app.include_router(feedback_router)   # RLHF feedback → Global Wisdom
-app.include_router(history_router)    # Workflow History
-app.include_router(workflows_router)  # Custom Workflow Templates
-app.include_router(credits_router)    # Billing / Usage
+app.include_router(health.router)      # /health endpoints
+app.include_router(agents_router)      # /api/agents + /api/team endpoints
+app.include_router(rag.router)         # /api/rag endpoints
 
 
-
-
-# Dynamic Agent Registry
+# =============================================================================
+# Core Endpoints
+# =============================================================================
 from agents.registry import registry
+
 
 class HealthResponse(BaseModel):
     status: str
@@ -120,20 +100,20 @@ class HealthResponse(BaseModel):
 
 @app.get("/")
 async def root():
-    """API root"""
+    """API root - service information"""
     agents_list = registry.list_agents()
     return {
-        "name": "FlagPilot Multi-Agent API",
-        "version": "3.0.0",
-        "description": "MetaGPT AI agents for freelancers",
+        "name": "FlagPilot Agent API",
+        "version": "4.0.0",
+        "description": "Pure MetaGPT agent server for freelancers",
         "agents": len(agents_list),
         "docs": "/docs",
-        "features": [
-            "MetaGPT Team Orchestration",
-            "RAGFlow Document Understanding",
-            "Personal Vault + Global Wisdom",
-            f"{len(agents_list)} Specialist Agents"
-        ]
+        "endpoints": {
+            "agents": "/api/agents",
+            "team": "/api/team/chat",
+            "rag": "/api/rag/search",
+            "health": "/health",
+        }
     }
 
 
@@ -143,41 +123,14 @@ async def health_check():
     return HealthResponse(
         status="healthy",
         timestamp=datetime.utcnow().isoformat(),
-        version="3.0.0",
+        version="4.0.0",
         agents=registry.list_agents(),
         features=[
             "MetaGPT Team Orchestration",
             "RAGFlow Integration",
-            "PostgreSQL",
-            "Redis Caching"
+            "SSE Streaming",
         ]
     )
-
-
-@app.get("/api/v1/agents")
-async def list_agents():
-    """List all available agents"""
-    agents_list = registry.list_agents()
-    return {
-        "agents": agents_list,
-        "count": len(agents_list)
-    }
-
-
-@app.get("/api/v1/team/capabilities")
-async def team_capabilities():
-    """Get team capabilities"""
-    return {
-        "capabilities": [
-            "contract_review",
-            "job_verification", 
-            "payment_protection",
-            "communication_coaching",
-            "dispute_resolution"
-        ],
-        "supported_formats": ["pdf", "docx", "txt"],
-        "rag_enabled": True
-    }
 
 
 if __name__ == "__main__":
