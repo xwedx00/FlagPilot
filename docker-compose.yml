@@ -130,10 +130,10 @@ services:
       retries: 5
       start_period: 30s
 
-  # 3. MySQL (Latest - RAGFlow DB)
+  # 3. MySQL (8.0 - RAGFlow DB - stable version)
   mysql:
     container_name: ragflow-mysql
-    image: mysql:latest
+    image: mysql:8.0
     restart: unless-stopped
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
@@ -145,7 +145,7 @@ services:
     ports:
       - "${MYSQL_PORT:-5455}:3306"
     command: >
-      --max_connections=1000  --character-set-server=utf8mb4  --collation-server=utf8mb4_general_ci  --mysql-native-password=ON --transaction-isolation=READ-COMMITTED
+      --max_connections=1000 --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci --default-authentication-plugin=mysql_native_password --transaction-isolation=READ-COMMITTED
     networks:
       - flagpilot-network
     healthcheck:
