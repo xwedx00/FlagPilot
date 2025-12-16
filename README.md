@@ -103,40 +103,40 @@ FlagPilot deploys **17 specialized AI agents**, each with a unique role:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                              FlagPilot Platform                              │
+│                              FlagPilot Platform                             │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
+│                                                                             │
 │  ┌─────────────────────────────────────────────────────────────────────┐    │
-│  │                       Frontend (Vercel AI Chatbot)                   │    │
-│  │                    Auth · Chat UI · Workflow Visualization           │    │
+│  │                       Frontend (Vercel AI Chatbot)                  │    │
+│  │                    Auth · Chat UI · Workflow Visualization          │    │
 │  └───────────────────────────────────┬─────────────────────────────────┘    │
-│                                      │ SSE/REST                              │
+│                                      │ SSE/REST                             │
 │  ┌───────────────────────────────────▼─────────────────────────────────┐    │
-│  │                         FastAPI Backend (:8000)                      │    │
+│  │                         FastAPI Backend (:8000)                     │    │
 │  │  ┌─────────────────────────────────────────────────────────────┐    │    │
-│  │  │                   FlagPilot Orchestrator                     │    │    │
-│  │  │              DAG-based Multi-Agent Coordination              │    │    │
+│  │  │                   FlagPilot Orchestrator                    │    │    │
+│  │  │              DAG-based Multi-Agent Coordination             │    │    │
 │  │  └───────────────────────────┬─────────────────────────────────┘    │    │
-│  │                              │                                       │    │
+│  │                              │                                      │    │
 │  │  ┌───────────────────────────▼─────────────────────────────────┐    │    │
-│  │  │                  MetaGPT Agent Pool (17 Agents)              │    │    │
-│  │  │  Contract Guardian · Job Authenticator · Scope Sentinel ···  │    │    │
+│  │  │                  MetaGPT Agent Pool (17 Agents)             │    │    │
+│  │  │  Contract Guardian · Job Authenticator · Scope Sentinel ··· │    │    │
 │  │  └───────────────────────────┬─────────────────────────────────┘    │    │
-│  │                              │                                       │    │
+│  │                              │                                      │    │
 │  │  ┌───────────────────────────▼─────────────────────────────────┐    │    │
-│  │  │                     RAGFlow Integration                       │    │    │
-│  │  │         Global Wisdom · Tiered Context Injection              │    │    │
+│  │  │                     RAGFlow Integration                     │    │    │
+│  │  │         Global Wisdom · Tiered Context Injection            │    │    │
 │  │  └─────────────────────────────────────────────────────────────┘    │    │
 │  └─────────────────────────────────────────────────────────────────────┘    │
-│                                                                              │
+│                                                                             │
 │  ┌──────────────────────────────────────────────────────────────────────┐   │
-│  │                          Infrastructure Layer                         │   │
+│  │                          Infrastructure Layer                        │   │
 │  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────┐  │   │
 │  │  │  Redis   │  │  MySQL   │  │  MinIO   │  │  Elastic │  │RAGFlow │  │   │
 │  │  │  Cache   │  │    DB    │  │ Storage  │  │  Search  │  │ Server │  │   │
 │  │  └──────────┘  └──────────┘  └──────────┘  └──────────┘  └────────┘  │   │
 │  └──────────────────────────────────────────────────────────────────────┘   │
-│                                                                              │
+│                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
