@@ -117,6 +117,7 @@ class FlagPilotTeam:
         
         # Build context string
         context_str = ""
+        rag_context_str = ""
         if context:
             # RAG Context Injection
             user_id = context.get("id")
@@ -124,9 +125,17 @@ class FlagPilotTeam:
                 try:
                     from ragflow.client import get_ragflow_client
                     client = get_ragflow_client()
-                    rag_context_str = await client.get_agent_context(user_id, task)
+                    # Use the configured search or enhanced search from Agent logic?
+                    # The Orchestrator doesn't usually do the deep search, but we want to inject context.
+                    # We'll use a generic "get_agent_context" or simply "search_user_context"
+                    # But wait, agents do their own retrieval usually.
+                    # However, inserting global wisdom upfront helps the Orchestrator plan better.
+                    
+                    results = await client.search_user_context(user_id, task, limit=5)
+                    rag_context_str = "\n\n".join([f"Context [{r['similarity']:.2f}]: {r['content']}" for r in results])
+                    
                     if rag_context_str:
-                        logger.info(f"Injected RAG context for user {user_id}")
+                        logger.info(f"Injected RAG context ({len(results)} chunks) for user {user_id}")
                         context["RAG_CONTEXT"] = rag_context_str
                 except Exception as e:
                     logger.warning(f"Failed to inject RAG context: {e}")
@@ -144,6 +153,7 @@ class FlagPilotTeam:
         try:
             # Step 1: Orchestrator analyzes and plans
             logger.info("Step 1: Orchestrator analyzing task...")
+            # We must ensure Orchestrator has the RAG context too!
             plan_str = await self.orchestrator.analyze(task, context)
             
             # PARSE PLAN JSON SAFEGUARD
@@ -159,11 +169,11 @@ class FlagPilotTeam:
             
             outcome = plan.get("outcome")
 
-            # --- 🛡️ EXPANDED FAST-FAIL GATEKEEPER ---
+            # --- 🛡️ EXPANDED FAST-FAIL & SMART ORCHESTRATION ---
             
-            # Case A: Happy Path Short-Circuit (Greeting)
+            # Case A: Happy Path Short-Circuit (Direct Response)
             if outcome == "direct_response":
-                logger.info("⚡ Fast-Fail Triggered: Direct Response identified.")
+                logger.info("⚡ Smart Orchestration: Direct Response bypass.")
                 direct_content = plan.get("direct_response_content", "No content provided.")
                 return {
                     "task": task,
@@ -171,7 +181,7 @@ class FlagPilotTeam:
                     "orchestrator_analysis": plan,
                     "agent_outputs": {},
                     "final_synthesis": direct_content,
-                    "status": "COMPLETED_FAST"
+                    "status": "COMPLETED_DIRECT"
                 }
 
             # Case B: Security/Safety Abort
@@ -197,6 +207,11 @@ class FlagPilotTeam:
                     "final_synthesis": f"I need clarification: {plan.get('clarification_question')}",
                     "status": "WAITING_FOR_USER"
                 }
+                
+            # Case D: Single Agent Fast-Path
+            # If implementation supports it, we could check if only 1 node is in the plan
+            # and it's a "simple" task, we might skip complex synthesis?
+            # For now, we continue to Step 2.
             # ---------------------------------------------
             
             # Step 2: Identify relevant agents based on task
@@ -216,13 +231,12 @@ class FlagPilotTeam:
                     # Add agent to environment for message exchange capability
                     if self.env:
                         # Update environment context with the request context
-                        # This ensures when add_role is called, the agent inherits THIS context
                         if context:
                             for k, v in context.items():
                                 self.env.context.kwargs.set(k, v)
                         self.env.add_role(agent)
                     elif context:
-                        # Fallback if no env (should not happen if env initialized in __init__)
+                        # Fallback if no env
                          from metagpt.context import Context
                          ctx = Context()
                          for k, v in context.items():
@@ -247,11 +261,16 @@ class FlagPilotTeam:
                         # Check for CRITICAL RISK signals in JSON-like agent output
                         # We try to parse agent output if it looks like JSON, or check for specific keywords
                         try:
+                            result_str = str(result).lower()
                             # Heuristic: Check if output contains "is_critical_risk": true
-                            # Note: Agents might not always return clean JSON, so we treat it robustly
-                            if '"is_critical_risk": true' in str(result) or "'is_critical_risk': True" in str(result):
+                            if '"is_critical_risk": true' in result_str or "'is_critical_risk': true" in result_str:
                                 critical_risks.append(f"CRITICAL RISK detected by {agent_id}")
                                 logger.warning(f"🚨 CRITICAL RISK SIGNAL received from {agent_id}")
+                            
+                            # Additional Safety Net: Regex for strong scam warnings
+                            if "scam detected" in result_str or "fraud alert" in result_str:
+                                critical_risks.append(f"SCAM WARNING from {agent_id}")
+                                
                         except Exception:
                             pass
 

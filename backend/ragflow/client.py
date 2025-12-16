@@ -52,52 +52,89 @@ class RAGFlowClient:
         Search user's context (personal vault + global wisdom).
         
         Args:
-            user_id: User ID for context (can be used to filter datasets)
+            user_id: User ID for context (used to find personal dataset)
             query: Search query
             limit: Maximum results to return
-            dataset_ids: Optional list of dataset IDs to search
+            dataset_ids: Optional list of dataset IDs to search (overrides auto-discovery)
             similarity_threshold: Minimum similarity score (0.0-1.0)
             
         Returns:
             List of matching chunks as dictionaries
         """
         try:
-            # If no dataset_ids provided, try to get all available datasets
-            if not dataset_ids:
-                datasets = self._client.list_datasets()
-                dataset_ids = [ds.id for ds in datasets] if datasets else []
+            target_datasets = []
             
-            if not dataset_ids:
-                logger.warning("No datasets found for search")
+            # Smart Thresholding: Lower threshold for longer queries as they are harder to match exactly
+            adjusted_threshold = similarity_threshold
+            if len(query) > 100:
+                adjusted_threshold = max(0.1, similarity_threshold - 0.05)
+                logger.debug(f"Long query detected ({len(query)} chars). Lowering threshold to {adjusted_threshold}")
+
+            # 1. Determine Target Datasets
+            if dataset_ids:
+                target_datasets = dataset_ids
+            else:
+                # Auto-discovery strategy
+                all_datasets = self.list_datasets()
+                if not all_datasets:
+                    logger.warning("No datasets available in RAGFlow.")
+                    return []
+                
+                # Filter for User's Personal Dataset AND Global Wisdom
+                # Convention: Personal = "{user_id}", Global = "global_wisdom"
+                for ds in all_datasets:
+                    ds_name = getattr(ds, "name", "").lower()
+                    
+                    # Match User ID (Personal Vault)
+                    if user_id and user_id.lower() in ds_name:
+                        target_datasets.append(ds.id)
+                    
+                    # Match Global Wisdom
+                    if "global_wisdom" in ds_name or "flagpilot_global" in ds_name:
+                        target_datasets.append(ds.id)
+                
+                # Fallback: If no specific datasets found, search ALL (be careful with this in prod)
+                if not target_datasets and all_datasets:
+                    # logger.info("No specific datasets found for user/global. Falling back to searching all datasets (DEV MODE).")
+                    target_datasets = [ds.id for ds in all_datasets]
+
+            if not target_datasets:
+                logger.warning(f"No target datasets identified for user {user_id}")
                 return []
             
-            # Use RAGFlow's retrieve method
-            # Note: The SDK's retrieve method is synchronous, but we wrap it for async compatibility
+            logger.info(f"Searching Datasets: {target_datasets} | Query: '{query[:50]}...'")
+
+            # 2. Execute Search (Async Wrap)
+            # RAGFlow SDK retrieve is blocking, so we ideally run it in an executor if high load,
+            # but for now direct call is acceptable in this async wrapper.
+            
             chunks = self._client.retrieve(
                 question=query,
-                dataset_ids=dataset_ids,
+                dataset_ids=target_datasets,
                 page_size=limit,
-                similarity_threshold=similarity_threshold,
-                top_k=limit * 10  # Get more candidates for better results
+                similarity_threshold=adjusted_threshold,
+                vector_similarity_weight=0.7, # Higher weight on vector for semantic meaning
+                top_k=1024
             )
             
-            # Convert chunks to dictionaries
+            # 3. Format Results
             results = []
-            for chunk in chunks:
-                results.append({
-                    "content": getattr(chunk, "content", ""),
-                    "document_name": getattr(chunk, "document_name", "Unknown"),
-                    "document_id": getattr(chunk, "document_id", ""),
-                    "dataset_id": getattr(chunk, "dataset_id", ""),
-                    "similarity": getattr(chunk, "similarity", 0.0),
-                    "id": getattr(chunk, "id", "")
-                })
+            if chunks:
+                for chunk in chunks:
+                    results.append({
+                        "content": getattr(chunk, "content_with_weight", getattr(chunk, "content", "")),
+                        "document_name": getattr(chunk, "document_name", "Unknown"),
+                        "document_id": getattr(chunk, "document_id", ""),
+                        "dataset_id": getattr(chunk, "dataset_id", ""),
+                        "similarity": getattr(chunk, "similarity", 0.0),
+                        "id": getattr(chunk, "id", "")
+                    })
             
-            logger.info(f"RAGFlow search returned {len(results)} results for query: {query[:50]}...")
+            logger.info(f"RAGFlow search complete. Found {len(results)} chunks.")
             return results
             
         except Exception as e:
-            logger.error(f"RAGFlow search error: {e}")
+            logger.exception(f"CRITICAL RAGFlow Search Error: {e}")
             return []
     
     async def retrieve(
@@ -195,6 +232,23 @@ class RAGFlowClient:
                 "connected": False,
                 "error": str(e)
             }
+
+    def reset_system(self):
+        """
+        DANGER: Deletes ALL datasets.
+        Used ONLY for clean system tests.
+        """
+        try:
+            datasets = self.list_datasets()
+            if not datasets:
+                return
+            
+            ids = [ds.id for ds in datasets]
+            logger.warning(f"RESET SYSTEM: Deleting {len(ids)} datasets...")
+            self._client.delete_datasets(ids=ids)
+            logger.warning("RESET SYSTEM: Complete.")
+        except Exception as e:
+            logger.error(f"Failed to reset system: {e}")
 
 
 def get_ragflow_client() -> RAGFlowClient:

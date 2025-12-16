@@ -63,6 +63,8 @@ The backend uses JWT (JSON Web Tokens). Most endpoints require the `Authorizatio
 
 This is the core feature. Changes flow via **Server-Sent Events (SSE)**.
 
+> ⚡ **Smart Orchestration**: The system automagically optimizes workflows. Simple queries (greetings, general questions) may return a single `message` event immediately, bypassing the full agent DAG.
+
 ### Endpoint: `POST /api/v1/stream/workflow`
 **Headers**: `Authorization: Bearer <token>`
 

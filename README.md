@@ -73,6 +73,11 @@ Watch your AI team work in real-time with Server-Sent Events (SSE) streaming. Se
 ### 💾 Workflow Persistence
 Every interaction is saved. Review past analyses, track patterns, and build your personal knowledge base over time.
 
+### ⚡ Smart Orchestration
+The system automatically optimizes workflows:
+- **Direct Response**: Simple queries (e.g., greetings) bypass the full agent team for instant responses.
+- **Dynamic Routing**: Complex tasks are routed only to relevant agents, saving tokens and time.
+
 ---
 
 ## 🤖 AI Agent Roster
@@ -268,14 +273,11 @@ curl -X POST "http://localhost:8000/api/team/chat" \
 
 Run the comprehensive test suite inside Docker:
 
-```bash
-# Run all tests
-docker exec flagpilot-backend python -m pytest tests/ -v
+# Run the unified live system test suite
+docker-compose exec backend pytest backend/tests/test_live_system.py -v
 
-# Run specific test suites
-docker exec flagpilot-backend python -m pytest tests/test_stress_global_wisdom.py
-docker exec flagpilot-backend python -m pytest tests/test_agents.py
-```
+# Run verification for specific features
+docker-compose exec backend pytest backend/tests/test_live_system.py -k test_03_fast_fail_scam
 
 ---
 

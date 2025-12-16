@@ -342,11 +342,11 @@ backend/
 ### Running Tests
 
 ```bash
-# Inside Docker
-docker exec flagpilot-backend python -m pytest tests/ -v
+# Inside Docker (Recommended)
+docker-compose exec backend pytest backend/tests/test_live_system.py -v
 
-# Run specific test file
-docker exec flagpilot-backend python -m pytest tests/test_stress_global_wisdom.py -v
+# Run specific test case
+docker-compose exec backend pytest backend/tests/test_live_system.py -k test_05_complex_e2e_flow
 
 # With coverage
 docker exec flagpilot-backend python -m pytest tests/ --cov=. --cov-report=html
@@ -356,8 +356,8 @@ docker exec flagpilot-backend python -m pytest tests/ --cov=. --cov-report=html
 
 | Test File | Description |
 |-----------|-------------|
-| `test_agents.py` | Individual agent functionality |
-| `test_stress_global_wisdom.py` | RAG retrieval & Fast-Fail logic |
+| `test_live_system.py` | **Core unified suite**: RAGFlow + OpenRouter + MetaGPT Integration |
+| `test_agents.py` | Individual agent functionality unit tests |
 
 ---
 
