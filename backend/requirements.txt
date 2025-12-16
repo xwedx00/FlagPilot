@@ -1,9 +1,14 @@
-# FlagPilot Backend - Minimal Requirements
-# =========================================
-# Core: MetaGPT + FastAPI + RAGFlow + Redis
+# FlagPilot Backend - Requirements
+# =================================
+# MetaGPT 0.8.1 (0.8.2 has broken dependencies)
 
-metagpt>=0.8.2
+# Core: MetaGPT
+metagpt==0.8.1
+
+# RAGFlow SDK
 ragflow-sdk
+
+# Auth & Testing
 pyjwt
 pytest
 pytest-asyncio

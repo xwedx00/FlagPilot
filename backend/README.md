@@ -46,41 +46,41 @@ The FlagPilot backend is a **pure MetaGPT agent server** built with FastAPI. It 
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
-│                      FastAPI Application Layer                      │
+│                      FastAPI Application Layer                     │
 ├────────────────────────────────────────────────────────────────────┤
-│                                                                     │
+│                                                                    │
 │  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐  │
 │  │   /api/agents    │  │   /api/team      │  │   /api/rag       │  │
 │  │  Agent Registry  │  │  Team Workflow   │  │  RAG Search      │  │
 │  └────────┬─────────┘  └────────┬─────────┘  └────────┬─────────┘  │
 │           │                     │                     │            │
 │  ┌────────▼─────────────────────▼─────────────────────▼────────┐   │
-│  │                   FlagPilot Orchestrator                     │   │
-│  │            (Multi-Agent Coordination)                          │   │
+│  │                   FlagPilot Orchestrator                    │   │
+│  │            (Multi-Agent Coordination)                       │   │
 │  └──────────────────────────────┬──────────────────────────────┘   │
-│                                 │                                   │
+│                                 │                                  │
 │  ┌──────────────────────────────▼──────────────────────────────┐   │
-│  │                    Agent Pool (17 Agents)                    │   │
+│  │                    Agent Pool (17 Agents)                   │   │
 │  │  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌──────────┐  │   │
 │  │  │ Contract   │ │   Job      │ │   Scope    │ │  Risk    │  │   │
-│  │  │ Guardian   │ │Authenticator│ │ Sentinel   │ │ Advisor  │  │   │
+│  │  │ Guardian   │ │Authenticator│ │ Sentinel   │ │ Advisor │  │   │
 │  │  └────────────┘ └────────────┘ └────────────┘ └──────────┘  │   │
 │  │  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌──────────┐  │   │
 │  │  │ Payment    │ │Negotiation │ │   Dispute  │ │ Ghosting │  │   │
 │  │  │ Enforcer   │ │ Assistant  │ │  Mediator  │ │  Shield  │  │   │
 │  │  └────────────┘ └────────────┘ └────────────┘ └──────────┘  │   │
 │  │  ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌──────────┐  │   │
-│  │  │Communication│ │Application│ │  Feedback  │ │ Profile  │  │   │
-│  │  │   Coach    │ │  Filter   │ │    Loop    │ │ Analyzer │  │   │
+│  │  │ Communicate│ │ Application│ │  Feedback  │ │ Profile  │  │   │
+│  │  │   Coach    │ │  Filter    │ │    Loop    │ │ Analyzer │  │   │
 │  │  └────────────┘ └────────────┘ └────────────┘ └──────────┘  │   │
 │  │         ... and more specialized agents                     │   │
 │  └─────────────────────────────────────────────────────────────┘   │
-│                                                                     │
+│                                                                    │
 │  ┌─────────────────────────────────────────────────────────────┐   │
-│  │                    RAGFlow Integration                       │   │
-│  │    Global Wisdom DB · Tiered Context · Document Retrieval    │   │
+│  │                    RAGFlow Integration                      │   │
+│  │    Global Wisdom DB · Tiered Context · Document Retrieval   │   │
 │  └─────────────────────────────────────────────────────────────┘   │
-│                                                                     │
+│                                                                    │
 └────────────────────────────────────────────────────────────────────┘
 ```
 
