@@ -202,6 +202,7 @@ services:
       - OPENROUTER_BASE_URL=${OPENROUTER_BASE_URL:-https://openrouter.ai/api/v1}
     volumes:
       - ./service_conf.yaml.template:/ragflow/conf/service_conf.yaml.template
+      - ./nginx-ragflow.conf:/etc/nginx/sites-enabled/default
       - ragflow_logs:/ragflow/logs
       - ragflow_data:/ragflow/data
     networks:

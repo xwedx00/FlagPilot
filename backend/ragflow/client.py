@@ -208,8 +208,8 @@ def get_ragflow_client() -> RAGFlowClient:
     
     if _ragflow_client is None:
         _ragflow_client = RAGFlowClient(
-            api_key=settings.ragflow_api_key,
-            base_url=settings.ragflow_url
+            api_key=settings.RAGFLOW_API_KEY or "",
+            base_url=settings.RAGFLOW_URL
         )
     
     return _ragflow_client
