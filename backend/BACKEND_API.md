@@ -104,7 +104,7 @@ Used to show "thinking" indicators or active agents in the UI.
 
 #### C. Workflow / Plan Update
 Event Type: `workflow_update`
-Contains the DAG (Directed Acyclic Graph) of the agent plan. Use this to render a visual graph.
+Contains the workflow plan for agent execution. Use this to render a visual progress chart.
 ```json
 {
   "type": "workflow_update",

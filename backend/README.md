@@ -56,7 +56,7 @@ The FlagPilot backend is a **pure MetaGPT agent server** built with FastAPI. It 
 │           │                     │                     │            │
 │  ┌────────▼─────────────────────▼─────────────────────▼────────┐   │
 │  │                   FlagPilot Orchestrator                     │   │
-│  │            (DAG-based Multi-Agent Coordination)              │   │
+│  │            (Multi-Agent Coordination)                          │   │
 │  └──────────────────────────────┬──────────────────────────────┘   │
 │                                 │                                   │
 │  ┌──────────────────────────────▼──────────────────────────────┐   │
@@ -87,7 +87,7 @@ The FlagPilot backend is a **pure MetaGPT agent server** built with FastAPI. It 
 ### Request Flow
 
 1. **Client Request** → FastAPI receives the workflow request via REST/SSE
-2. **Orchestrator Planning** → FlagPilot Orchestrator creates a DAG of tasks
+2. **Orchestrator Planning** → FlagPilot Orchestrator plans agent tasks
 3. **Agent Execution** → Agents execute their assigned tasks in parallel/sequence
 4. **RAG Enhancement** → Agents query Global Wisdom for relevant strategies
 5. **Fast-Fail Check** → If CRITICAL_RISK detected, workflow aborts immediately
@@ -171,7 +171,7 @@ Real-time workflow updates via Server-Sent Events:
 // Event types
 event: message        // Agent text output
 event: agent_status   // Agent working/completed/error
-event: workflow_update // DAG visualization data
+event: workflow_update // Workflow progress data
 ```
 
 ### 4. Workflow Persistence 💾
@@ -234,9 +234,8 @@ OPENROUTER_MODEL=openai/gpt-4o-mini
 OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 
 # ===========================================
-# Database & Cache
+# Redis (Cache only - no database needed)
 # ===========================================
-DATABASE_URL=postgresql+asyncpg://user:pass@db:5432/flagpilot
 REDIS_URL=redis://:password@redis:6379
 
 # ===========================================

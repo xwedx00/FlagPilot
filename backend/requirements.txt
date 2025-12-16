@@ -1,41 +1,9 @@
 # FlagPilot Backend - Minimal Requirements
 # =========================================
-# Core: MetaGPT + FastAPI + RAGFlow + PostgreSQL + Redis
+# Core: MetaGPT + FastAPI + RAGFlow + Redis
 
-# MetaGPT - Multi-Agent Framework
-metagpt>=0.8.0
-
-# Web Framework
-fastapi>=0.100.0
-uvicorn[standard]>=0.23.0
-pydantic>=2.0.0
-pydantic-settings>=2.0.0
-python-multipart>=0.0.6
-
-# Database - PostgreSQL
-asyncpg>=0.28.0
-sqlalchemy>=2.0.0
-psycopg2-binary>=2.9.0
-
-# Redis
-redis>=5.0.0
-
-# RAGFlow SDK (handles vectors, embeddings, file storage)
-ragflow-sdk>=0.0.4
-
-# LLM API
-openai==1.6.1
-tiktoken>=0.5.0
-
-# HTTP Client
-aiohttp>=3.8.0
-httpx>=0.27.0,<0.28.0
-
-
-# Security
-pyjwt>=2.8.0
-
-# Logging
-# Testing
-pytest>=7.0.0
-pytest-asyncio>=0.23.0
+metagpt>=0.8.2
+ragflow-sdk
+pyjwt
+pytest
+pytest-asyncio

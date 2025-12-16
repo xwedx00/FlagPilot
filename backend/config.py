@@ -17,9 +17,8 @@ class Settings(BaseSettings):
     OPENROUTER_MODEL: str
     OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
     
-    # Database & Redis
-    DATABASE_URL: str
-    REDIS_URL: str
+    # Redis (no PostgreSQL - database-free backend)
+    REDIS_URL: str = "redis://localhost:6379"
     
     # RAGFlow
     RAGFLOW_URL: str = "http://ragflow:80"

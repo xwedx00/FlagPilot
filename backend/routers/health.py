@@ -20,14 +20,6 @@ async def service_health() -> Dict[str, ServiceStatus]:
     """Check status of all services"""
     services = {}
     
-    # PostgreSQL
-    try:
-        from lib.database import get_db
-        db = get_db()
-        services["postgres"] = ServiceStatus(status="healthy", message="Connected")
-    except Exception as e:
-        services["postgres"] = ServiceStatus(status="unhealthy", message=str(e))
-    
     # Redis
     try:
         from lib.redis_client import get_redis
@@ -40,15 +32,17 @@ async def service_health() -> Dict[str, ServiceStatus]:
     except Exception as e:
         services["redis"] = ServiceStatus(status="unhealthy", message=str(e))
     
-    # Qdrant
+    # RAGFlow
     try:
-        from rag import get_vector_store
-        vs = get_vector_store()
-        if vs.client:
-            services["qdrant"] = ServiceStatus(status="healthy", message="Connected")
-        else:
-            services["qdrant"] = ServiceStatus(status="unavailable", message="Not connected")
+        import httpx
+        from config import settings
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(f"{settings.RAGFLOW_URL}/v1/health", timeout=5.0)
+            if resp.status_code == 200:
+                services["ragflow"] = ServiceStatus(status="healthy", message="Connected")
+            else:
+                services["ragflow"] = ServiceStatus(status="unhealthy", message=f"Status {resp.status_code}")
     except Exception as e:
-        services["qdrant"] = ServiceStatus(status="unhealthy", message=str(e))
+        services["ragflow"] = ServiceStatus(status="unhealthy", message=str(e))
     
     return services

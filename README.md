@@ -169,9 +169,8 @@ OPENROUTER_API_KEY=sk-or-v1-your-key-here
 OPENROUTER_MODEL=openai/gpt-4o-mini
 
 # ===========================================
-# Database & Cache
+# Redis (Cache)
 # ===========================================
-DATABASE_URL=postgresql+asyncpg://flagpilot:securepass@db:5432/flagpilot
 REDIS_PASSWORD=your-redis-password
 
 # ===========================================
@@ -211,7 +210,7 @@ docker compose up --build
 |----------|----------|---------|-------------|
 | `OPENROUTER_API_KEY` | ✅ | - | Your OpenRouter API key |
 | `OPENROUTER_MODEL` | ✅ | - | LLM model to use (e.g., `openai/gpt-4o-mini`) |
-| `DATABASE_URL` | ✅ | - | PostgreSQL connection string |
+| `RAGFLOW_URL` | ❌ | `http://ragflow:80` | RAGFlow server URL |
 | `REDIS_PASSWORD` | ✅ | - | Redis authentication password |
 | `LOG_LEVEL` | ❌ | `INFO` | Logging verbosity (`DEBUG`, `INFO`, `WARNING`, `ERROR`) |
 | `RAGFLOW_API_KEY` | ❌ | - | RAGFlow API key (auto-configured) |
