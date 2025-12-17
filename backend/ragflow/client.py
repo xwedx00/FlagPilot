@@ -14,6 +14,10 @@ from ragflow_sdk import RAGFlow
 
 logger = logging.getLogger(__name__)
 
+# Default embedding model for RAGFlow (built-in, no external API needed)
+# Options: BAAI/bge-large-zh-v1.5@BAAI, BAAI/bge-base-en-v1.5@BAAI, etc.
+DEFAULT_EMBEDDING_MODEL = "BAAI/bge-large-zh-v1.5@BAAI"
+
 # Singleton instance
 _ragflow_client: Optional["RAGFlowClient"] = None
 
@@ -172,10 +176,33 @@ class RAGFlowClient:
             logger.error(f"Failed to list datasets: {e}")
             return []
     
-    def create_dataset(self, name: str, **kwargs):
-        """Create a new dataset."""
+    def create_dataset(
+        self, 
+        name: str, 
+        embedding_model: str = DEFAULT_EMBEDDING_MODEL,
+        description: str = "",
+        **kwargs
+    ):
+        """
+        Create a new dataset with embedding model configured.
+        
+        Args:
+            name: Dataset name
+            embedding_model: Embedding model to use (default: BAAI/bge-large-zh-v1.5@BAAI)
+            description: Dataset description
+            **kwargs: Additional arguments
+            
+        Returns:
+            Dataset object
+        """
         try:
-            return self._client.create_dataset(name=name, **kwargs)
+            logger.info(f"Creating dataset '{name}' with embedding model: {embedding_model}")
+            return self._client.create_dataset(
+                name=name, 
+                embedding_model=embedding_model,
+                description=description,
+                **kwargs
+            )
         except Exception as e:
             logger.error(f"Failed to create dataset: {e}")
             raise
@@ -204,12 +231,24 @@ class RAGFlowClient:
                 return False
             
             dataset = datasets[0]
+            
+            # Upload the document
             dataset.upload_documents([{
                 "display_name": filename,
                 "blob": content
             }])
             
             logger.info(f"Uploaded document {filename} to dataset {dataset_id}")
+            
+            # Trigger parsing immediately after upload
+            # Get the document we just uploaded
+            docs = dataset.list_documents(keywords=filename.split('.')[0])
+            if docs:
+                doc_ids = [doc.id for doc in docs if getattr(doc, 'run', 'UNSTART') == 'UNSTART']
+                if doc_ids:
+                    logger.info(f"Triggering async parsing for {len(doc_ids)} documents...")
+                    dataset.async_parse_documents(doc_ids)
+            
             return True
             
         except Exception as e:
