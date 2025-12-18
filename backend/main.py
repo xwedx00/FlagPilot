@@ -79,10 +79,12 @@ app.add_middleware(
 from routers import health
 from routers.agents import router as agents_router
 from routers import rag
+from routers import feedback
 
 app.include_router(health.router)      # /health endpoints
 app.include_router(agents_router)      # /api/agents + /api/team endpoints
 app.include_router(rag.router)         # /api/rag endpoints
+app.include_router(feedback.router)    # /api/v1/feedback endpoints
 
 
 # =============================================================================

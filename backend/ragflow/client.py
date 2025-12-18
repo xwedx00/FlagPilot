@@ -14,9 +14,15 @@ from ragflow_sdk import RAGFlow
 
 logger = logging.getLogger(__name__)
 
-# Default embedding model for RAGFlow (built-in, no external API needed)
-# Options: BAAI/bge-large-zh-v1.5@BAAI, BAAI/bge-base-en-v1.5@BAAI, etc.
-DEFAULT_EMBEDDING_MODEL = "BAAI/bge-large-zh-v1.5@BAAI"
+from config import settings
+
+# Helper to ensure factory is appended if missing
+def _get_full_model_name(model_str: str, default_factory: str = "OpenAI") -> str:
+    if "@" in model_str:
+        return model_str
+    return f"{model_str}@{default_factory}"
+
+DEFAULT_EMBEDDING_MODEL = _get_full_model_name(settings.RAGFLOW_EMBEDDING_MODEL)
 
 # Singleton instance
 _ragflow_client: Optional["RAGFlowClient"] = None
@@ -207,6 +213,39 @@ class RAGFlowClient:
             logger.error(f"Failed to create dataset: {e}")
             raise
     
+    async def add_user_document(
+        self,
+        user_id: str,
+        filename: str,
+        content: bytes
+    ) -> bool:
+        """
+        Add a document to a user's personal dataset (auto-creates if missing).
+        """
+        try:
+            # 1. Find or Create Dataset
+            target_ds_id = None
+            all_ds = self.list_datasets()
+            
+            # Pattern: vault_user_{user_id}
+            expected_name = f"vault_user_{user_id}"
+            for ds in all_ds:
+                if getattr(ds, "name", "").lower() == expected_name.lower():
+                    target_ds_id = ds.id
+                    break
+            
+            if not target_ds_id:
+                logger.info(f"Creating new dataset '{expected_name}' for user {user_id}")
+                new_ds = self.create_dataset(name=expected_name)
+                target_ds_id = new_ds.id
+            
+            # 2. Upload to that dataset
+            return await self.upload_document(target_ds_id, filename, content)
+            
+        except Exception as e:
+            logger.error(f"Failed to add user document: {e}")
+            return False
+
     async def upload_document(
         self,
         dataset_id: str,

@@ -23,6 +23,11 @@ class Settings(BaseSettings):
     # RAGFlow
     RAGFLOW_URL: str = "http://ragflow:80"
     RAGFLOW_API_KEY: Optional[str] = None
+    RAGFLOW_EMBEDDING_MODEL: str = "text-embedding-3-small@OpenAI"
+    
+    # ElasticSearch (Direct Access for Memory)
+    ES_HOST: str = "es01"
+    ES_PORT: int = 9200
     
     # MetaGPT Legacy Config (Derived)
     # These are needed for MetaGPT's internal config

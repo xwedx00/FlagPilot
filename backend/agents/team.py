@@ -126,13 +126,24 @@ class FlagPilotTeam:
             if user_id:
                 try:
                     from ragflow.client import get_ragflow_client
-                    client = get_ragflow_client()
-                    # Use the configured search or enhanced search from Agent logic?
-                    # The Orchestrator doesn't usually do the deep search, but we want to inject context.
-                    # We'll use a generic "get_agent_context" or simply "search_user_context"
-                    # But wait, agents do their own retrieval usually.
-                    # However, inserting global wisdom upfront helps the Orchestrator plan better.
+                    from lib.memory.manager import memory_manager
                     
+                    client = get_ragflow_client()
+                    
+                    # 1. Get Personal Memory (Dynamic Profile)
+                    user_summary = await memory_manager.get_current_user_profile(user_id)
+                    if user_summary:
+                        logger.info(f"Retrieved personal memory for user {user_id}")
+                        context["USER_MEMORY"] = user_summary
+                    
+                    # 2. Get Shared Memory (Similar Experiences)
+                    similar_lessons = await memory_manager.search_similar_experiences(task, limit=2)
+                    if similar_lessons:
+                        lessons_text = "\n".join([f"- {l['lesson']}" for l in similar_lessons])
+                        logger.info(f"Retrieved {len(similar_lessons)} shared lessons.")
+                        context["SHARED_WISDOM"] = lessons_text
+
+                    # 3. Get Vault Context (RAGFlow)
                     results = await client.search_user_context(user_id, task, limit=5)
                     rag_context_str = "\n\n".join([f"Context [{r['similarity']:.2f}]: {r['content']}" for r in results])
                     
@@ -140,7 +151,7 @@ class FlagPilotTeam:
                         logger.info(f"Injected RAG context ({len(results)} chunks) for user {user_id}")
                         context["RAG_CONTEXT"] = rag_context_str
                 except Exception as e:
-                    logger.warning(f"Failed to inject RAG context: {e}")
+                    logger.warning(f"Failed to inject RAG context/memory: {e}")
 
             context_str = "\n".join([f"- {k}: {v}" for k, v in context.items()])
         
@@ -291,6 +302,18 @@ class FlagPilotTeam:
                 task, results["orchestrator_analysis"], results["agent_outputs"]
             )
             
+            # Step 5: Update User Memory (Async background)
+            if user_id:
+                try:
+                    from lib.memory.manager import memory_manager
+                    interaction_summary = f"Task: {task}\nResult: {results['final_synthesis']}"
+                    # Use create_task to avoid blocking the main response
+                    asyncio.create_task(
+                        memory_manager.summarize_and_update(user_id, context.get("USER_MEMORY", ""), interaction_summary)
+                    )
+                except Exception as e:
+                    logger.warning(f"Failed to trigger memory update: {e}")
+
         except Exception as e:
             logger.error(f"Team execution error: {e}")
             results["error"] = str(e)
