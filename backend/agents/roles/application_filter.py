@@ -35,7 +35,7 @@ class FilterApplication(FlagPilotAction):
         # 1. Native Tool: Search for job details if looking at a specific application
         rag_context = "Standard screening criteria."
         try:
-            rag_context = RAGSearch.search_knowledge_base(
+            rag_context = await RAGSearch.search_knowledge_base(
                 query=f"job description qualifications {instruction[:50]}", 
                 top_k=2
             )

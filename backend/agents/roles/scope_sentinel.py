@@ -45,7 +45,7 @@ class DetectScopeCreep(FlagPilotAction):
         rag_context = "Original agreement not found in context."
         try:
             # We search for "SOW", "agreement", or project name references
-            rag_context = RAGSearch.search_knowledge_base(
+            rag_context = await RAGSearch.search_knowledge_base(
                 query=f"project scope agreement SOW {instruction[:50]}", 
                 top_k=2
             )

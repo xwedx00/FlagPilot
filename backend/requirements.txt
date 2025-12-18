@@ -15,6 +15,9 @@ pydantic-settings
 # RAGFlow SDK
 ragflow-sdk
 
+# AG-UI Protocol (local implementation to avoid pydantic conflicts)
+# ag-ui-protocol is not installed due to dependency conflicts with metagpt
+
 # Auth & Testing
 pyjwt
 pytest

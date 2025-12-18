@@ -1,14 +1,15 @@
 """
-FlagPilot Backend API - Simplified
-==================================
-Pure MetaGPT Agent Server
+FlagPilot Backend API
+======================
+Pure MetaGPT Agent Server with AG-UI Protocol
 
 Core Focus:
 - MetaGPT-based AI agents (17 specialists)
 - Team orchestration (MGX.dev style)
 - RAGFlow integration for document understanding
+- AG-UI protocol for frontend communication
 
-NOTE: Auth, chat persistence, and UI are handled by the frontend (Vercel AI Chatbot).
+NOTE: Auth and chat persistence are handled by the frontend.
 """
 
 # =============================================================================
@@ -128,7 +129,7 @@ async def health_check():
         features=[
             "MetaGPT Team Orchestration",
             "RAGFlow Integration",
-            "SSE Streaming",
+            "AG-UI Protocol Streaming",
         ]
     )
 

@@ -36,7 +36,7 @@ class VetTalent(FlagPilotAction):
         rag_context = "Standard evaluation criteria."
         try:
             # Search for specific role requirements mentioned in the profile (e.g., "Senior Python Dev requirements")
-            rag_context = RAGSearch.search_knowledge_base(
+            rag_context = await RAGSearch.search_knowledge_base(
                 query=f"job requirements criteria {instruction[:50]}", 
                 top_k=2
             )

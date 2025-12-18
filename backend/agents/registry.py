@@ -3,7 +3,7 @@ import os
 import pkgutil
 import inspect
 import importlib
-from typing import Dict, Type, List, Optional
+from typing import Dict, Type, List, Optional, Any
 from loguru import logger
 from metagpt.roles import Role
 from agents import roles
@@ -69,6 +69,36 @@ class AgentRegistry:
         if not cls._initialized:
             cls.initialize()
         return list(cls._agents.keys())
+
+    @classmethod
+    def get_agent_info(cls, agent_id: str) -> Optional[Dict[str, Any]]:
+        """Get descriptive info about an agent from its class attributes"""
+        if not cls._initialized:
+            cls.initialize()
+            
+        role_cls = cls._agents.get(agent_id)
+        if not role_cls:
+            return None
+            
+        # Extract metadata from MetaGPT Role class
+        # (Using getattr/default because Pydantic models in MetaGPT 0.8.1 might store them in different places)
+        profile = getattr(role_cls, "profile", f"FlagPilot {agent_id} specialist")
+        goal = getattr(role_cls, "goal", f"Help users with {agent_id.replace('_', ' ')}")
+        
+        # MetaGPT 0.8.1 often stores these as default values in Pydantic fields
+        if hasattr(role_cls, "__fields__"):
+             if "profile" in role_cls.__fields__:
+                 profile = role_cls.__fields__["profile"].default
+             if "goal" in role_cls.__fields__:
+                 goal = role_cls.__fields__["goal"].default
+
+        return {
+            "id": agent_id,
+            "name": agent_id.replace("_", "-"),
+            "description": f"FlagPilot {agent_id} agent",
+            "profile": profile,
+            "goal": goal
+        }
 
 # Create a singleton-like access
 registry = AgentRegistry

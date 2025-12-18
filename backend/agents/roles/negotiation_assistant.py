@@ -35,7 +35,7 @@ class AssistNegotiation(FlagPilotAction):
         # 1. Native Tool: Search for market rates or similar negotiation history
         rag_context = "No specific market data found."
         try:
-            rag_context = RAGSearch.search_knowledge_base(
+            rag_context = await RAGSearch.search_knowledge_base(
                 query=f"market rate negotiation strategy {instruction[:50]}", 
                 top_k=2
             )

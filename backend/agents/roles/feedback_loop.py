@@ -35,7 +35,7 @@ class AnalyzeFeedback(FlagPilotAction):
         # 1. Native Tool: Search for past feedback patterns
         rag_context = "First feedback entry."
         try:
-            rag_context = RAGSearch.search_knowledge_base(
+            rag_context = await RAGSearch.search_knowledge_base(
                 query=f"client feedback history lessons {instruction[:50]}", 
                 top_k=3
             )

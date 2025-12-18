@@ -36,7 +36,7 @@ class AnalyzeProfile(FlagPilotAction):
         # 1. Native Tool: Search for industry keywords (e.g., "React Developer keywords")
         rag_context = "General best practices."
         try:
-            rag_context = RAGSearch.search_knowledge_base(
+            rag_context = await RAGSearch.search_knowledge_base(
                 query=f"high paying keywords skills {instruction[:50]}", 
                 top_k=3
             )

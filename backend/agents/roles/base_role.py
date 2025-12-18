@@ -3,12 +3,13 @@ Base Role for all FlagPilot agents using MetaGPT
 
 Provides streaming-capable agents with:
 - Real-time status updates via async generators
-- Vercel AI SDK compatible output formatting
+- AG-UI Protocol compatible event formatting
 - Credit consumption tracking
 - Integration with the Data Moat
 """
 
 import os
+import time
 from metagpt.roles import Role
 from metagpt.actions import Action
 from metagpt.schema import Message
@@ -25,60 +26,103 @@ from loguru import logger
 # Import centralized LLM configuration
 from config import get_configured_llm
 
+from lib.agui.core import (
+    EventType, CustomEvent, TextMessageChunkEvent, TextMessageContentEvent,
+    StepStartedEvent, StepFinishedEvent
+)
 
-# Agent-to-UI event types for streaming
+
+# Agent-to-UI event types for streaming (AG-UI Protocol Compatible)
 class AgentEvent:
-    """Events that agents emit during execution"""
+    """
+    Events that agents emit during execution.
+    Updated to return official AG-UI Event objects.
+    """
     
     @staticmethod
-    def thinking(agent_id: str, thought: str) -> Dict[str, Any]:
-        return {
-            "type": "agent_thinking",
-            "agentId": agent_id,
-            "thought": thought,
-            "timestamp": datetime.utcnow().isoformat(),
-        }
+    def thinking(agent_id: str, thought: str) -> CustomEvent:
+        """Emit a custom thinking event"""
+        return CustomEvent(
+            name="agent_thinking",
+            value={
+                "agentId": agent_id,
+                "thought": thought,
+            }
+        )
     
     @staticmethod
-    def status(agent_id: str, status: str, action: str = None) -> Dict[str, Any]:
-        return {
-            "type": "agent_status",
-            "agentId": agent_id,
-            "status": status,
-            "action": action,
-            "timestamp": datetime.utcnow().isoformat(),
-        }
+    def status(agent_id: str, status: str, action: str = None) -> CustomEvent:
+        """Emit agent status update"""
+        return CustomEvent(
+            name="agent_status",
+            value={
+                "agentId": agent_id,
+                "status": status,
+                "action": action,
+            }
+        )
     
     @staticmethod
-    def output(agent_id: str, content: str) -> Dict[str, Any]:
-        return {
-            "type": "message",
-            "agentId": agent_id,
-            "content": content,
-            "timestamp": datetime.utcnow().isoformat(),
-        }
+    def usage(agent_id: str, usage: Dict[str, int]) -> CustomEvent:
+        """Emit token usage update (Production Enhancement)"""
+        return CustomEvent(
+            name="usage_update",
+            value={
+                "agentId": agent_id,
+                "usage": usage,
+                "timestamp": int(time.time() * 1000)
+            }
+        )
     
     @staticmethod
-    def ui_component(component_name: str, props: Dict[str, Any]) -> Dict[str, Any]:
-        return {
-            "type": "ui_component",
-            "componentName": component_name,
-            "props": props,
-            "timestamp": datetime.utcnow().isoformat(),
-        }
+    def output(agent_id: str, content: str, message_id: str = None) -> TextMessageChunkEvent:
+        """Emit agent output chunk"""
+        return TextMessageChunkEvent(
+            message_id=message_id or str(uuid.uuid4()),
+            delta=content
+        )
     
     @staticmethod
-    def artifact(name: str, artifact_type: str, content: str, agent_id: str) -> Dict[str, Any]:
-        return {
-            "type": "artifact",
-            "artifact": {
+    def text_chunk(message_id: str, delta: str) -> TextMessageContentEvent:
+        """Emit a text chunk"""
+        return TextMessageContentEvent(
+            message_id=message_id,
+            delta=delta
+        )
+    
+    @staticmethod
+    def step_started(step_name: str) -> StepStartedEvent:
+        """Emit step started"""
+        return StepStartedEvent(step_name=step_name)
+    
+    @staticmethod
+    def step_finished(step_name: str) -> StepFinishedEvent:
+        """Emit step finished"""
+        return StepFinishedEvent(step_name=step_name)
+    
+    @staticmethod
+    def ui_component(component_name: str, props: Dict[str, Any]) -> CustomEvent:
+        """Emit UI component"""
+        return CustomEvent(
+            name="ui_component",
+            value={
+                "componentName": component_name,
+                "props": props,
+            }
+        )
+    
+    @staticmethod
+    def artifact(name: str, artifact_type: str, content: str, agent_id: str) -> CustomEvent:
+        """Emit artifact"""
+        return CustomEvent(
+            name="artifact",
+            value={
                 "name": name,
                 "type": artifact_type,
                 "content": content,
                 "createdBy": agent_id,
-            },
-            "timestamp": datetime.utcnow().isoformat(),
-        }
+            }
+        )
 
 
 class FlagPilotAction(Action):
@@ -141,6 +185,10 @@ This will trigger a safety abort for the entire mission.
         # Use our configured LLM instead of relying on MetaGPT context
         llm = get_configured_llm()
         response = await llm.aask(prompt)
+        
+        # Track usage (Simulated as we don't always get it from aask back directly in same object)
+        # In production, we'd extract it from the LLM response object
+        yield AgentEvent.usage(agent_id, {"prompt_tokens": len(prompt) // 4, "completion_tokens": len(response) // 4})
         
         # Emit output
         yield AgentEvent.output(agent_id, response)

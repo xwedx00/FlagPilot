@@ -95,6 +95,8 @@ class FlagPilotTeam:
             
             if role_class:
                 self.active_agents[agent_id] = role_class
+                # Also store an instance for tests/internal use
+                self.agents[agent_id] = role_class()
                 logger.debug(f"Loaded agent capability: {agent_id}")
             else:
                 logger.warning(f"Agent {agent_id} not found in registry")

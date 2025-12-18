@@ -72,7 +72,7 @@ class TestAgentEndpoints:
         agents = list_response.json()["agents"]
         
         if agents:
-            agent_id = agents[0]
+            agent_id = agents[0]["id"]
             response = client.get(f"/api/agents/{agent_id}")
             
             assert response.status_code == 200
