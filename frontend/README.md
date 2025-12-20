@@ -64,8 +64,17 @@ Modern AI-powered freelancer protection platform built with Next.js 15, Shadcn U
 - `/lib`: Utilities, database connection, and auth configuration.
 - `/public`: Static assets.
 
-## Integration with Backend
+## Integration with Backend (AG-UI)
+The frontend communicates with the FastAPI backend via the **AG-UI Protocol**:
 
-The frontend communicates with the FastAPI backend via:
-- **Proxy**: `/api/agui/*` requests are proxied to `http://127.0.0.1:8000/api/agui/*`.
-- **CopilotKit**: Connects to the runtime URL `/api/agui` to discover and interact with agents.
+1.  **Proxy Configuration**:
+    - `next.config.ts` proxies `/api/agui/*` -> `http://127.0.0.1:8000/api/agui/*`.
+    
+2.  **CopilotKit Runtime**:
+    - Root Layout (`app/layout.tsx`) configures `<CopilotKit runtimeUrl="/api/agui" />`.
+    - This enables auto-discovery of agents like `flagpilot_orchestrator`.
+
+3.  **Authentication**:
+    - Better Auth sessions are managed via `lib/auth.ts`.
+    - Future: Session tokens will be passed to `/api/agui` headers for backend context.
+

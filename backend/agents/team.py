@@ -52,13 +52,18 @@ class FlagPilotTeam:
         # or load it as part of _init_team
         
         # We need orchestrator instance for self.orchestrator.analyze calls in run()
-        orc_cls = registry.get_agent_class("Flagpilot_orchestrator")
+        # Try standard snake_case first
+        orc_cls = registry.get_agent_class("flagpilot_orchestrator")
+        if not orc_cls:
+             # Try mixed fallback just in case
+             orc_cls = registry.get_agent_class("Flagpilot_orchestrator")
+             
         if orc_cls:
             self.orchestrator = orc_cls()
         else:
             # Fallback if registry fails/missing
             logger.error("Orchestrator not found in registry!")
-            from agents.roles.Flagpilot_orchestrator import FlagPilotOrchestrator
+            from agents.roles.flagpilot_orchestrator import FlagPilotOrchestrator
             self.orchestrator = FlagPilotOrchestrator()
 
         self._init_team()

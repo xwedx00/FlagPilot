@@ -53,6 +53,7 @@ task.md
 # Test Outputs
 *_output.txt
 backend/*.txt
+!backend/test_live_output.txt
 !backend/requirements.txt
 !backend/Dockerfile
 !backend/docker-compose.yml

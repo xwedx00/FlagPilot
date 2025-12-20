@@ -1,0 +1,1070 @@
+======================================================================
+  FLAGPILOT LIVE INTEGRATION TEST - VERBOSE MODE
+  Started: 2025-12-20T22:22:34.323579
+======================================================================
+
+[22:22:34.325] [INFO] 
+======================================================================
+[22:22:34.327] [INFO]   TEST 1: ENVIRONMENT CHECK
+[22:22:34.329] [INFO] ======================================================================
+
+[22:22:34.330] [INFO] OpenRouter Model: kwaipilot/kat-coder-pro:free
+[22:22:34.332] [INFO] OpenRouter Base URL: https://openrouter.ai/api/v1
+[22:22:34.334] [INFO] RAGFlow URL: http://ragflow:80
+[22:22:34.336] [INFO] RAGFlow API Key: ragflow-IT272Lo0t8CBnhIdXfmBXoK_LxFjLl_A_KgOMjHJXqQ
+[22:22:34.338] [INFO]   OPENROUTER_API_KEY: ✅ SET
+[22:22:34.339] [INFO]   OPENROUTER_MODEL: ✅ SET
+[22:22:34.341] [INFO]   OPENROUTER_BASE_URL: ✅ SET
+[22:22:34.343] [INFO]   RAGFLOW_API_KEY: ✅ SET
+[22:22:34.345] [INFO]   RAGFLOW_URL: ✅ SET
+[22:22:34.347] [SUCCESS] Environment check PASSED
+[22:22:34.353] [INFO] 
+======================================================================
+[22:22:34.355] [INFO]   TEST 2: RAGFLOW HEALTH CHECK
+[22:22:34.357] [INFO] ======================================================================
+
+[22:22:34.663] [DEBUG] RAGFlow Base URL: http://ragflow:80
+[22:22:34.681] [DEBUG] Health Response:
+{
+  "status": "healthy",
+  "connected": true,
+  "dataset_count": 1
+}
+[22:22:34.683] [SUCCESS] RAGFlow health check PASSED
+[22:22:34.688] [INFO] 
+======================================================================
+[22:22:34.690] [INFO]   TEST 3: OPENROUTER LLM HEALTH CHECK
+[22:22:34.691] [INFO] ======================================================================
+
+[22:22:35.318] [INFO] Model: kwaipilot/kat-coder-pro:free
+[22:22:35.320] [INFO] Sending test prompt...
+[22:22:37.447] [INFO] Response: Hello, I'm working and ready to help you.
+[22:22:37.450] [INFO] Duration: 2.13s
+[22:22:37.452] [DEBUG] Prompt Tokens: 33
+[22:22:37.454] [DEBUG] Completion Tokens: 12
+[22:22:37.456] [DEBUG] Total Tokens: 45
+[22:22:37.458] [SUCCESS] OpenRouter health check PASSED
+[22:22:37.467] [INFO] 
+======================================================================
+[22:22:37.469] [INFO]   TEST 4: RAGFLOW FULL VERIFICATION (Review & Search)
+[22:22:37.471] [INFO] ======================================================================
+
+[22:22:37.473] [INFO] Default Embedding Model: text-embedding-3-small@OpenAI
+[22:22:37.474] [INFO] 
+--- Step 1: Create Test Dataset ---
+[22:22:37.515] [SUCCESS] Created dataset: Flagpilot_live_test_1766269357
+[22:22:37.518] [DEBUG] Dataset ID: 63d01076ddf211f0b46e0eca1cdc33af
+[22:22:37.520] [INFO] 
+--- Step 2: Upload Test Contract ---
+[22:22:37.806] [INFO] Document upload result: True
+[22:22:37.808] [INFO] 
+--- Step 3: Wait for Document Parsing ---
+[22:22:37.842] [DEBUG] Checking doc status: RUNNING (Attempt 1/20)
+[22:22:39.866] [DEBUG] Checking doc status: RUNNING (Attempt 2/20)
+[22:22:41.891] [DEBUG] Checking doc status: RUNNING (Attempt 3/20)
+[22:22:43.920] [DEBUG] Checking doc status: RUNNING (Attempt 4/20)
+[22:22:45.945] [DEBUG] Checking doc status: DONE (Attempt 5/20)
+[22:22:45.948] [SUCCESS] Document parsing COMPLETE
+[22:22:45.950] [INFO] 
+--- Step 4: Verify RAG Retrieval ---
+[22:22:45.952] [INFO] 
+--- Query: 'payment terms contract' ---
+[22:22:48.865] [INFO] Retrieved 1 chunks
+[22:22:48.867] [DEBUG]   [1] ...         FREELANCE SERVICE AGREEMENT - RISKY CLIENT        =========================================...
+[22:22:48.868] [INFO] 
+--- Query: 'intellectual property transfer' ---
+[22:22:50.417] [INFO] Retrieved 1 chunks
+[22:22:50.419] [DEBUG]   [1] ...         FREELANCE SERVICE AGREEMENT - RISKY CLIENT        =========================================...
+[22:22:50.422] [INFO] 
+--- Query: 'late fees' ---
+[22:22:51.803] [INFO] Retrieved 1 chunks
+[22:22:51.806] [DEBUG]   [1] ...         FREELANCE SERVICE AGREEMENT - RISKY CLIENT        =========================================...
+[22:22:51.807] [INFO] 
+--- Query: 'SketchyCorp' ---
+[22:22:53.733] [INFO] Retrieved 1 chunks
+[22:22:53.735] [DEBUG]   [1] ...         FREELANCE SERVICE AGREEMENT - RISKY CLIENT        =========================================...
+[22:22:53.738] [SUCCESS] RAGFlow Full Verification: PASSED
+[22:22:53.743] [INFO] 
+======================================================================
+[22:22:53.745] [INFO]   TEST 6: LLM CONTRACT ANALYSIS QUALITY
+[22:22:53.747] [INFO] ======================================================================
+
+[22:22:53.777] [INFO] Sending contract for analysis...
+[22:23:04.406] [INFO] 
+==================================================
+[22:23:04.408] [INFO] FULL LLM RESPONSE:
+[22:23:04.410] [INFO] ==================================================
+[22:23:04.411] [INFO] Based on my analysis of this freelance contract, here are the top 5 specific risks with their severity levels and explanations:
+
+**1. Payment Risk - 100% on Completion with No Upfront Payment (HIGH SEVERITY)**
+- **Why it's a risk**: The freelancer must complete the entire project without any financial security or cash flow during development
+- **Specific danger**: If the client becomes insolvent, changes business direction, or simply decides not to pay after work is completed, the freelancer has no recourse and loses all time invested
+- **Industry standard violation**: Most professional freelance contracts require 30-50% upfront or milestone payments
+
+**2. IP Transfer Before Payment - Immediate Transfer Upon Completion (HIGH SEVERITY)**
+- **Why it's a risk**: The freelancer loses all leverage and bargaining power once intellectual property rights transfer to the client
+- **Specific danger**: Client receives full ownership of deliverables before being obligated to pay, creating a situation where they could use the work without compensating the freelancer
+- **Legal vulnerability**: Once IP transfers, the freelancer has significantly reduced legal standing to enforce payment
+
+**3. Subjective "Satisfaction Review" with 90-Day Payment Window (HIGH SEVERITY)**
+- **Why it's a risk**: Payment is contingent on client's subjective satisfaction with no objective criteria defined
+- **Specific danger**: Client can indefinitely delay payment by claiming dissatisfaction, even if deliverables meet technical specifications
+- **Financial impact**: 90-day payment window creates severe cash flow problems and the client can effectively hold payment hostage
+
+**4. Unilateral Termination Right - Client Can Cancel with 24 Hours Notice, No Compensation (HIGH SEVERITY)**
+- **Why it's a risk**: Client can terminate the contract at any time for any reason, leaving freelancer uncompensated for work completed
+- **Specific danger**: If freelancer has invested significant time before termination, they receive nothing despite having performed valuable work
+- **Business risk**: Makes project planning impossible and exposes freelancer to complete financial loss
+
+**5. No Late Payment Penalties or Interest (MEDIUM SEVERITY)**
+- **Why it's a risk**: Client faces no financial consequences for late payment, encouraging payment delays
+- **Specific danger**: Without penalties, client has no incentive to pay on time, potentially stretching the 90-day window or paying even later
+- **Cash flow impact**: Freelancer bears all the financial burden of delayed payment while client faces no repercussions
+
+**Additional Concern**: The combination of these clauses creates a perfect storm where the freelancer bears all financial risk while the client retains maximum control and leverage throughout the entire engagement.
+[22:23:04.413] [INFO] ==================================================
+[22:23:04.415] [DEBUG] Response Length: 2815 characters
+[22:23:04.416] [DEBUG] Duration: 10.63s
+[22:23:04.417] [DEBUG] Tokens Used: 699
+[22:23:04.419] [INFO] 
+--- Quality Checks ---
+[22:23:04.421] [INFO]   ✅ identifies_payment_risk
+[22:23:04.422] [INFO]   ✅ identifies_ip_risk
+[22:23:04.424] [INFO]   ✅ identifies_late_fee_risk
+[22:23:04.425] [INFO]   ✅ identifies_termination_risk
+[22:23:04.427] [INFO]   ✅ provides_severity
+[22:23:04.429] [INFO]   ✅ actionable_advice
+[22:23:04.431] [INFO] 
+Quality Score: 100% (6/6)
+[22:23:04.433] [SUCCESS] LLM contract analysis quality PASSED
+[22:23:04.438] [INFO] 
+======================================================================
+[22:23:04.440] [INFO]   TEST 7: TEAM INITIALIZATION (VERBOSE)
+[22:23:04.441] [INFO] ======================================================================
+
+[22:23:09.723] [INFO] Available Agents (15):
+[22:23:09.724] [DEBUG]   - application_filter
+[22:23:09.726] [DEBUG]   - communication_coach
+[22:23:09.728] [DEBUG]   - contract_guardian
+[22:23:09.730] [DEBUG]   - dispute_mediator
+[22:23:09.732] [DEBUG]   - feedback_loop
+[22:23:09.734] [DEBUG]   - flagpilot_orchestrator
+[22:23:09.735] [DEBUG]   - ghosting_shield
+[22:23:09.737] [DEBUG]   - job_authenticator
+[22:23:09.738] [DEBUG]   - negotiation_assistant
+[22:23:09.740] [DEBUG]   - payment_enforcer
+[22:23:09.742] [DEBUG]   - planner_role
+[22:23:09.743] [DEBUG]   - profile_analyzer
+[22:23:09.745] [DEBUG]   - risk_advisor
+[22:23:09.747] [DEBUG]   - scope_sentinel
+[22:23:09.749] [DEBUG]   - talent_vet
+[22:23:09.750] [INFO] 
+Initializing team with: ['contract-guardian', 'job-authenticator', 'risk-advisor']
+[22:23:09.878] [INFO] Team Agents Loaded: ['contract-guardian', 'job-authenticator', 'risk-advisor']
+[22:23:09.880] [DEBUG]   contract-guardian: ContractGuardian
+[22:23:09.882] [DEBUG]   job-authenticator: JobAuthenticator
+[22:23:09.884] [DEBUG]   risk-advisor: RiskAdvisor
+[22:23:09.886] [SUCCESS] Team initialization PASSED
+[22:23:09.901] [INFO] 
+======================================================================
+[22:23:09.905] [INFO]   TEST 8: TEAM SCAM DETECTION (FULL OUTPUT)
+[22:23:09.907] [INFO] ======================================================================
+
+[22:23:10.459] [INFO] TASK:
+[22:23:10.461] [INFO] 
+        I received a job offer from "QuickMoney Enterprises". The details:
+        
+        1. They want me to pay a $750 "security deposit" for equipment via Zelle
+        2. The job is "data entry from home" paying $45/hour
+        3. They contacted me on WhatsApp, not a job platform
+        4. No formal interview, just a "quick chat"
+        5. They want my bank details for "direct deposit setup"
+        6. The company has no website or LinkedIn presence
+        
+        Is this legitimate? Should I take this job?
+        
+[22:23:10.463] [INFO] 
+Running team orchestration...
+[22:23:31.093] [INFO] 
+Execution Duration: 20.63s
+[22:23:31.095] [DEBUG] Error: None
+[22:23:31.097] [INFO] 
+--- AGENT OUTPUTS (FULL) ---
+[22:23:31.099] [INFO] 
+[AGENT: JOB-AUTHENTICATOR]
+[22:23:31.100] [INFO] --------------------------------------------------
+[22:23:31.103] [INFO] {
+    "is_critical_risk": true,
+    "risk_level": "CRITICAL",
+    "risk_summary": "This is a classic advance fee scam where the victim is asked to pay a security deposit for equipment.",
+    "override_instruction": "DO NOT PAY ANY MONEY. DO NOT SHARE BANK DETAILS. BLOCK AND REPORT THE SCAMMER IMMEDIATELY.",
+    "score": 1,
+    "analysis": "# CRITICAL SCAM DETECTED - DO NOT ENGAGE\n\n## Red Flags Identified:\n- **Advance Fee Scam**: Requesting $750 security deposit via Zelle for equipment\n- **Unrealistic Pay**: $45/hour for simple data entry is extremely high\n- **Unprofessional Contact**: WhatsApp communication instead of professional channels\n- **No Due Diligence**: No formal interview process\n- **Bank Details Request**: Early request for sensitive financial information\n- **No Company Presence**: No website or LinkedIn presence for 'QuickMoney Enterprises'\n\n## Scam Pattern Match:\nThis matches the known pattern from our RAG context where scammers request upfront payments for equipment or deposits, then disappear with the victim's money. The lack of formal processes and professional communication channels are major warning signs.\n\n## Immediate Actions Required:\n1. **STOP ALL COMMUNICATION** with this 'employer'\n2. **DO NOT** send any money via Zelle or any other method\n3. **DO NOT** provide bank account details\n4. **BLOCK** the number on WhatsApp\n5. **REPORT** to local authorities and FTC\n\n## Legitimacy Score: 1/10\nThis is a confirmed scam with multiple critical red flags. No legitimate employer operates this way."
+}
+[22:23:31.104] [INFO] --------------------------------------------------
+[22:23:31.106] [INFO] 
+[AGENT: PAYMENT-ENFORCER]
+[22:23:31.108] [INFO] --------------------------------------------------
+[22:23:31.110] [INFO] # Payment Situation Analysis: QuickMoney Enterprises Job Offer
+
+## 1. SITUATION ASSESSMENT
+
+**SEVERITY: EXTREME - This is a confirmed scam**
+
+**LEVERAGE: None - You have no leverage because this is not a legitimate business relationship**
+
+**CRITICAL RED FLAGS:**
+- **Advance fee scam**: The $750 "security deposit" is a classic scam tactic
+- **No formal hiring process**: Legitimate companies don't hire via WhatsApp with no interview
+- **Too good to be true**: $45/hour for data entry from home is unrealistic
+- **No company presence**: No website, LinkedIn, or verifiable business information
+- **Payment method**: Zelle payments are nearly impossible to reverse
+- **Bank details request**: This is identity theft territory
+
+**This is NOT a payment collection issue - this is a scam prevention situation.**
+
+## 2. RECOMMENDED APPROACH
+
+**DO NOT ENGAGE FURTHER. DO NOT PAY ANY MONEY.**
+
+This is not a legitimate job offer and there is no actual client relationship to preserve. Any communication should be to disengage safely and report the scam.
+
+## 3. EMAIL/MESSAGE TEMPLATES
+
+### Template 1: Polite Disengagement
+```
+Subject: Job Opportunity - Unable to Proceed
+
+Thank you for reaching out about the data entry position. After careful consideration, I've decided to pursue other opportunities that better align with my current career goals.
+
+I appreciate your time and wish you success in finding the right candidate for this role.
+
+Best regards,
+[Your Name]
+```
+
+### Template 2: If They Pressure You Further
+```
+Subject: Re: Job Offer
+
+I'm not comfortable proceeding with this opportunity. Please remove my information from your records and do not contact me further.
+
+If you continue to contact me, I will report this to the appropriate authorities as a potential scam.
+
+[Your Name]
+```
+
+## 4. ESCALATION STEPS
+
+**IMMEDIATE ACTIONS:**
+1. **STOP ALL COMMUNICATION** - Do not reply to any further messages
+2. **BLOCK THE NUMBER** - Block their WhatsApp and any other contact methods
+3. **REPORT THE SCAM**:
+   - File a report with the FTC at reportfraud.ftc.gov
+   - Report to the FBI Internet Crime Complaint Center (IC3)
+   - Report to your state's consumer protection agency
+4. **MONITOR YOUR ACCOUNTS** - Watch for any unauthorized activity
+5. **WARN OTHERS** - Share this experience to help prevent others from falling victim
+
+**DO NOT:**
+- Send any money
+- Provide additional personal information
+- Click on any links they send
+- Download any files they provide
+
+## LEGAL CONSIDERATIONS
+
+This situation involves potential violations of:
+- Wire fraud statutes
+- Identity theft laws
+- Advance fee fraud regulations
+
+If you've already provided personal information, consider placing a fraud alert on your credit reports and monitoring your accounts closely.
+
+**Bottom line: This is a scam. Walk away immediately and report it to authorities.**
+[22:23:31.112] [INFO] --------------------------------------------------
+[22:23:31.113] [INFO] 
+--- FINAL SYNTHESIS (FULL) ---
+[22:23:31.115] [INFO] **MISSION ABORTED DUE TO CRITICAL RISKS**
+
+CRITICAL RISK detected by job-authenticator; SCAM WARNING from job-authenticator; SCAM WARNING from payment-enforcer
+
+Please review the warnings above immediately. Do not proceed.
+[22:23:31.117] [INFO] 
+--- SCAM DETECTION VALIDATION ---
+[22:23:31.119] [INFO]   ✅ identifies_as_scam
+[22:23:31.121] [INFO]   ✅ flags_deposit
+[22:23:31.123] [INFO]   ✅ flags_no_interview
+[22:23:31.125] [INFO]   ✅ flags_bank_request
+[22:23:31.127] [INFO]   ✅ recommends_decline
+[22:23:31.129] [INFO]   ✅ warns_about_whatsapp
+[22:23:31.130] [INFO] 
+Scam Detection Score: 100% (6/6)
+[22:23:31.132] [SUCCESS] Team scam detection PASSED
+[22:23:31.138] [INFO] 
+======================================================================
+[22:23:31.139] [INFO]   TEST 9: COMPLEX NEGOTIATION TASK
+[22:23:31.141] [INFO] ======================================================================
+
+[22:23:31.279] [INFO] COMPLEX TASK:
+[22:23:31.281] [INFO] 
+        I'm a freelance web developer. A client wants to hire me for a $10,000 project.
+        Their proposed contract has these issues:
+        
+        1. Payment: 100% upon completion (no milestones)
+        2. Timeline: 6 weeks, but scope is "flexible" 
+        3. No late fees for delayed payment
+        4. Client owns IP immediately
+        5. "Unlimited revisions" clause
+        
+        My goals:
+        1. Analyze the contract risks
+        2. Suggest specific negotiation points
+        3. Draft a polite but firm counter-proposal email
+        
+        Help me negotiate fair terms.
+        
+[22:23:31.284] [INFO] 
+Executing multi-agent workflow...
+[22:24:01.685] [INFO] 
+Total Duration: 30.40s
+[22:24:01.687] [INFO] Agents Used: ['contract-guardian', 'payment-enforcer', 'talent-vet']
+[22:24:01.689] [INFO] 
+--- FULL AGENT RESPONSES ---
+[22:24:01.691] [INFO] 
+=== CONTRACT-GUARDIAN ===
+[22:24:01.693] [INFO] {
+    "is_critical_risk": true,
+    "risk_level": "CRITICAL",
+    "risk_summary": "100% payment upon completion with no upfront deposit and no late fees creates severe financial risk.",
+    "override_instruction": "Reject the contract as written. Demand at least 50% upfront and clear payment milestones before starting work.",
+    "analysis": "# Contract Risk Analysis: CRITICAL ISSUES DETECTED\n\n## Red Flags & Risks\n\n**🚨 CRITICAL RISK: Payment Structure**\n- **100% upon completion** with no upfront deposit\n- **No late fees** for delayed payment\n- **Net 90 days** payment window after vague \"client satisfaction review\"\n- **Total project value: $15,000 USD** (significant financial exposure)\n\n**⚠️ HIGH RISK: Scope Creep**\n- \"Flexible\" timeline allows client to extend indefinitely\n- \"Unlimited revisions\" clause enables endless scope expansion\n- No clear deliverable specifications\n\n**⚠️ MEDIUM RISK: IP Ownership**\n- Client owns IP immediately, removing leverage for payment disputes\n\n## Payment Terms (Based on Context)\n\n**Current Terms (UNACCEPTABLE):**\n- **Total Project Value: $15,000 USD**\n- **Payment: 100% upon completion** (NO UPFRONT DEPOSIT)\n- **Payment Window: Net 90 days** after \"client satisfaction review\"\n- **Late Fees: NONE**\n\n**Recommended Terms:**\n- **50% upfront** ($7,500) before project commencement\n- **40%** upon milestone completion\n- **10%** upon final delivery and acceptance\n- **Net 15 days** payment terms\n- **1.5% monthly late fees** on overdue amounts\n\n## Late Fees/Penalties\n\n**Current: NONE** - This is unacceptable and enables payment delays\n**Recommended: 1.5% monthly** compound interest on overdue amounts\n\n## Recommendations\n\n1. **Reject current payment terms** - Demand 50% upfront minimum\n2. **Add clear milestones** with associated payments\n3. **Limit revisions** to 3 rounds maximum\n4. **Set firm timeline** with scope boundaries\n5. **Retain IP until full payment** received\n6. **Add late payment penalties**\n\n**Counter-proposal email template:**\n\n> \"Thank you for the opportunity. To ensure a smooth partnership, I propose revised terms: 50% upfront, 40% at milestone completion, 10% upon final delivery. Payment terms Net 15 days with 1.5% monthly late fees. Scope limited to 3 revision rounds with clear deliverable specifications. Please let me know if this works for you.\"\n\n**Bottom line:** This contract as written is a financial trap. Walk away unless they agree to reasonable payment protections."
+}
+[22:24:01.695] [INFO] 
+=== PAYMENT-ENFORCER ===
+[22:24:01.696] [INFO] ## 1. TONE CHECK
+
+**Overall Assessment: Professional & Appropriate**
+
+Your draft strikes a good balance:
+- **Professional**: Clear, business-like language
+- **Not Passive-Aggressive**: Direct but respectful
+- **Not Too Casual**: Maintains appropriate business formality
+
+**Minor Tone Issues:**
+- "Their proposed contract has these issues" could sound slightly accusatory
+- "Help me negotiate fair terms" at the end is a bit informal for a business email
+
+## 2. CLARITY CHECK
+
+**Strengths:**
+- Clear identification of specific contract problems
+- Well-defined goals for the negotiation
+
+**Areas for Improvement:**
+- The "Help me negotiate fair terms" ending lacks a clear call to action
+- Could benefit from more specific proposed solutions rather than just identifying problems
+
+## 3. POLISHED VERSION
+
+Here's a more polished version of your message:
+
+---
+
+**Subject: Contract Terms Review and Proposed Modifications**
+
+Dear [Client Name],
+
+Thank you for sharing the contract proposal for the $10,000 web development project. I appreciate the opportunity to collaborate with you.
+
+After reviewing the terms, I'd like to discuss several areas that would help ensure a successful and mutually beneficial partnership:
+
+**Key Areas for Discussion:**
+
+1. **Payment Structure**: I propose a milestone-based payment schedule (e.g., 30% upfront, 40% at midpoint, 30% upon completion) to better align with the project timeline and scope.
+
+2. **Project Scope**: Given the 6-week timeline, I recommend defining specific deliverables and scope parameters to ensure we meet your expectations within the agreed timeframe.
+
+3. **Intellectual Property**: I suggest transferring IP rights upon final payment completion, which is standard practice in our industry and protects both parties' interests.
+
+4. **Revisions**: I propose including a reasonable limit on revisions (e.g., 2-3 rounds) with clear parameters for additional changes to maintain project scope and timeline.
+
+Would you be available for a call this week to discuss these points? I'm confident we can reach terms that work well for both of us while ensuring the project's success.
+
+Best regards,
+[Your Name]
+
+---
+
+## 4. ALTERNATIVE STRATEGY
+
+If you want to be more direct or if previous negotiations have been challenging, consider this alternative approach:
+
+**Alternative Strategy: Solution-Focused with Firm Boundaries**
+
+---
+
+**Subject: Contract Terms - Moving Forward with Clear Agreements**
+
+Dear [Client Name],
+
+I'm excited about this project and want to ensure we establish terms that set us up for success. To proceed, I need to address a few standard industry practices:
+
+**Required Modifications:**
+- Payment schedule: 30% upfront, 40% at milestone, 30% upon completion
+- IP transfer upon final payment (industry standard)
+- Defined scope with revision limits to maintain quality and timeline
+
+These terms align with professional web development standards and protect the interests of both parties. Please let me know if you can accommodate these changes so we can move forward.
+
+I'm available to discuss this further at your convenience.
+
+Best regards,
+[Your Name]
+
+---
+
+**Key Improvements Made:**
+1. **More Professional Tone**: Removed potentially accusatory language
+2. **Clear Call to Action**: Specific request for discussion/call
+3. **Solution-Oriented**: Focused on collaborative problem-solving
+4. **Industry Context**: Referenced standard practices to strengthen position
+5. **Confident but Respectful**: Assertive without being demanding
+
+Choose the version that best fits your relationship with the client and your negotiation style.
+[22:24:01.698] [INFO] 
+=== TALENT-VET ===
+[22:24:01.700] [INFO] # Negotiation Analysis & Strategy for Your $10,000 Web Development Project
+
+## 1. LEVERAGE ANALYSIS
+
+**Your Strengths:**
+- **Specialized Skills**: Web development expertise is in high demand
+- **Client's Urgency**: They've already identified you as their preferred developer
+- **Market Demand**: Quality web developers can command premium rates
+- **Alternative Options**: You can walk away and find other clients
+
+**Their Leverage:**
+- **Project Budget**: $10,000 is a substantial project
+- **Timeline Pressure**: 6-week deadline suggests they need this completed
+- **Scope Flexibility**: They may be willing to adjust requirements
+
+**Your Negotiation Power**: **HIGH** - You have specialized skills they need, and the market favors skilled developers.
+
+## 2. RATE GUIDANCE
+
+Based on market standards for a $10,000 project:
+- **Your effective rate**: ~$40-50/hour (assuming 200-250 hours over 6 weeks)
+- **Market rate for experienced developers**: $60-120/hour
+- **Your rate is competitive** - you have room to negotiate better terms
+
+## 3. SPECIFIC NEGOTIATION POINTS
+
+### Critical Issues to Address:
+
+**Payment Structure:**
+- Request 30% upfront, 40% at midpoint, 30% upon completion
+- Add late fees: 1.5% monthly interest on overdue payments
+
+**Scope Management:**
+- Define "unlimited revisions" as 3 rounds of revisions per deliverable
+- Add scope change process with additional fees for work beyond original scope
+
+**Intellectual Property:**
+- Transfer IP only upon full payment
+- Retain rights to code libraries and frameworks
+
+**Timeline Protection:**
+- Define scope clearly in writing
+- Add timeline extensions for scope changes or delayed client feedback
+
+## 4. COUNTER-PROPOSAL EMAIL SCRIPT
+
+**Subject: Contract Terms Discussion - [Project Name]**
+
+Dear [Client Name],
+
+Thank you for the opportunity to work on this exciting project. I'm enthusiastic about bringing your vision to life and have reviewed the proposed terms carefully.
+
+To ensure a successful partnership and protect both our interests, I'd like to propose some adjustments to the contract terms:
+
+**Payment Structure:**
+I propose a milestone-based payment schedule:
+- 30% upfront to begin work
+- 40% upon completion of core functionality (midpoint)
+- 30% upon final delivery and approval
+
+This structure helps me manage project resources effectively while ensuring you receive regular progress updates.
+
+**Scope & Revisions:**
+To maintain our 6-week timeline, I suggest defining "unlimited revisions" as 3 rounds of revisions per deliverable. Additional revisions would be billed at our agreed rate. This ensures we stay on schedule while maintaining quality.
+
+**Intellectual Property:**
+I recommend transferring full IP rights upon final payment. This is standard practice in our industry and protects both parties' interests.
+
+**Timeline Protection:**
+I'll provide a detailed project scope and timeline. Any scope changes will be documented and may affect our delivery schedule.
+
+These terms are designed to ensure project success while protecting both our interests. I'm confident this approach will result in an excellent final product delivered on time.
+
+Would you like to discuss these proposals? I'm available [your availability] for a call.
+
+Best regards,
+[Your Name]
+
+## 5. RESPONSES TO LIKELY PUSHBACKS
+
+**If they say: "We've always paid 100% upon completion"**
+
+Response: "I understand your preference, but milestone payments are standard in our industry for projects of this size. They help ensure steady progress and reduce risk for both parties. Many of my clients find this approach actually improves project outcomes."
+
+**If they say: "Unlimited revisions are non-negotiable"**
+
+Response: "I completely understand wanting flexibility. My proposal of 3 rounds of revisions per deliverable typically covers 95% of client needs. If we find you need more, we can always adjust - but having this framework helps us stay on schedule and budget."
+
+**If they say: "We need IP rights immediately"**
+
+Response: "I respect that need. However, retaining IP until payment is standard practice and protects my ability to complete the work. Once final payment is received, all rights transfer immediately. This protects both our interests and is common across the industry."
+
+**If they say: "Your terms are too rigid"**
+
+Response: "These terms are actually designed to provide flexibility while ensuring project success. Clear milestones and scope help us adapt efficiently when changes are needed. This approach has helped me deliver successful projects consistently."
+
+## 6. NEGOTIATION STRATEGY
+
+**Opening Position**: Present your counter-proposal confidently
+**Middle Ground**: Be willing to compromise on minor points while holding firm on payment structure and IP rights
+**Walk-Away Point**: If they refuse all reasonable terms, be prepared to decline - your skills are valuable
+
+**Key Phrases to Use:**
+- "This is standard practice in our industry"
+- "This approach ensures project success"
+- "This protects both our interests"
+- "I'm confident this will result in the best outcome"
+
+Remember: You're providing valuable expertise. Don't undervalue your work or accept terms that put you at financial risk.
+[22:24:01.702] [INFO] 
+--- FINAL SYNTHESIS ---
+[22:24:01.704] [INFO] **MISSION ABORTED DUE TO CRITICAL RISKS**
+
+CRITICAL RISK detected by contract-guardian
+
+Please review the warnings above immediately. Do not proceed.
+[22:24:01.706] [INFO] 
+--- QUALITY VALIDATION ---
+[22:24:01.708] [INFO]   ✅ addresses_payment
+[22:24:01.709] [INFO]   ✅ addresses_ip
+[22:24:01.711] [INFO]   ✅ addresses_scope
+[22:24:01.713] [INFO]   ✅ provides_email
+[22:24:01.715] [INFO]   ✅ suggests_specifics
+[22:24:01.717] [INFO] 
+Quality Score: 5/5
+[22:24:01.718] [SUCCESS] Complex negotiation task PASSED
+[22:24:01.725] [INFO] 
+======================================================================
+[22:24:01.727] [INFO]   TEST 10: END-TO-END STRESS TEST
+[22:24:01.729] [INFO] ======================================================================
+
+[22:24:01.730] [INFO] Test User ID: e2e_stress_1766269441
+[22:24:01.733] [INFO] 
+--- STEP 1: RAGFLOW STATUS ---
+[22:24:01.749] [INFO] RAGFlow Status: healthy
+[22:24:01.751] [INFO] 
+--- STEP 2: RAG CONTEXT SEARCH ---
+[22:24:03.842] [INFO] Found 3 context chunks
+[22:24:03.844] [DEBUG]   - Similarity 0.538: 
+        FREELANCE SERVICE AGREEMENT - RISKY CLIENT        =====================...
+[22:24:03.846] [DEBUG]   - Similarity 0.538: 
+        FREELANCE SERVICE AGREEMENT - RISKY CLIENT        =====================...
+[22:24:03.848] [DEBUG]   - Similarity 0.538: 
+        FREELANCE SERVICE AGREEMENT - RISKY CLIENT        =====================...
+[22:24:03.850] [INFO] 
+--- STEP 3: TEAM ORCHESTRATION ---
+[22:24:03.852] [INFO] Stress Task:
+[22:24:03.854] [INFO] 
+        I'm a freelancer facing multiple challenges:
+        
+        1. A client wants me to sign a contract with NO upfront payment
+        2. They're asking for "a few small fixes" outside the original scope
+        3. They haven't responded to my last 3 invoices
+        4. Now they want a 40% discount due to "budget constraints"
+        
+        I need help with:
+        - Contract review for the new project
+        - Response to scope creep  
+        - Payment enforcement strategy
+        - Negotiation for the discount request
+        
+        Give me a complete action plan.
+        
+[22:24:48.494] [INFO] 
+Total Execution Time: 44.05s
+[22:24:48.496] [DEBUG] Error: None
+[22:24:48.498] [INFO] 
+--- ALL AGENT OUTPUTS ---
+[22:24:48.500] [INFO] 
+[CONTRACT-GUARDIAN]
+{
+    "is_critical_risk": true,
+    "risk_level": "CRITICAL",
+    "risk_summary": "Client demands 100% payment upon completion with no upfront deposit and a 90-day payment window after subjective 'client satisfaction review', creating extreme payment risk.",
+    "override_instruction": "STOP WORK IMMEDIATELY. Do not deliver any further work until a revised contract with 50% upfront payment and clear scope boundaries is signed.",
+    "analysis": "# Contract Analysis: CRITICAL RISK DETECTED\n\n## Red Flags & Risks\n\n**🚨 SCAM INDICATORS:**\n- **No upfront payment** - Client demands 100% payment upon completion\n- **Subjective payment trigger** - Payment contingent on \"client satisfaction review\"\n- **Extended payment terms** - Net 90 days after completion\n- **No late fees** - Zero penalties for non-payment\n- **Scope creep** - \"Small fixes\" outside original scope\n- **Payment history** - 3 unpaid invoices already\n- **Discount pressure** - 40% discount request due to \"budget constraints\"\n\n## Payment Terms (From Context)\n\n**Current Contract Terms:**\n- **Total Project Value:** $15,000 USD\n- **Payment Structure:** 100% upon completion (NO UPFRONT DEPOSIT)\n- **Payment Window:** Net 90 days after \"client satisfaction review\"\n- **Late Fees:** NONE\n\n**Risk Assessment:** This is a **PREDATORY CONTRACT** designed to exploit freelancers.\n\n## Late Fees/Penalties\n\n**Current:** No late fees specified\n**Recommended:** 1.5% monthly interest on overdue amounts + collection costs\n\n## Recommendations\n\n### IMMEDIATE ACTIONS\n1. **Cease all work immediately**\n2. **Send payment demand** for all outstanding invoices\n3. **Refuse scope creep** - \"Small fixes\" must be billable\n4. **Reject discount request** - Client has breached payment terms\n\n### CONTRACT REVISION REQUIREMENTS\n1. **50% upfront payment** before any work begins\n2. **30% milestone payment** at project midpoint\n3. **20% final payment** within 14 days of delivery\n4. **Clear scope definition** with change order process\n5. **Late fees:** 1.5% monthly on overdue amounts\n6. **Kill fee:** 25% of remaining balance if client terminates\n\n### NEGOTIATION STRATEGY\n- **Do not negotiate** on payment terms - they are non-negotiable\n- **Document all scope changes** and require separate payment\n- **Threaten legal action** for unpaid invoices if necessary\n- **Walk away** if client refuses reasonable terms\n\n### LEGAL PROTECTION\n- **Send cease-and-desist** for scope creep\n- **File mechanics lien** if applicable in your jurisdiction\n- **Consult attorney** for debt collection if needed\n\n**BOTTOM LINE:** This client is attempting to scam you. Protect yourself by stopping work and demanding payment for completed work under the original terms."
+}
+[22:24:48.502] [INFO] 
+[PAYMENT-ENFORCER]
+# SITUATION ASSESSMENT
+
+**Severity Level: HIGH RISK**
+- **Financial Impact**: Multiple unpaid invoices + new project without protection
+- **Client Behavior Pattern**: Scope creep, payment delays, discount demands
+- **Leverage**: You have completed work and deliverables, but no upfront payment protection
+
+**Your Leverage Points:**
+- Completed work and deliverables
+- Professional reputation and relationship
+- Potential for future business (if terms improve)
+
+**Client Leverage Points:**
+- Control over payment timing
+- Ability to withhold future work
+- "Budget constraints" justification
+
+# RECOMMENDED APPROACH
+
+**Phase 1: Professional but Firm (Immediate)**
+- Address unpaid invoices first
+- Set boundaries on scope creep
+- Require payment terms for new work
+
+**Phase 2: Contract Protection (New Project)**
+- Insist on 50% upfront for new project
+- Clear scope definition with change order process
+- Payment milestones
+
+**Phase 3: Negotiation Strategy**
+- Offer limited discount ONLY with immediate payment of past due invoices
+- No discount without payment protection for future work
+
+# EMAIL TEMPLATES
+
+## Template 1: Immediate Invoice Follow-up + New Project Terms
+
+**Subject: Payment Status & New Project Terms - Action Required**
+
+Dear [Client Name],
+
+I hope this message finds you well. I wanted to follow up on our recent discussions regarding the outstanding invoices for [Project Name/Reference].
+
+**Current Status:**
+- Invoice #[number] dated [date] - $[amount] (overdue [X] days)
+- Invoice #[number] dated [date] - $[amount] (overdue [X] days)
+- Invoice #[number] dated [date] - $[amount] (overdue [X] days)
+**Total Outstanding: $[total amount]**
+
+Regarding the new project you mentioned, I'm excited about the opportunity to continue our collaboration. However, to move forward, I need to establish clear terms:
+
+**New Project Terms:**
+- 50% upfront payment required before commencement
+- 50% due upon completion
+- Scope clearly defined with change order process for additional work
+- Payment terms: Net 15 days from invoice date
+
+**Regarding Your Discount Request:**
+I understand budget considerations, but given the current outstanding balance, I'm unable to offer discounts on new work without payment protection. I would be happy to discuss a 10% discount on the new project if you can clear the outstanding invoices by [specific date].
+
+Please let me know how you'd like to proceed. I'm available for a call tomorrow or Thursday to discuss this further.
+
+Best regards,
+[Your Name]
+
+## Template 2: Scope Creep Response
+
+**Subject: Scope Clarification for [Project Name]**
+
+Dear [Client Name],
+
+Thank you for your feedback on the [Project Name]. I appreciate your input and want to ensure we're aligned on deliverables.
+
+**Regarding the "small fixes" you mentioned:**
+After reviewing the original scope agreement dated [date], these items fall outside our agreed-upon deliverables:
+- [List specific items]
+- [List specific items]
+
+**Options for Moving Forward:**
+1. **Change Order**: I can provide a quote for these additional items at my standard rate of $[rate]/hour or a fixed fee of $[amount]
+2. **Scope Adjustment**: We can adjust the project scope and timeline accordingly
+
+Please let me know which option works best for you, and I'll prepare the appropriate documentation.
+
+Best regards,
+[Your Name]
+
+## Template 3: Formal Payment Demand (If No Response)
+
+**Subject: Final Notice: Overdue Invoice Payment Required**
+
+Dear [Client Name],
+
+This is my final attempt to resolve the outstanding payment issue before escalating to formal collection procedures.
+
+**Payment Required Immediately:**
+- Total Due: $[amount]
+- Days Overdue: [number] days
+- Late Fee (per contract): $[amount] (if applicable)
+
+**Next Steps:**
+If payment is not received by [date - 5 business days from now], I will:
+1. Cease all work on current and future projects
+2. Engage a collections agency
+3. Pursue legal action to recover the debt
+
+I prefer to resolve this amicably and preserve our professional relationship. Please remit payment today via [payment method] or contact me immediately to discuss payment arrangements.
+
+This matter requires your urgent attention.
+
+Sincerely,
+[Your Name]
+
+# ESCALATION STEPS
+
+## Phase 1: Immediate Actions (This Week)
+1. Send Template 1 email
+2. Follow up with phone call if no response in 48 hours
+3. Document all communication
+
+## Phase 2: If No Response (Next Week)
+1. Send Template 3 (Formal Demand)
+2. Stop all work immediately
+3. Send final invoice with late fees (if contract allows)
+
+## Phase 3: Collection Actions (Following Week)
+1. **Collections Agency**: Research reputable agencies specializing in B2B collections
+2. **Small Claims Court**: If amount is under jurisdictional limit (typically $5,000-$10,000)
+3. **Civil Court**: For larger amounts - consult with collections attorney
+4. **Lien Filing**: If applicable in your jurisdiction and for your industry
+
+## Phase 4: Future Protection
+1. **Contract Template**: Use standard contract with:
+   - 50% upfront payment
+   - Clear scope definition
+   - Late fees (5-10% monthly)
+   - Dispute resolution clause
+2. **Client Vetting**: Require payment history or references for future risky clients
+3. **Payment Terms**: Never work without upfront payment for new or problematic clients
+
+## Key Negotiation Points:
+- **No discount without payment**: Link any discount to immediate payment of past due
+- **Future work protection**: 50% upfront minimum
+- **Scope protection**: Change orders for additional work
+- **Relationship preservation**: Professional but firm tone
+
+**Bottom Line**: You cannot afford to continue this pattern. Either they pay what they owe and agree to fair terms, or you must be prepared to walk away and pursue collection.
+[22:24:48.504] [INFO] 
+[TALENT-VET]
+# Talent Assessment Report
+
+## 1. MATCH SCORE: 8/10
+
+The candidate demonstrates strong alignment with the project requirements, showing experience with complex client management scenarios and contract negotiation.
+
+## 2. KEY STRENGTHS
+
+**Contract Review & Risk Assessment:**
+- Demonstrates awareness of critical contract red flags (no upfront payment, scope creep, payment delays)
+- Shows understanding of legal protections needed in freelance agreements
+- Recognizes the importance of payment terms and intellectual property rights
+
+**Client Management Experience:**
+- Has faced multiple challenging scenarios simultaneously (payment issues, scope changes, discount requests)
+- Shows proactive approach by seeking professional guidance rather than accepting unfavorable terms
+- Demonstrates business acumen by recognizing when to seek expert help
+
+**Problem-Solving Approach:**
+- Presents structured, multi-faceted challenges requiring comprehensive solutions
+- Shows awareness of different aspects of client management (legal, financial, negotiation)
+- Requests complete action plan indicating strategic thinking
+
+## 3. RED FLAGS / INCONSISTENCIES
+
+**Financial Risk Tolerance:**
+- Has accepted work without upfront payments, indicating potential desperation or poor business practices
+- Multiple unpaid invoices suggest either poor contract enforcement or client selection issues
+- May be too accommodating to difficult clients
+
+**Scope Management:**
+- "A few small fixes" outside original scope suggests unclear initial agreements or poor boundary setting
+- Pattern of accommodating client demands without proper compensation
+
+**Business Acumen Questions:**
+- No mention of having standard contracts or payment terms
+- No indication of screening processes for high-risk clients
+- Lacks apparent systems to prevent these issues from recurring
+
+## 4. RECOMMENDED INTERVIEW QUESTIONS
+
+**Contract & Risk Management:**
+1. "Walk me through your standard contract terms and payment structure for new clients"
+2. "How do you screen potential clients to avoid payment issues before starting work?"
+3. "Describe your process for handling scope changes and additional requests"
+
+**Business Practices:**
+4. "What percentage of your projects require upfront payments, and why?"
+5. "How do you handle clients who request discounts or budget constraints?"
+6. "What systems do you have in place to ensure timely payment?"
+
+**Problem Resolution:**
+7. "Describe a time when you had to enforce payment terms with a difficult client"
+8. "How do you balance maintaining client relationships with protecting your business interests?"
+9. "What would you do differently in your current situation with this challenging client?"
+
+**Strategic Thinking:**
+10. "How do you determine when to walk away from a problematic client relationship?"
+
+The candidate shows promise but needs verification of their ability to implement better business practices and enforce boundaries effectively.
+[22:24:48.506] [INFO] 
+[GHOSTING-SHIELD]
+## 1. DIAGNOSIS
+
+**Why they're silent:**
+- **Financial distress** - The 40% discount request + ignored invoices = cash flow problems
+- **Scope creep guilt** - They know they're asking for unpaid extras
+- **Contract avoidance** - They don't want to commit to terms that protect you
+- **Shopping around** - Looking for cheaper alternatives while stalling you
+
+**This is a red flag client** - Multiple warning signs align with your RAG context:
+- No upfront payment (high risk)
+- Scope creep without compensation
+- Ignored invoices (payment issues)
+- Discount demands (budget problems)
+
+## 2. STRATEGY
+
+**Immediate approach:**
+- **Email first** - Create paper trail
+- **Call within 48 hours** - Add urgency
+- **Document everything** - For potential legal action
+- **Prepare to walk away** - This client is toxic
+
+**Tone:** Professional but firm. No desperation, no anger.
+
+## 3. THE "MAGIC EMAIL"
+
+**Subject: URGENT: Payment & Project Status - Action Required by [Date + 3 days]**
+
+Hi [Client Name],
+
+I hope you're doing well. I wanted to follow up on several important matters that need immediate resolution:
+
+**1. Outstanding Invoices**
+- Invoice #[number] - $[amount] (due [date])
+- Invoice #[number] - $[amount] (due [date])
+- Invoice #[number] - $[amount] (due [date])
+**Total: $[amount]**
+
+These invoices are now [X] days past due. Please remit payment by [specific date, 3 days from now].
+
+**2. Scope Creep Resolution**
+The "small fixes" you requested fall outside our original agreement. I've documented [X] hours of additional work at my standard rate of $[rate]/hour, totaling $[amount]. This must be paid before any further work begins.
+
+**3. New Project Terms**
+Regarding the new project, I cannot proceed without:
+- 50% upfront payment
+- Clear scope definition
+- Signed contract with standard payment terms
+
+**4. Discount Request**
+I cannot offer a 40% discount given the current circumstances. However, I'm willing to discuss a payment plan for outstanding balances if you can provide immediate payment of [X]% of the total owed.
+
+**Next Steps:**
+Please respond by [date] with:
+1. Payment arrangement for outstanding invoices
+2. Confirmation of payment for scope creep work
+3. Your decision on the new project terms
+
+If I don't hear back by [date], I'll assume you're no longer interested in continuing our work together.
+
+Best regards,
+[Your Name]
+
+## 4. THE "BREAK UP" EMAIL
+
+**Subject: Final Notice: Account Closure & Legal Action Preparation**
+
+Hi [Client Name],
+
+This will be my final communication regarding your outstanding balance of $[total amount].
+
+Despite multiple attempts to resolve this matter professionally, you have:
+- Ignored 3+ invoices totaling $[amount]
+- Requested unpaid additional work
+- Made unrealistic discount demands
+- Failed to respond to my previous email
+
+**Final Offer:**
+Pay the full outstanding balance of $[amount] by [date - 48 hours from now]. No discounts. No negotiations.
+
+**If payment is not received by [date]:**
+1. I will engage a collections agency
+2. I will pursue all available legal remedies
+3. I will report this to relevant business credit bureaus
+4. I will share this experience (anonymously) in freelancer communities to warn others
+
+This situation is entirely preventable. The choice is yours.
+
+[Your Name]
+[Contact Information]
+
+**After sending the break-up email:**
+- Block them on all platforms
+- Update your contract templates to prevent similar situations
+- Use this experience to screen future clients more carefully
+
+**Remember:** You don't need this client. Bad clients cost more than they're worth in stress, time, and reputation.
+[22:24:48.509] [INFO] 
+[SCOPE-SENTINEL]
+{
+    "is_critical_risk": true,
+    "risk_level": "CRITICAL",
+    "risk_summary": "Multiple red flags: no upfront payment, scope creep, unpaid invoices, and discount pressure indicate a high-risk client.",
+    "override_instruction": "STOP WORK IMMEDIATELY. Send payment demand for all outstanding invoices before any new work. Require 50% upfront for any new project.",
+    "analysis": "# Critical Risk Analysis\n\n## 🚨 IMMEDIATE THREATS IDENTIFIED\n\n**1. Payment Pattern Violation**\n- 3 unpaid invoices already exist\n- No upfront payment requested for new work\n- Client demanding 40% discount while owing money\n\n**2. Contract Red Flags**\n- No upfront deposit (high risk for freelancer)\n- Scope creep with \"small fixes\" outside original agreement\n- Client using financial pressure tactics\n\n**3. Pattern Recognition**\nThis follows the classic scope creep → payment delay → discount demand cycle used by problematic clients.\n\n## SCOPE CREEP ANALYSIS\n\n**IS THIS SCOPE CREEP?** → **YES**\n\n\"A few small fixes\" outside original scope = scope creep by definition.\n\n**IMPACT ANALYSIS**\n- Time: Unknown (\"small\" is subjective)\n- Cost: Risk of further unpaid work\n- Relationship: Client testing boundaries\n\n## RESPONSE STRATEGY\n\n### Immediate Actions (Priority 1)\n1. **STOP ALL WORK** until payment is received\n2. **Send formal payment demand** for all 3 outstanding invoices\n3. **Require 50% upfront** for any new project\n\n### Response Scripts\n\n**For Scope Creep:**\n> \"I appreciate you bringing these items to my attention. After reviewing the original scope, I can provide a detailed estimate for these additional requirements. However, I'll need to address the outstanding invoices from our previous work before proceeding with new deliverables.\"\n\n**For Discount Request:**\n> \"I understand budget constraints, but I'm unable to offer discounts while there are outstanding payments on previous invoices. Once those are resolved, I'd be happy to discuss pricing for new work with appropriate payment terms.\"\n\n**For New Contract:**\n> \"For new projects, I require 50% upfront payment and clear scope definition with change order procedures. This protects both parties and ensures smooth project execution.\"\n\n## LEGAL PROTECTION\n- Document all communication\n- Send payment demand via certified mail\n- Consider small claims court for unpaid invoices\n- Never work without payment protection\n\n## NEGOTIATION STANCE\n**FIRM BUT POLITE**\n- No free work\n- No discounts on unpaid invoices\n- Clear payment terms for future work\n- Professional boundaries maintained",
+    "detected_scope_creep": true
+}
+[22:24:48.511] [INFO] 
+[NEGOTIATION-ASSISTANT]
+# Negotiation Strategy for Your Challenging Client
+
+## 1. LEVERAGE ANALYSIS
+
+**Your Current Leverage:**
+- You have completed work that they likely need (intellectual property value)
+- They've already engaged you for multiple projects (relationship investment)
+- You have leverage from their payment delays (they need your cooperation)
+- You can walk away and focus on better clients
+
+**Their Leverage:**
+- They control payment for past work
+- They may have budget constraints (legitimate or negotiating tactic)
+- They could damage your reputation if disputes escalate
+
+**Your Hidden Leverage:**
+- You have marketable skills in demand
+- You can document their payment issues for future reference
+- You can set boundaries that attract better clients
+
+## 2. RATE GUIDANCE
+
+Based on the contract context showing a $15,000 project value, here's your pricing strategy:
+
+**For New Work:**
+- **Require 50% upfront** for any new project (industry standard for established clients, essential for this client)
+- **Scope clearly defined** with change order process for additional work
+- **Net 30 terms maximum** (not 90 days as in their problematic contract)
+- **1.5x rate for scope creep** work unless pre-approved
+
+**For Past Due Invoices:**
+- **No new work until past invoices are resolved**
+- Consider offering a small early payment discount (5-10%) for immediate settlement
+
+## 3. SPECIFIC SCRIPTS
+
+### Email 1: Addressing Past Invoices & Setting Boundaries
+
+Subject: Resolution Needed: Past Invoices and Future Project Terms
+
+Dear [Client Name],
+
+I hope this message finds you well. I wanted to follow up on our outstanding invoices [list invoice numbers and amounts] that are currently past due. These represent work that was completed and delivered according to our original agreements.
+
+Before we can move forward with any new project discussions, I need to resolve these outstanding balances. I'm prepared to offer a 5% discount for immediate payment in full, which would save you [specific amount].
+
+Regarding the new project you mentioned, I'm excited about the opportunity to work together again. However, given our payment history, I'll need to implement new terms:
+
+- 50% deposit required before project commencement
+- Clearly defined scope with change order process for any modifications
+- Net 30 payment terms upon completion
+- All work remains my property until full payment is received
+
+I understand budget constraints are a concern. The 40% discount you requested would significantly impact my ability to deliver the quality you expect. Instead, I can offer:
+
+- A 10% discount on the new project with the 50% upfront payment
+- Phased delivery to help with cash flow management
+- Value engineering to prioritize essential features
+
+Please let me know how you'd like to proceed with the outstanding invoices so we can move forward constructively.
+
+Best regards,
+[Your Name]
+
+### Email 2: If They Push Back on Payment
+
+Subject: Clarifying Our Business Relationship
+
+Dear [Client Name],
+
+I understand budget constraints are challenging, but I'm concerned about the pattern of payment delays affecting our business relationship. The outstanding invoices represent completed work that you've had the benefit of using.
+
+Regarding the "small fixes" you mentioned, these fall outside our original scope and would require a change order at my standard rates. I'm happy to provide a quote once I understand the specific requirements.
+
+The 40% discount you're requesting isn't feasible for me to maintain the quality and service standards you've come to expect. My counter-offer of 10% with 50% upfront represents a fair compromise that allows me to continue serving you while protecting my business interests.
+
+I value our relationship and want to find a solution that works for both of us. However, I cannot proceed with new work while past obligations remain unresolved.
+
+Please let me know how you'd like to resolve the outstanding invoices so we can discuss moving forward.
+
+Best regards,
+[Your Name]
+
+## 4. RESPONSES TO LIKELY PUSHBACKS
+
+### Pushback: "We can't pay until the new project is done"
+**Response:** "I understand the cash flow challenge, but I need to protect my business from further payment risks. Without resolution of past invoices, I cannot take on additional work. Let's focus on resolving what we already have completed first."
+
+### Pushback: "Other freelancers offer better rates"
+**Response:** "I'm confident in the value I provide. The quality and reliability you've experienced come at a price. If budget is the primary concern, let's discuss scaling back the new project scope rather than reducing my rates for the work involved."
+
+### Pushback: "The fixes are minor and should be included"
+**Response:** "I appreciate that perspective, but scope creep affects my ability to deliver quality work to all clients. I can provide a detailed quote for the additional work, or we can include a scope buffer in our new agreement to handle minor adjustments."
+
+### Pushback: "We need the 40% discount or we'll go elsewhere"
+**Response:** "I respect your need to manage costs. While I can't offer 40%, I can provide flexible payment terms with the 50% deposit, or we can prioritize the most critical aspects of the project to fit your budget. However, I need the past invoices resolved regardless of whether we proceed with new work."
+
+### Pushback: "We're a valuable client and deserve better terms"
+**Response:** "I value our relationship, which is why I'm offering a structured approach to move forward. The new terms protect both of us and ensure I can continue providing the quality service you expect. Past payment issues make these protections necessary for my business."
+
+## ACTION PLAN SUMMARY
+
+1. **Immediately:** Send Email 1 to address past due invoices
+2. **If no response in 3-5 days:** Send a polite but firm reminder
+3. **If they agree to pay:** Process payment, then discuss new project terms
+4. **If they refuse:** Consider pausing all work and potentially legal action for small claims court (depending on your jurisdiction and invoice amounts)
+5. **For future work:** Implement strict payment terms and scope management
+6. **Long-term:** Use this experience to improve your client screening and contract terms
+
+**Remember:** You have the right to be paid fairly and on time. Setting boundaries now will attract better clients and improve your overall business relationships.
+[22:24:48.513] [INFO] 
+--- FINAL SYNTHESIS ---
+[22:24:48.516] [INFO] **MISSION ABORTED DUE TO CRITICAL RISKS**
+
+CRITICAL RISK detected by contract-guardian; CRITICAL RISK detected by scope-sentinel
+
+Please review the warnings above immediately. Do not proceed.
+[22:24:48.518] [INFO] 
+--- COMPREHENSIVE VALIDATION ---
+[22:24:48.520] [INFO]   ✅ addresses_payment
+[22:24:48.522] [INFO]   ✅ addresses_scope
+[22:24:48.524] [INFO]   ✅ addresses_discount
+[22:24:48.526] [INFO]   ✅ provides_strategy
+[22:24:48.528] [INFO]   ✅ mentions_contract
+[22:24:48.529] [INFO]   ✅ actionable
+[22:24:48.531] [INFO]   ✅ professional_tone
+[22:24:48.533] [INFO] 
+==================================================
+[22:24:48.535] [INFO] FINAL STRESS TEST SCORE: 100% (7/7)
+[22:24:48.537] [INFO] ==================================================
+[22:24:48.540] [SUCCESS] End-to-end stress test PASSED
+
+======================================================================
+  TEST SUITE COMPLETED
+======================================================================
