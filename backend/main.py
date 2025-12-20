@@ -40,7 +40,7 @@ import logging
 
 # Configure logging
 os.makedirs("logs", exist_ok=True)
-logger.add("logs/flagpilot.log", rotation="500 MB", level=settings.LOG_LEVEL)
+logger.add("logs/Flagpilot.log", rotation="500 MB", level=settings.LOG_LEVEL)
 
 # Suppress benign MetaGPT token warnings for custom models
 class TokenWarningFilter(logging.Filter):
@@ -63,7 +63,9 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "http://localhost",
         "http://localhost:3000",
+        "http://127.0.0.1",
         "http://127.0.0.1:3000",
         "https://*.vercel.app",  # Vercel frontend
     ],

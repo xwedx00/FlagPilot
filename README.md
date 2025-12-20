@@ -23,7 +23,7 @@
 
 ## 📖 Table of Contents
 
-- [🎯 What is FlagPilot?](#-what-is-flagpilot)
+- [🎯 What is FlagPilot?](#-what-is-Flagpilot)
 - [✨ Key Features](#-key-features)
 - [🤖 AI Agent Roster](#-ai-agent-roster)
 - [🏗️ Architecture](#️-architecture)
@@ -186,7 +186,7 @@ MYSQL_USER=ragflow
 MYSQL_PASSWORD=ragflow-pass
 MINIO_ROOT_USER=minioadmin
 MINIO_ROOT_PASSWORD=minioadmin
-RAGFLOW_ADMIN_EMAIL=admin@flagpilot.ai
+RAGFLOW_ADMIN_EMAIL=admin@Flagpilot.ai
 RAGFLOW_ADMIN_PASSWORD=admin123
 ```
 

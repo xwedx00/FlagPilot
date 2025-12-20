@@ -15,8 +15,8 @@ class MemoryManager:
     def __init__(self):
         self.es_url = f"http://{settings.ES_HOST}:{settings.ES_PORT}"
         self.client = Elasticsearch(self.es_url)
-        self.profile_index = "flagpilot_user_profiles"
-        self.gallery_index = "flagpilot_experience_gallery"
+        self.profile_index = "Flagpilot_user_profiles"
+        self.gallery_index = "Flagpilot_experience_gallery"
         
         # Initialize indices
         self._ensure_indices()

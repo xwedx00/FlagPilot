@@ -94,7 +94,7 @@ class AgentRegistry:
 
         return {
             "id": agent_id,
-            "name": agent_id.replace("_", "-"),
+            "name": agent_id,
             "description": f"FlagPilot {agent_id} agent",
             "profile": profile,
             "goal": goal

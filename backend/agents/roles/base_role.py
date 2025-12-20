@@ -362,6 +362,6 @@ class FlagPilotRole(Role):
             "scribe": 3,
             "connector": 2,
             "vault-keeper": 2,
-            "flagpilot": 0,  # Orchestrator is free
+            "Flagpilot": 0,  # Orchestrator is free
         }
         return COSTS.get(self.get_agent_id(), 5)

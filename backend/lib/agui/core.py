@@ -3,8 +3,17 @@ from typing import Optional, List, Any, Union, Literal, Dict, Annotated
 from pydantic import BaseModel, Field, ConfigDict
 import time
 
+def to_camel(string: str) -> str:
+    words = string.split('_')
+    return words[0] + ''.join(word.capitalize() for word in words[1:])
+
 class ConfiguredBaseModel(BaseModel):
-    model_config = ConfigDict(populate_by_name=True, arbitrary_types_allowed=True)
+    model_config = ConfigDict(
+        populate_by_name=True,
+        alias_generator=to_camel,
+        arbitrary_types_allowed=True,
+        extra='allow'
+    )
 
 # =============================================================================
 # Core Types

@@ -103,7 +103,7 @@ All agents are **automatically discovered** from `agents/roles/` on startup.
 
 | Module | Agent Class | Responsibility |
 |--------|-------------|----------------|
-| `flagpilot_orchestrator.py` | `FlagPilotOrchestrator` | Team lead, task planning & coordination |
+| `Flagpilot_orchestrator.py` | `FlagPilotOrchestrator` | Team lead, task planning & coordination |
 | `contract_guardian.py` | `ContractGuardian` | Legal analysis & contract review |
 | `job_authenticator.py` | `JobAuthenticator` | Scam detection with Fast-Fail |
 | `scope_sentinel.py` | `ScopeSentinel` | Scope creep identification |
@@ -300,7 +300,7 @@ backend/
 ├── agents/                     # MetaGPT agent system
 │   ├── roles/                  # Agent implementations
 │   │   ├── base_role.py        # Base class for all agents
-│   │   ├── flagpilot_orchestrator.py
+│   │   ├── Flagpilot_orchestrator.py
 │   │   ├── contract_guardian.py
 │   │   ├── job_authenticator.py
 │   │   ├── scope_sentinel.py
@@ -349,7 +349,7 @@ docker-compose exec backend pytest backend/tests/test_live_system.py -v
 docker-compose exec backend pytest backend/tests/test_live_system.py -k test_05_complex_e2e_flow
 
 # With coverage
-docker exec flagpilot-backend python -m pytest tests/ --cov=. --cov-report=html
+docker exec Flagpilot-backend python -m pytest tests/ --cov=. --cov-report=html
 ```
 
 ### Test Categories
@@ -397,10 +397,10 @@ Error: Container killed due to memory limits
 
 ```bash
 # View backend logs
-docker logs flagpilot-backend -f
+docker logs Flagpilot-backend -f
 
 # Application logs (inside container)
-docker exec flagpilot-backend cat logs/flagpilot.log
+docker exec Flagpilot-backend cat logs/Flagpilot.log
 ```
 
 ---

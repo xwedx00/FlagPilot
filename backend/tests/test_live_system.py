@@ -224,7 +224,7 @@ class TestLiveSystemIntegration:
         
         # Step 2: Create test dataset
         log_subsection("Step 2: Create Test Dataset")
-        dataset_name = f"flagpilot_live_test_{timestamp}"
+        dataset_name = f"Flagpilot_live_test_{timestamp}"
         
         try:
             dataset = client.create_dataset(

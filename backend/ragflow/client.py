@@ -100,7 +100,7 @@ class RAGFlowClient:
                         target_datasets.append(ds.id)
                     
                     # Match Global Wisdom
-                    if "global_wisdom" in ds_name or "flagpilot_global" in ds_name:
+                    if "global_wisdom" in ds_name or "Flagpilot_global" in ds_name:
                         target_datasets.append(ds.id)
                 
                 # Fallback: If no specific datasets found, search ALL (be careful with this in prod)

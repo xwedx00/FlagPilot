@@ -120,9 +120,75 @@ async def get_agent_details(agent_id: str):
     return info
 
 
+@router.get("/agui/info")
+async def get_agui_info():
+    """
+    CopilotKit Discovery Endpoint
+    Returns available agents for the CopilotKit runtime as a Dict.
+    """
+    agents_list = registry.list_agents()
+    agents_map = {}
+    for agent_id in agents_list:
+        info = registry.get_agent_info(agent_id)
+        if info:
+            agents_map[agent_id] = {
+                "id": agent_id,
+                **info
+            }
+            
+    return {
+        "service": "FlagPilot AG-UI",
+        "agents": agents_map
+    }
+
+
+@router.get("/agui")
+async def get_agui_root():
+    """Health check for the runtime endpoint"""
+    return {"status": "healthy", "service": "FlagPilot AG-UI Runtime"}
+
+
 @router.post("/agui")
 @router.post("/team/chat")
-async def agui_team_endpoint(input_data: RunAgentInput, request: Request):
+async def agui_team_endpoint(request: Request):
+    try:
+        data = await request.json()
+        print(f"🔍 DEBUG: Raw /agui payload: {data}", flush=True)
+    except Exception as e:
+        print(f"❌ DEBUG: Failed to read JSON: {e}", flush=True)
+        return JSONResponse(status_code=400, content={"error": "Invalid JSON"})
+
+    # CopilotKit RPC Handling
+    # CopilotKit RPC Handling
+    if data.get("method") == "info":
+        logger.info("ℹ️ CopilotKit requested INFO via POST")
+        try:
+            agents_list = registry.list_agents()
+            agents_map = {}
+            for agent_id in agents_list:
+                info = registry.get_agent_info(agent_id)
+                if info:
+                    agents_map[agent_id] = {
+                        "id": agent_id,
+                        **info
+                    }
+            
+            return {
+                "service": "FlagPilot AG-UI",
+                "agents": agents_map
+            }
+        except Exception as e:
+            logger.error(f"❌ INFO CRASH: {e}")
+            return JSONResponse(status_code=500, content={"error": str(e)})
+
+    # Manual validation with comprehensive logging
+    try:
+        input_data = RunAgentInput(**data)
+        logger.info(f"✅ Input Validated: thread_id={input_data.thread_id}")
+    except Exception as e:
+        logger.error(f"❌ DEBUG: Pydantic Validation Error: {e}")
+        return JSONResponse(status_code=422, content={"error": str(e), "received_payload": data})
+
     """
     AG-UI Protocol Team Orchestration Endpoint
     

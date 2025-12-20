@@ -8,7 +8,7 @@ Tests FlagPilot agents using real OpenRouter LLM responses.
 NO MOCKING - all responses are real API calls.
 
 Run with:
-    docker exec flagpilot-backend pytest tests/agents/test_agents_live.py -v -s
+    docker exec Flagpilot-backend pytest tests/agents/test_agents_live.py -v -s
 """
 
 import pytest

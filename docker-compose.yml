@@ -11,7 +11,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: flagpilot-backend
+    container_name: Flagpilot-backend
     restart: unless-stopped
     ports:
       - "127.0.0.1:8000:8000"
@@ -30,14 +30,14 @@ services:
       - RAGFLOW_API_KEY=${RAGFLOW_API_KEY:-}
     volumes:
       - ./backend:/app
-      - /app/__pycache__
+      - backend_pycache:/app/__pycache__
     depends_on:
       redis:
         condition: service_healthy
       ragflow:
         condition: service_healthy
     networks:
-      - flagpilot-network
+      - Flagpilot-network
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
       interval: 30s
@@ -50,7 +50,7 @@ services:
   # ===========================================
   redis:
     image: redis:latest
-    container_name: flagpilot-redis
+    container_name: Flagpilot-redis
     restart: unless-stopped
     ports:
       - "127.0.0.1:${REDIS_PORT:-6379}:6379"
@@ -58,7 +58,7 @@ services:
       - redis_data:/data
     command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
     networks:
-      - flagpilot-network
+      - Flagpilot-network
     healthcheck:
       test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping" ]
       interval: 10s
@@ -95,7 +95,7 @@ services:
     ports:
       - "127.0.0.1:${ES_PORT:-9200}:9200"
     networks:
-      - flagpilot-network
+      - Flagpilot-network
     healthcheck:
       test: [ "CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q 'green\\|yellow'" ]
       interval: 30s
@@ -122,7 +122,7 @@ services:
     volumes:
       - minio_data:/data
     networks:
-      - flagpilot-network
+      - Flagpilot-network
     healthcheck:
       test: [ "CMD", "mc", "ready", "local" ]
       interval: 30s
@@ -147,7 +147,7 @@ services:
     command: >
       --max_connections=1000 --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci --default-authentication-plugin=mysql_native_password --transaction-isolation=READ-COMMITTED
     networks:
-      - flagpilot-network
+      - Flagpilot-network
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent" ]
       interval: 15s
@@ -206,7 +206,7 @@ services:
       - ragflow_logs:/ragflow/logs
       - ragflow_data:/ragflow/data
     networks:
-      - flagpilot-network
+      - Flagpilot-network
     healthcheck:
       test: [ "CMD-SHELL", "wget -q --spider http://localhost:80/ || exit 1" ]
       interval: 30s
@@ -214,27 +214,52 @@ services:
       retries: 10
       start_period: 180s
 
-# ===========================================
-# Volumes
-# ===========================================
+  # ===========================================
+  # 5. PostgreSQL (Auth/Users/Billing)
+  # ===========================================
+  postgres:
+    image: postgres:latest
+    container_name: Flagpilot-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-Flagpilot}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - Flagpilot-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   redis_data:
-    name: flagpilot_redis_data
+    name: Flagpilot_redis_data
   es_data:
     name: ragflow_es_data
   minio_data:
     name: ragflow_minio_data
   mysql_data:
     name: ragflow_mysql_data
+  postgres_data:
+    name: Flagpilot_postgres_data
   ragflow_logs:
     name: ragflow_logs
   ragflow_data:
     name: ragflow_data
+  backend_pycache:
+    name: Flagpilot_backend_pycache
 
 # ===========================================
 # Network
 # ===========================================
 networks:
-  flagpilot-network:
-    name: flagpilot-network
+  Flagpilot-network:
+    name: Flagpilot-network
     driver: bridge

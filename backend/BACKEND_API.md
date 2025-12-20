@@ -167,7 +167,7 @@ agent.runAgent({ messages: [...] }).subscribe(event => {
 
 | ID | Purpose |
 |----|---------|
-| `flagpilot-orchestrator` | Main orchestrator |
+| `Flagpilot-orchestrator` | Main orchestrator |
 | `contract-guardian` | Contract analysis |
 | `job-authenticator` | Job post verification |
 | `payment-enforcer` | Payment protection |

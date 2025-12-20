@@ -61,7 +61,7 @@ AGENT_REGISTRY = {
     "negotiation-assistant": NegotiationAssistant,
     "application-filter": ApplicationFilter,
     "feedback-loop": FeedbackLoop,
-    "flagpilot": FlagPilotOrchestrator,
+    "Flagpilot": FlagPilotOrchestrator,
     "risk-advisor": RiskAdvisor,
 }
 
@@ -82,7 +82,7 @@ AGENT_ID_MAP = {
     "negotiation-assistant": "negotiator",
     "application-filter": "job-authenticator",
     "feedback-loop": "scribe",
-    "flagpilot": "flagpilot",
+    "Flagpilot": "Flagpilot",
 }
 
 def get_frontend_agent_id(backend_id: str) -> str:

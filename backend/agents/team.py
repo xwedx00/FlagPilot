@@ -46,19 +46,19 @@ class FlagPilotTeam:
         # We need an orchestrator always? Or is it part of the agents list?
         # The original code had self.orchestrator = FlagPilotOrchestrator()
         # We should load it from registry dynamically too?
-        # 'flagpilot' -> 'flagpilot_orchestrator'
+        # 'Flagpilot' -> 'Flagpilot_orchestrator'
         
         # Let's instantiate the orchestrator explicitly if we need strict access to it 
         # or load it as part of _init_team
         
         # We need orchestrator instance for self.orchestrator.analyze calls in run()
-        orc_cls = registry.get_agent_class("flagpilot_orchestrator")
+        orc_cls = registry.get_agent_class("Flagpilot_orchestrator")
         if orc_cls:
             self.orchestrator = orc_cls()
         else:
             # Fallback if registry fails/missing
             logger.error("Orchestrator not found in registry!")
-            from agents.roles.flagpilot_orchestrator import FlagPilotOrchestrator
+            from agents.roles.Flagpilot_orchestrator import FlagPilotOrchestrator
             self.orchestrator = FlagPilotOrchestrator()
 
         self._init_team()
@@ -78,7 +78,7 @@ class FlagPilotTeam:
             self.agent_ids = [
                 name.replace("_", "-") 
                 for name in registry.list_agents() 
-                if name != "flagpilot_orchestrator"
+                if name != "Flagpilot_orchestrator"
             ]
         
         # Load requested agents

@@ -11,7 +11,7 @@ IMPORTANT: These tests use LIVE APIs:
 All responses are real - NO MOCKING.
 
 Run with:
-    docker exec flagpilot-backend pytest tests/integration/test_live_integration.py -v -s
+    docker exec Flagpilot-backend pytest tests/integration/test_live_integration.py -v -s
 """
 
 import pytest
