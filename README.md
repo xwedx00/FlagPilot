@@ -269,15 +269,27 @@ curl -X POST "http://localhost:8000/api/team/chat" \
 
 ---
 
-## 🧪 Testing
+## 🧪 Verification & Testing Status
 
-Run the comprehensive test suite inside Docker:
+**Current Status (Dec 2025): ✅ STABLE**
 
+The backend has passed a comprehensive "Live System" integration test suite.
+- **Report**: [View Full Test Report](backend/TEST_REPORT.md)
+- **Raw Logs**: [View Raw Output](backend/test_live_output.txt)
+
+### Validated Features:
+1.  **RAGFlow Knowledge Base**: Successfully ingests and retrieves documents (Fixes "0 chunks" bug).
+2.  **MetaGPT Orchestration**: Multi-agent collaboration confirmed (Scam Detection, Negotiation).
+3.  **LLM Integration**: OpenRouter connection verified.
+
+### Run Tests Manually
+```bash
 # Run the unified live system test suite
 docker-compose exec backend pytest backend/tests/test_live_system.py -v
 
 # Run verification for specific features
 docker-compose exec backend pytest backend/tests/test_live_system.py -k test_03_fast_fail_scam
+```
 
 ---
 
