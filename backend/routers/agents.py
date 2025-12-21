@@ -74,12 +74,20 @@ def build_context_dict(input_data: RunAgentInput) -> Dict[str, Any]:
 # =============================================================================
 
 @router.get("/agents/{agent_id}/state")
-async def get_agent_state(agent_id: str):
-    """Fetch the current state of an agent"""
-    # In a real system, this would fetch from a database or distributed cache
-    # For now, we return the last known state from run_states or a default
-    state = next((s for r, s in run_states.items() if s.get("current_agent") == agent_id), {})
-    return {"agentId": agent_id, "state": state or {"status": "idle"}}
+async def get_agent_state(agent_id: str, request: Request):
+    """Fetch the current state of an agent (User-Scoped)"""
+    auth_header = request.headers.get("authorization", "")
+    user_id = auth_header.replace("Bearer ", "").strip() if "Bearer" in auth_header else "anonymous"
+
+    # Find state belonging to this user where current_agent matches
+    # run_states keys are typically "user_id:run_id", but values also contain "user_id" now
+    found_state = {}
+    for key, state in run_states.items():
+        if state.get("user_id") == user_id and state.get("current_agent") == agent_id:
+            found_state = state
+            break
+            
+    return {"agentId": agent_id, "state": found_state or {"status": "idle"}}
 
 
 @router.post("/runs/{run_id}/stop")
@@ -183,7 +191,10 @@ async def agui_team_endpoint(request: Request):
 
     # Manual validation with comprehensive logging
     try:
-        input_data = RunAgentInput(**data)
+        # CopilotKit (and some AG-UI clients) wrap the payload in a 'body' field
+        # especially for 'agent/connect' or similar RPC-style methods.
+        payload = data.get("body", data)
+        input_data = RunAgentInput(**payload)
         logger.info(f"✅ Input Validated: thread_id={input_data.thread_id}")
     except Exception as e:
         logger.error(f"❌ DEBUG: Pydantic Validation Error: {e}")
@@ -198,7 +209,10 @@ async def agui_team_endpoint(request: Request):
     3. Returns streaming response compatible with AG-UI clients
     """
     # Input validation per AG-UI best practices
-    if not input_data.messages:
+    # Skip message validation for RPC-style calls (e.g., initial connection) which might not have messages yet
+    is_rpc_call = "method" in data or data.get("body", {}).get("method")
+    
+    if not input_data.messages and not is_rpc_call:
         return JSONResponse(
             status_code=400,
             content={"error": "messages required", "code": "INVALID_INPUT"}
@@ -215,14 +229,27 @@ async def agui_team_endpoint(request: Request):
                 run_id=input_data.run_id
             ))
             
+            # Auth & Scoped State
+            auth_header = request.headers.get("authorization", "")
+            user_id = auth_header.replace("Bearer ", "").strip() if "Bearer" in auth_header else "anonymous"
+            
+            # Use composite key for state isolation
+            state_key = f"{user_id}:{input_data.run_id}"
+
             # 2. Initial STATE_SNAPSHOT
             initial_state = {
                 "status": "planning",
                 "agents": [],
                 "current_agent": None,
-                "risk_level": "none"
+                "risk_level": "none",
+                "user_id": user_id
             }
-            run_states[input_data.run_id] = initial_state
+            run_states[state_key] = initial_state
+            
+            # Note: We still sync to run_states[run_id] for backward compatibility if needed, 
+            # but ideally we should rely on the scoped key.
+            run_states[input_data.run_id] = initial_state 
+            
             yield encoder.encode(StateSnapshotEvent(snapshot=initial_state))
             
             # 2.5: MESSAGES_SNAPSHOT
@@ -262,6 +289,8 @@ async def agui_team_endpoint(request: Request):
                 {"op": "replace", "path": "/status", "value": "executing"},
                 {"op": "add", "path": "/plan", "value": plan}
             ]
+            if state_key in run_states:
+                run_states[state_key].update({"status": "executing", "plan": plan})
             run_states[input_data.run_id].update({"status": "executing", "plan": plan})
             yield encoder.encode(StateDeltaEvent(delta=patch))
             
@@ -285,7 +314,10 @@ async def agui_team_endpoint(request: Request):
                 ))
                 
                 # State update: current agent
+                if state_key in run_states:
+                    run_states[state_key]["current_agent"] = agent_id
                 run_states[input_data.run_id]["current_agent"] = agent_id
+                
                 yield encoder.encode(StateDeltaEvent(delta=[
                     {"op": "replace", "path": "/current_agent", "value": agent_id}
                 ]))
@@ -329,8 +361,11 @@ async def agui_team_endpoint(request: Request):
             final_snapshot = {
                 "status": "complete",
                 "current_agent": None,
-                "risk_level": risk_level
+                "risk_level": risk_level,
+                "user_id": user_id
             }
+            if state_key in run_states:
+                run_states[state_key] = final_snapshot
             run_states[input_data.run_id] = final_snapshot
             yield encoder.encode(StateSnapshotEvent(snapshot=final_snapshot))
             
@@ -407,11 +442,19 @@ async def agui_single_agent_endpoint(agent_id: str, input_data: RunAgentInput, r
     
     async def event_generator():
         try:
+            # Auth Extraction
+            auth_header = request.headers.get("authorization", "")
+            user_id = auth_header.replace("Bearer ", "").strip() if "Bearer" in auth_header else "anonymous"
+            state_key = f"{user_id}:{input_data.run_id}"
+
             active_runs[input_data.run_id] = asyncio.current_task()
             
             yield encoder.encode(RunStartedEvent(thread_id=input_data.thread_id, run_id=input_data.run_id))
             yield encoder.encode(StepStartedEvent(step_name=agent_id))
             
+            # Initial state tracking
+            run_states[state_key] = {"status": "running", "current_agent": agent_id, "user_id": user_id}
+
             task = get_last_user_message(input_data.messages)
             context = build_context_dict(input_data)
             
@@ -445,6 +488,11 @@ async def agui_single_agent_endpoint(agent_id: str, input_data: RunAgentInput, r
             
             yield encoder.encode(TextMessageEndEvent(message_id=msg_id))
             yield encoder.encode(StepFinishedEvent(step_name=agent_id))
+            
+            # Final state update
+            if state_key in run_states:
+                run_states[state_key]["status"] = "complete"
+
             yield encoder.encode(RunFinishedEvent(
                 thread_id=input_data.thread_id,
                 run_id=input_data.run_id
@@ -461,6 +509,8 @@ async def agui_single_agent_endpoint(agent_id: str, input_data: RunAgentInput, r
             yield encoder.encode(RunErrorEvent(message=str(e), code=type(e).__name__))
         finally:
             active_runs.pop(input_data.run_id, None)
+            # Optional: Clean up state after run finishes to save memory?
+            # run_states.pop(state_key, None) 
     
     return StreamingResponse(
         event_generator(),

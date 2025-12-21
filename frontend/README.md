@@ -57,6 +57,20 @@ Modern AI-powered freelancer protection platform built with Next.js 15, Shadcn U
    bun dev
    ```
 
+## Authentication
+This project uses **BetterAuth** with PostgreSQL (Drizzle ORM).
+- **Providers**: GitHub, Google (Email/Password disabled).
+- **Strict Isolation**: Account linking is DISABLED. Users cannot link multiple providers to the same email.
+- **Middleware**: Routes are protected via `proxy.ts` (Next.js 16+ convention).
+- **Database**:
+  - Run `bun reset-db.js` to wipe and reset the schema.
+  - Run `bun drizzle-kit push` to apply schema changes.
+
+## Development
+1. `bun install`
+2. `bun dev` (Runs on localhost:3000)
+3. `bun run build` (Production build)
+
 ## Project Structure
 
 - `/app`: Next.js App Router pages and API routes.

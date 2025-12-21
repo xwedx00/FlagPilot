@@ -184,6 +184,20 @@ All executions are saved for:
 
 ---
 
+## Authentication & Security
+- **Auth**: Expects `Authorization: Bearer <user_id>` header.
+- **Isolation**: Agent state is scoped to `user_id` to prevent data leakage.
+- **Protocol**: Implements AG-UI (Agent-User Interaction) protocol for CopilotKit integration.
+
+## Usage
+Run with Docker or locally:
+```bash
+python main.py
+```
+API Documentation available at `/docs` (Swagger UI).
+
+---
+
 ## 🚀 Setup & Installation
 
 ### Prerequisites
