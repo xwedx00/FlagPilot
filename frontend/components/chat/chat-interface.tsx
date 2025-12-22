@@ -4,7 +4,7 @@ import { useCopilotChat } from "@copilotkit/react-core";
 import { CopilotChat } from "@copilotkit/react-ui";
 // import { TextMessage, MessageRole } from "@copilotkit/runtime-client-gql";
 
-import { Send, User, Bot, AlertTriangle, Shield, CheckCircle, Loader2 } from "lucide-react";
+import { Send, User, Bot, AlertTriangle, Shield, CheckCircle, Loader2, Brain } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,9 @@ import { authClient } from "@/lib/auth-client";
 
 // FlagPilot CopilotKit integrations
 import { useFlagPilotActions } from "@/lib/hooks/use-flagpilot-actions";
-import { useAgentStatusRenderer, AgentStatusDisplay } from "@/components/chat/agent-status";
+import { useFlagPilotState, useFlagPilotStateRenderer } from "@/lib/hooks/use-flagpilot-state";
+import { AgentStatusDisplay } from "@/components/chat/agent-status";
+import { MemoryPanel } from "@/components/chat/memory-panel";
 
 
 export function ChatInterface() {
@@ -31,11 +33,17 @@ export function ChatInterface() {
         } : {}
     });
 
-    // 3. FlagPilot CopilotKit Actions (registers 6 actions with AI)
+    // 3. FlagPilot CopilotKit Actions (registers 18 actions with AI - all 17 agents + memory)
     const { agentState } = useFlagPilotActions();
 
-    // 4. Agent Status Renderer (shows agent progress in chat)
-    useAgentStatusRenderer();
+    // 4. Shared state with backend LangGraph agent
+    const { state: coAgentState, isProcessing, riskLevel } = useFlagPilotState();
+
+    // 5. Agent State Renderer (shows agent progress in chat via Generative UI)
+    useFlagPilotStateRenderer();
+
+    // Memory panel toggle
+    const [showMemory, setShowMemory] = useState(false);
 
     const messages = visibleMessages || [];
     console.log("Render: messages count:", messages.length);
@@ -103,7 +111,7 @@ export function ChatInterface() {
                         <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-md">
                             <Bot className="w-6 h-6" />
                         </div>
-                        {isLoading && (
+                        {(isLoading || isProcessing) && (
                             <span className="absolute -bottom-1 -right-1 flex h-3 w-3">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
@@ -113,19 +121,41 @@ export function ChatInterface() {
                     <div>
                         <h2 className="font-semibold text-zinc-900 dark:text-zinc-100">FlagPilot Orchestrator</h2>
                         <p className="text-xs text-zinc-500 flex items-center gap-1">
-                            {isLoading ? (
+                            {isLoading || isProcessing ? (
                                 <>
-                                    <Loader2 className="w-3 h-3 animate-spin" /> Processing...
+                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                    {coAgentState?.currentAgent ? `${coAgentState.currentAgent} working...` : "Processing..."}
                                 </>
                             ) : (
                                 <>
-                                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" /> Active & Ready
+                                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" /> 17 Agents Ready
                                 </>
                             )}
                         </p>
                     </div>
                 </div>
+                {/* Memory Panel Toggle */}
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowMemory(!showMemory)}
+                    className="flex items-center gap-2 text-zinc-600 dark:text-zinc-400 hover:text-indigo-600 dark:hover:text-indigo-400"
+                >
+                    <Brain className="w-4 h-4" />
+                    <span className="hidden sm:inline">Memory</span>
+                </Button>
             </div>
+
+            {/* Memory Panel (Collapsible) */}
+            {showMemory && (
+                <div className="px-4 py-3 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
+                    <MemoryPanel
+                        isOpen={showMemory}
+                        onToggle={() => setShowMemory(false)}
+                        className="max-h-[300px] overflow-y-auto"
+                    />
+                </div>
+            )}
 
             {/* Messages Area */}
             <ScrollArea className="flex-1 p-4 bg-zinc-50/50 dark:bg-zinc-900/50">
