@@ -15,6 +15,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { authClient } from "@/lib/auth-client";
 
+// FlagPilot CopilotKit integrations
+import { useFlagPilotActions } from "@/lib/hooks/use-flagpilot-actions";
+import { useAgentStatusRenderer, AgentStatusDisplay } from "@/components/chat/agent-status";
+
+
 export function ChatInterface() {
     // 1. Get Session for Auth Headers
     const { data: session } = authClient.useSession();
@@ -25,6 +30,12 @@ export function ChatInterface() {
             "Authorization": `Bearer ${session.user.id}`
         } : {}
     });
+
+    // 3. FlagPilot CopilotKit Actions (registers 6 actions with AI)
+    const { agentState } = useFlagPilotActions();
+
+    // 4. Agent Status Renderer (shows agent progress in chat)
+    useAgentStatusRenderer();
 
     const messages = visibleMessages || [];
     console.log("Render: messages count:", messages.length);
@@ -119,6 +130,11 @@ export function ChatInterface() {
             {/* Messages Area */}
             <ScrollArea className="flex-1 p-4 bg-zinc-50/50 dark:bg-zinc-900/50">
                 <div className="space-y-6">
+                    {/* Agent Status Display - Shows real-time agent progress */}
+                    {agentState.status !== "idle" && (
+                        <AgentStatusDisplay state={agentState} />
+                    )}
+
                     {messages.length === 0 && (
                         <div className="flex flex-col items-center justify-center h-[50vh] text-center space-y-4 opacity-50">
                             <Shield className="w-16 h-16 text-zinc-300" />
