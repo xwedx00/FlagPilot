@@ -3,7 +3,7 @@ Base Role for all FlagPilot agents using MetaGPT
 
 Provides streaming-capable agents with:
 - Real-time status updates via async generators
-- AG-UI Protocol compatible event formatting
+- CopilotKit Protocol compatible event formatting
 - Credit consumption tracking
 - Integration with the Data Moat
 """
@@ -26,103 +26,106 @@ from loguru import logger
 # Import centralized LLM configuration
 from config import get_configured_llm
 
-from lib.agui.core import (
-    EventType, CustomEvent, TextMessageChunkEvent, TextMessageContentEvent,
-    StepStartedEvent, StepFinishedEvent
-)
 
-
-# Agent-to-UI event types for streaming (AG-UI Protocol Compatible)
+# Agent-to-UI event types for streaming (CopilotKit Compatible)
 class AgentEvent:
     """
     Events that agents emit during execution.
-    Updated to return official AG-UI Event objects.
+    Simplified for CopilotKit integration - actual streaming 
+    is handled by LangGraph's copilotkit_emit_* functions.
     """
     
     @staticmethod
-    def thinking(agent_id: str, thought: str) -> CustomEvent:
-        """Emit a custom thinking event"""
-        return CustomEvent(
-            name="agent_thinking",
-            value={
-                "agentId": agent_id,
-                "thought": thought,
-            }
-        )
+    def thinking(agent_id: str, thought: str) -> Dict[str, Any]:
+        """Emit a thinking event"""
+        return {
+            "type": "thinking",
+            "agentId": agent_id,
+            "thought": thought,
+            "timestamp": int(time.time() * 1000)
+        }
     
     @staticmethod
-    def status(agent_id: str, status: str, action: str = None) -> CustomEvent:
+    def status(agent_id: str, status: str, action: str = None) -> Dict[str, Any]:
         """Emit agent status update"""
-        return CustomEvent(
-            name="agent_status",
-            value={
-                "agentId": agent_id,
-                "status": status,
-                "action": action,
-            }
-        )
+        return {
+            "type": "status",
+            "agentId": agent_id,
+            "status": status,
+            "action": action,
+            "timestamp": int(time.time() * 1000)
+        }
     
     @staticmethod
-    def usage(agent_id: str, usage: Dict[str, int]) -> CustomEvent:
-        """Emit token usage update (Production Enhancement)"""
-        return CustomEvent(
-            name="usage_update",
-            value={
-                "agentId": agent_id,
-                "usage": usage,
-                "timestamp": int(time.time() * 1000)
-            }
-        )
+    def usage(agent_id: str, usage: Dict[str, int]) -> Dict[str, Any]:
+        """Emit token usage update"""
+        return {
+            "type": "usage",
+            "agentId": agent_id,
+            "usage": usage,
+            "timestamp": int(time.time() * 1000)
+        }
     
     @staticmethod
-    def output(agent_id: str, content: str, message_id: str = None) -> TextMessageChunkEvent:
+    def output(agent_id: str, content: str, message_id: str = None) -> Dict[str, Any]:
         """Emit agent output chunk"""
-        return TextMessageChunkEvent(
-            message_id=message_id or str(uuid.uuid4()),
-            delta=content
-        )
+        return {
+            "type": "output",
+            "agentId": agent_id,
+            "messageId": message_id or str(uuid.uuid4()),
+            "content": content,
+            "timestamp": int(time.time() * 1000)
+        }
     
     @staticmethod
-    def text_chunk(message_id: str, delta: str) -> TextMessageContentEvent:
+    def text_chunk(message_id: str, delta: str) -> Dict[str, Any]:
         """Emit a text chunk"""
-        return TextMessageContentEvent(
-            message_id=message_id,
-            delta=delta
-        )
+        return {
+            "type": "text_chunk",
+            "messageId": message_id,
+            "delta": delta,
+            "timestamp": int(time.time() * 1000)
+        }
     
     @staticmethod
-    def step_started(step_name: str) -> StepStartedEvent:
+    def step_started(step_name: str) -> Dict[str, Any]:
         """Emit step started"""
-        return StepStartedEvent(step_name=step_name)
+        return {
+            "type": "step_started",
+            "stepName": step_name,
+            "timestamp": int(time.time() * 1000)
+        }
     
     @staticmethod
-    def step_finished(step_name: str) -> StepFinishedEvent:
+    def step_finished(step_name: str) -> Dict[str, Any]:
         """Emit step finished"""
-        return StepFinishedEvent(step_name=step_name)
+        return {
+            "type": "step_finished",
+            "stepName": step_name,
+            "timestamp": int(time.time() * 1000)
+        }
     
     @staticmethod
-    def ui_component(component_name: str, props: Dict[str, Any]) -> CustomEvent:
+    def ui_component(component_name: str, props: Dict[str, Any]) -> Dict[str, Any]:
         """Emit UI component"""
-        return CustomEvent(
-            name="ui_component",
-            value={
-                "componentName": component_name,
-                "props": props,
-            }
-        )
+        return {
+            "type": "ui_component",
+            "componentName": component_name,
+            "props": props,
+            "timestamp": int(time.time() * 1000)
+        }
     
     @staticmethod
-    def artifact(name: str, artifact_type: str, content: str, agent_id: str) -> CustomEvent:
+    def artifact(name: str, artifact_type: str, content: str, agent_id: str) -> Dict[str, Any]:
         """Emit artifact"""
-        return CustomEvent(
-            name="artifact",
-            value={
-                "name": name,
-                "type": artifact_type,
-                "content": content,
-                "createdBy": agent_id,
-            }
-        )
+        return {
+            "type": "artifact",
+            "name": name,
+            "artifactType": artifact_type,
+            "content": content,
+            "createdBy": agent_id,
+            "timestamp": int(time.time() * 1000)
+        }
 
 
 class FlagPilotAction(Action):

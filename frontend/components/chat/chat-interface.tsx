@@ -1,7 +1,8 @@
 "use client";
 
 import { useCopilotChat } from "@copilotkit/react-core";
-import { TextMessage, MessageRole } from "@copilotkit/runtime-client-gql";
+import { CopilotChat } from "@copilotkit/react-ui";
+// import { TextMessage, MessageRole } from "@copilotkit/runtime-client-gql";
 
 import { Send, User, Bot, AlertTriangle, Shield, CheckCircle, Loader2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -20,12 +21,13 @@ export function ChatInterface() {
 
     // 2. Pass headers to useCopilotChat
     const { visibleMessages, appendMessage, isLoading } = useCopilotChat({
-        headers: {
-            "Authorization": `Bearer ${session?.user.id || ""}`
-        }
+        headers: session?.user?.id ? {
+            "Authorization": `Bearer ${session.user.id}`
+        } : {}
     });
 
     const messages = visibleMessages || [];
+    console.log("Render: messages count:", messages.length);
 
     const [input, setInput] = useState("");
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -37,19 +39,42 @@ export function ChatInterface() {
         }
     }, [messages]);
 
-    const handleSend = () => {
+    // Connectivity Test
+    useEffect(() => {
+        console.log("Testing connectivity to backend...");
+        fetch("/api/health")
+            .then(res => res.text())
+            .then(txt => console.log("Health Check Result:", txt))
+            .catch(err => console.error("Health Check Failed:", err));
+    }, []);
+
+    // In handleSend
+    const handleSend = async () => {
+        console.log("handleSend called with input:", input);
         if (!input.trim()) return;
 
-        appendMessage(
-            new TextMessage({
+        try {
+            // Duck-typing the message to bypass instanceof checks between packages
+            const msg: any = {
                 id: crypto.randomUUID(),
-                role: MessageRole.User,
+                role: "user",
                 content: input,
-            })
-        );
+                createdAt: new Date(),
+                isTextMessage: () => true,
+                isActionExecutionMessage: () => false,
+                isResultMessage: () => false,
+            };
+            console.log("Appending message (duck-typed):", msg);
+            await appendMessage(msg);
+            console.log("Message appended successfully");
+        } catch (e) {
+            console.error("Failed to append message:", e);
+        }
 
         setInput("");
     };
+
+
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -107,18 +132,18 @@ export function ChatInterface() {
                     {messages.map((msg: any, idx) => (
                         <div
                             key={msg.id || idx}
-                            className={`flex items-start gap-3 ${String(msg.role) === "user" ? "flex-row-reverse" : ""
+                            className={`flex items-start gap-3 ${String(msg.role).toLowerCase() === "user" ? "flex-row-reverse" : ""
                                 }`}
                         >
-                            <Avatar className={`w-8 h-8 ${String(msg.role) === "user" ? "bg-zinc-200" : "bg-indigo-100"}`}>
+                            <Avatar className={`w-8 h-8 ${String(msg.role).toLowerCase() === "user" ? "bg-zinc-200" : "bg-indigo-100"}`}>
                                 <AvatarFallback>
-                                    {String(msg.role) === "user" ? <User className="w-4 h-4 text-zinc-600" /> : <Bot className="w-4 h-4 text-indigo-600" />}
+                                    {String(msg.role).toLowerCase() === "user" ? <User className="w-4 h-4 text-zinc-600" /> : <Bot className="w-4 h-4 text-indigo-600" />}
                                 </AvatarFallback>
                             </Avatar>
 
-                            <div className={`flex flex-col gap-1 max-w-[80%] ${String(msg.role) === "user" ? "items-end" : "items-start"}`}>
+                            <div className={`flex flex-col gap-1 max-w-[80%] ${String(msg.role).toLowerCase() === "user" ? "items-end" : "items-start"}`}>
                                 <div
-                                    className={`px-4 py-3 rounded-2xl shadow-sm text-sm whitespace-pre-wrap leading-relaxed ${String(msg.role) === "user"
+                                    className={`px-4 py-3 rounded-2xl shadow-sm text-sm whitespace-pre-wrap leading-relaxed ${String(msg.role).toLowerCase() === "user"
                                         ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 rounded-tr-none"
                                         : "bg-white border border-zinc-200 text-zinc-800 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-100 rounded-tl-none"
                                         }`}

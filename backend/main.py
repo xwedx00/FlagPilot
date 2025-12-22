@@ -1,53 +1,35 @@
 """
 FlagPilot Backend API
 ======================
-Pure MetaGPT Agent Server with AG-UI Protocol
+MetaGPT Agent Server with CopilotKit Integration
 
-Core Focus:
-- MetaGPT-based AI agents (17 specialists)
-- Team orchestration (MGX.dev style)
-- RAGFlow integration for document understanding
-- AG-UI protocol for frontend communication
+Architecture:
+- Main environment: FastAPI + CopilotKit + LangGraph (latest versions)
+- MetaGPT environment: Isolated venv with MetaGPT 0.8.1 (executed via subprocess)
+
+This dual-venv approach resolves dependency conflicts between CopilotKit
+(requires OpenAI 1.52+) and MetaGPT 0.8.1 (requires OpenAI <1.52).
 
 NOTE: Auth and chat persistence are handled by the frontend.
 """
 
-# =============================================================================
-# CRITICAL: Set MetaGPT environment variables BEFORE any imports
-# MetaGPT config2 validates on import, so env vars must be set first
-# =============================================================================
 import os
-
-# =============================================================================
-# Configuration
-# =============================================================================
-from config import settings
-
-# Inject env vars for MetaGPT (must happen before imports)
-settings.configure_metagpt_env()
-
-# Apply Billing Patches
-from lib.patches import apply_metagpt_patches
-apply_metagpt_patches()
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
 from datetime import datetime
 from loguru import logger
-import logging
+
+# =============================================================================
+# Configuration
+# =============================================================================
+
+# Create logs directory
+os.makedirs("logs", exist_ok=True)
 
 # Configure logging
-os.makedirs("logs", exist_ok=True)
-logger.add("logs/Flagpilot.log", rotation="500 MB", level=settings.LOG_LEVEL)
-
-# Suppress benign MetaGPT token warnings for custom models
-class TokenWarningFilter(logging.Filter):
-    def filter(self, record):
-        return "usage calculation failed" not in record.getMessage()
-
-logging.getLogger("metagpt").addFilter(TokenWarningFilter())
+logger.add("logs/Flagpilot.log", rotation="500 MB", level="INFO")
 
 
 # =============================================================================
@@ -55,8 +37,8 @@ logging.getLogger("metagpt").addFilter(TokenWarningFilter())
 # =============================================================================
 app = FastAPI(
     title="FlagPilot Agent API",
-    description="Pure MetaGPT multi-agent server. 17 AI agents with team orchestration and RAGFlow.",
-    version="4.0.0",
+    description="MetaGPT multi-agent server with CopilotKit integration. 17 AI agents with team orchestration and RAGFlow.",
+    version="5.0.0",
 )
 
 # CORS - Allow frontend origins
@@ -76,23 +58,68 @@ app.add_middleware(
 )
 
 # =============================================================================
-# Routers (Simplified)
+# CopilotKit Integration (Primary)
 # =============================================================================
-from routers import health
-from routers.agents import router as agents_router
-from routers import rag
-from routers import feedback
+try:
+    from copilotkit.integrations.fastapi import add_fastapi_endpoint
+    from lib.copilotkit import sdk
 
-app.include_router(health.router)      # /health endpoints
-app.include_router(agents_router)      # /api/agents + /api/team endpoints
-app.include_router(rag.router)         # /api/rag endpoints
-app.include_router(feedback.router)    # /api/v1/feedback endpoints
+    # Add CopilotKit endpoint - this is the primary integration point for frontend
+    add_fastapi_endpoint(app, sdk, "/copilotkit")
+    logger.info("✅ CopilotKit endpoint registered at /copilotkit")
+except ImportError as e:
+    logger.warning(f"CopilotKit not available: {e}")
+
+# =============================================================================
+# Legacy Routers (RAG, Health)
+# =============================================================================
+try:
+    from routers import health
+    app.include_router(health.router)  # /health endpoints
+except ImportError:
+    pass
+
+try:
+    from routers.agents import router as agents_router
+    app.include_router(agents_router)  # /api/agents endpoints
+except ImportError:
+    pass
+
+try:
+    from routers import rag
+    app.include_router(rag.router)  # /api/rag endpoints
+except ImportError:
+    pass
+
+try:
+    from routers import feedback
+    app.include_router(feedback.router)  # /api/v1/feedback endpoints
+except ImportError:
+    pass
 
 
 # =============================================================================
 # Core Endpoints
 # =============================================================================
-from agents.registry import registry
+
+# Agent list (static for when MetaGPT is isolated)
+AVAILABLE_AGENTS = [
+    "contract-guardian",
+    "job-authenticator",
+    "scope-sentinel",
+    "payment-enforcer",
+    "dispute-mediator",
+    "communication-coach",
+    "negotiation-assistant",
+    "profile-analyzer",
+    "ghosting-shield",
+    "risk-advisor",
+    "talent-vet",
+    "application-filter",
+    "feedback-loop",
+    "planner-role",
+    "flagpilot-orchestrator",
+]
 
 
 class HealthResponse(BaseModel):
@@ -106,16 +133,16 @@ class HealthResponse(BaseModel):
 @app.get("/")
 async def root():
     """API root - service information"""
-    agents_list = registry.list_agents()
     return {
         "name": "FlagPilot Agent API",
-        "version": "4.0.0",
-        "description": "Pure MetaGPT agent server for freelancers",
-        "agents": len(agents_list),
+        "version": "5.0.0",
+        "description": "MetaGPT multi-agent server with CopilotKit integration",
+        "agents": len(AVAILABLE_AGENTS),
+        "architecture": "Dual-venv (CopilotKit isolated from MetaGPT)",
         "docs": "/docs",
         "endpoints": {
+            "copilotkit": "/copilotkit",
             "agents": "/api/agents",
-            "team": "/api/team/chat",
             "rag": "/api/rag/search",
             "health": "/health",
         }
@@ -128,12 +155,13 @@ async def health_check():
     return HealthResponse(
         status="healthy",
         timestamp=datetime.utcnow().isoformat(),
-        version="4.0.0",
-        agents=registry.list_agents(),
+        version="5.0.0",
+        agents=AVAILABLE_AGENTS,
         features=[
-            "MetaGPT Team Orchestration",
+            "MetaGPT Team Orchestration (Isolated)",
             "RAGFlow Integration",
-            "AG-UI Protocol Streaming",
+            "CopilotKit Protocol Streaming",
+            "Dual-Venv Architecture",
         ]
     )
 

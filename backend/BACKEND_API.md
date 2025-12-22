@@ -1,124 +1,108 @@
-# Backend API & AG-UI Protocol Specification
+# FlagPilot Backend API Documentation
 
-## Overview
-FlagPilot's backend exposes a **Server-Sent Events (SSE)** API that adheres to the **AG-UI Protocol**. This allows the frontend (using CopilotKit) to receive real-time updates about agent orchestration, state changes, and streaming text responses.
+## Multi-Venv Isolation Architecture
 
-## Base URL
-`http://localhost:8000/api`
+FlagPilot Backend uses a **4-environment isolation architecture** to ensure zero dependency conflicts between packages:
 
-## Authentication
-Currently, the AG-UI endpoints are open to the internal network (accessed via Next.js proxy). In production, `Authorization: Bearer <token>` is required.
+```
+┌─────────────────────────────────────────────────────────────┐
+│                   Docker Container                          │
+├─────────────────────────────────────────────────────────────┤
+│    CORE (/usr/local)          │  FastAPI, uvicorn, pydantic │
+├─────────────────────────────────────────────────────────────┤
+│    venv-copilotkit            │  copilotkit, langgraph      │
+├─────────────────────────────────────────────────────────────┤
+│    venv-metagpt               │  metagpt==0.8.1             │
+├─────────────────────────────────────────────────────────────┤
+│    venv-ragflow               │  ragflow-sdk, elasticsearch │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Benefits
+- **Zero conflicts**: Each SDK manages its own dependencies
+- **Future-proof**: No dependency pinning needed (except MetaGPT 0.8.1)
+- **Easy upgrades**: Update any venv independently
 
 ---
 
-## 1. Agent Discovery
+## API Endpoints
 
-### `GET /agui/info`
-**Purpose**: Used by CopilotKit to discover available agents and their capabilities.
-**Response Format**: JSON Object (Map)
+### Health Check
+```
+GET /health
+```
+Returns server status, agents list, and version.
 
-```json
-{
-  "service": "FlagPilot AG-UI",
-  "agents": {
-    "flagpilot_orchestrator": {
-      "id": "flagpilot_orchestrator",
-      "name": "FlagPilotOrchestrator",
-      "profile": "Workflow Manager",
-      "goal": "Orchestrate the perfect team...",
-      "constraints": "Optimize for efficiency..."
-    },
-    "contract-guardian": {
-      "id": "contract-guardian",
-      "name": "ContractGuardian",
-      "description": "Analyzes legal contracts..."
-    }
-  }
-}
+### CopilotKit Integration
+```
+POST /copilotkit
+```
+Primary frontend integration endpoint. CopilotKit SDK handles streaming.
+
+### Agents
+```
+GET /api/agents          # List all agents
+GET /api/agents/{id}     # Get agent details
+```
+
+### RAG Search
+```
+POST /api/rag/search     # Search knowledge base
 ```
 
 ---
 
-## 2. Event Stream (Chat & Orchestration)
+## Agent List (15 Specialists)
 
-### `POST /agui`
-**Purpose**: Primary interaction endpoint. Handles both orchestration (Team) and direct agent communication.
-**Headers**:
-- `Content-Type: application/json`
-- `Accept: text/event-stream`
-
-**Request Body**:
-```json
-{
-  "thread_id": "uuid-string",
-  "run_id": "uuid-string",
-  "agent_id": "flagpilot_orchestrator", // Optional, defaults to team
-  "messages": [
-    {
-      "role": "user",
-      "content": "Analyze this contract for risks..."
-    }
-  ],
-  "context": [],
-  "state": {}
-}
-```
-
-**SSE Event Stream**:
-The server streams line-delimited JSON events. Each event is a JSON object encoded by the AG-UI `EventEncoder`.
-
-#### Key Events
-1.  **RunStarted**
-    ```json
-    {"type": "RUN_STARTED", "thread_id": "...", "run_id": "..."}
-    ```
-
-2.  **StateSnapshot** (Initial State)
-    ```json
-    {"type": "STATE_SNAPSHOT", "snapshot": {"status": "planning", "risk_level": "none"}}
-    ```
-
-3.  **StepStarted** (Orchestrator Planning)
-    ```json
-    {"type": "STEP_STARTED", "step_name": "orchestrator-planning"}
-    ```
-
-4.  **StateDelta** (Plan Update)
-    ```json
-    {"type": "STATE_DELTA", "delta": [{"op": "add", "path": "/plan", "value": {...}}]}
-    ```
-
-5.  **ActivitySnapshot** (Agent Execution Progress)
-    ```json
-    {
-      "type": "ACTIVITY_SNAPSHOT",
-      "activity_type": "AGENT_EXECUTION",
-      "content": {
-        "agent_id": "contract-guardian",
-        "status": "running",
-        "progress": 33
-      }
-    }
-    ```
-
-6.  **TextMessageContent** (Streaming Response)
-    ```json
-    {"type": "TEXT_MESSAGE_CONTENT", "message_id": "...", "delta": "Analysis complete..."}
-    ```
-
-7.  **RunFinished**
-    ```json
-    {"type": "RUN_FINISHED", "result": {"status": "COMPLETED"}}
-    ```
+| ID | Name | Purpose |
+|----|------|---------|
+| contract-guardian | Contract Guardian | Legal contract analysis |
+| job-authenticator | Job Authenticator | Scam detection |
+| scope-sentinel | Scope Sentinel | Scope creep prevention |
+| payment-enforcer | Payment Enforcer | Payment recovery |
+| dispute-mediator | Dispute Mediator | Conflict resolution |
+| communication-coach | Communication Coach | Professional messaging |
+| negotiation-assistant | Negotiation Assistant | Rate negotiation |
+| profile-analyzer | Profile Analyzer | Profile optimization |
+| ghosting-shield | Ghosting Shield | Client ghosting recovery |
+| risk-advisor | Risk Advisor | Risk assessment |
+| talent-vet | Talent Vet | Candidate evaluation |
+| application-filter | Application Filter | Job filtering |
+| feedback-loop | Feedback Loop | Continuous improvement |
+| planner-role | Planner Role | Workflow planning |
+| flagpilot-orchestrator | Orchestrator | Multi-agent coordination |
 
 ---
 
-## 3. RAG & Memory Integration (Internal)
+## Environment Variables
 
-The backend automatically injects context into the `POST /agui` flow:
+| Variable | Description |
+|----------|-------------|
+| `OPENROUTER_API_KEY` | OpenRouter API key |
+| `OPENROUTER_MODEL` | Model to use (e.g., anthropic/claude-3.5-sonnet) |
+| `RAGFLOW_URL` | RAGFlow server URL |
+| `RAGFLOW_API_KEY` | RAGFlow API key |
+| `REDIS_URL` | Redis connection string |
 
-1.  **User Profile**: Fetched from ElasticSearch (`Flagpilot_user_profiles`).
-2.  **Global Wisdom**: Fetched from Experience Gallery (`Flagpilot_experience_gallery`).
-3.  **RAG Context**: Fetched from RAGFlow specific to the user's query.
+---
 
-This is transparent to the API client but affects the agent's behavior.
+## File Structure
+
+```
+backend/
+├── requirements-core.txt       # FastAPI, uvicorn, pydantic
+├── requirements-copilotkit.txt # copilotkit, langgraph
+├── requirements-metagpt.txt    # metagpt==0.8.1
+├── requirements-ragflow.txt    # ragflow-sdk
+├── lib/
+│   ├── copilotkit/            # CopilotKit SDK integration
+│   │   ├── graph.py           # LangGraph workflow
+│   │   └── sdk.py             # SDK setup
+│   └── runners/               # Subprocess runners for venvs
+│       ├── copilotkit_runner.py
+│       ├── metagpt_runner.py
+│       └── ragflow_runner.py
+├── agents/                    # MetaGPT agent definitions
+├── routers/                   # FastAPI routers
+└── Dockerfile                 # Multi-venv build
+```

@@ -29,9 +29,9 @@ class TestHealthEndpoints:
         assert response.status_code == 200
         data = response.json()
         
-        assert data["version"] == "4.0.0"
+        assert data["version"] == "5.0.0"
         assert "endpoints" in data
-        logger.info(f"✅ Root endpoint: v{data['version']}, {data['agents']} agents")
+        logger.info(f"✅ Root endpoint: v{data['version']}")
     
     def test_health_endpoint(self, client):
         """Test GET /health returns healthy status"""

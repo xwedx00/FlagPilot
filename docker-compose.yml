@@ -29,8 +29,8 @@ services:
       - RAGFLOW_URL=http://ragflow:80
       - RAGFLOW_API_KEY=${RAGFLOW_API_KEY:-}
     volumes:
-      - ./backend:/app
-      - backend_pycache:/app/__pycache__
+      # NOTE: Do NOT mount ./backend:/app - it shadows isolated venvs
+      - backend_logs:/app/logs
     depends_on:
       redis:
         condition: service_healthy
@@ -253,8 +253,8 @@ volumes:
     name: ragflow_logs
   ragflow_data:
     name: ragflow_data
-  backend_pycache:
-    name: Flagpilot_backend_pycache
+  backend_logs:
+    name: Flagpilot_backend_logs
 
 # ===========================================
 # Network

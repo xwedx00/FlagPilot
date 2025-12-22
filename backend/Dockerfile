@@ -1,6 +1,12 @@
-# FlagPilot Backend
-# =================
-# Optimized with pip caching via BuildKit
+# FlagPilot Backend - Multi-Venv Isolation Architecture
+# ======================================================
+# 4 completely isolated virtual environments:
+# - Core: FastAPI web server (main Python)
+# - CopilotKit: AI integration SDK
+# - MetaGPT: Multi-agent framework
+# - RAGFlow: Knowledge retrieval SDK
+#
+# Each venv has its complete dependency tree - zero conflicts possible.
 
 FROM python:3.11-slim-bookworm AS builder
 
@@ -13,16 +19,43 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for layer caching
-COPY requirements.txt .
+# Copy all requirements files
+COPY requirements-core.txt \
+    requirements-copilotkit.txt \
+    requirements-metagpt.txt \
+    requirements-ragflow.txt \
+    ./
 
-# Install dependencies with BuildKit cache mount
+# ============================================
+# VENV 1: Core (installed in main Python)
+# ============================================
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --prefer-binary -r requirements.txt
+    pip install --prefer-binary -r requirements-core.txt
 
-# =================
+# ============================================
+# VENV 2: CopilotKit (isolated)
+# ============================================
+RUN python -m venv /venv-copilotkit
+RUN --mount=type=cache,target=/root/.cache/pip \
+    /venv-copilotkit/bin/pip install --prefer-binary -r requirements-copilotkit.txt
+
+# ============================================
+# VENV 3: MetaGPT (isolated)
+# ============================================
+RUN python -m venv /venv-metagpt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    /venv-metagpt/bin/pip install --prefer-binary -r requirements-metagpt.txt
+
+# ============================================
+# VENV 4: RAGFlow (isolated)
+# ============================================
+RUN python -m venv /venv-ragflow
+RUN --mount=type=cache,target=/root/.cache/pip \
+    /venv-ragflow/bin/pip install --prefer-binary -r requirements-ragflow.txt
+
+# ============================================
 # Runtime Stage
-# =================
+# ============================================
 FROM python:3.11-slim-bookworm
 
 WORKDIR /app
@@ -33,26 +66,37 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy installed packages from builder
+# Copy installed packages from builder (core env)
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Copy application code
+# Copy application code FIRST
 COPY . .
 
-# Environment
+# Copy isolated virtual environments AFTER app code (prevents overwrite)
+COPY --from=builder /venv-copilotkit /app/venv-copilotkit
+COPY --from=builder /venv-metagpt /app/venv-metagpt
+COPY --from=builder /venv-ragflow /app/venv-ragflow
+
+# Environment variables
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 ENV GIT_PYTHON_REFRESH=quiet
 
-# Create all needed directories with full permissions
-RUN mkdir -p /app/metagpt/tools/schemas /app/.metagpt \
-    && chmod -R 777 /app /usr/local/lib/python3.11/site-packages/metagpt
+# Venv paths for runners
+ENV COPILOTKIT_VENV=/app/venv-copilotkit
+ENV METAGPT_VENV=/app/venv-metagpt
+ENV RAGFLOW_VENV=/app/venv-ragflow
+
+# Create directories and set permissions
+RUN mkdir -p /app/logs /app/.metagpt /app/metagpt/tools/schemas \
+    && chmod -R 777 /app/logs \
+    && chmod -R 777 /app/venv-metagpt/lib/python3.11/site-packages/metagpt 2>/dev/null || true
 
 EXPOSE 8000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=5 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 CMD ["python", "run.py"]

@@ -30,7 +30,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        <CopilotKit runtimeUrl="/api/agui" agent="flagpilot_orchestrator">
+        <CopilotKit runtimeUrl="/api/copilotkit" agent="flagpilot_orchestrator">
           {children}
         </CopilotKit>
       </body>

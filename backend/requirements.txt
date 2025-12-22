@@ -1,27 +1,4 @@
-# FlagPilot Backend - Requirements
-# =================================
-# MetaGPT 0.8.1 (0.8.2 has broken dependencies)
+# Combined requirements (for backwards compatibility)
+# Points to individual requirement files
 
-# Core: MetaGPT
-metagpt==0.8.1
-
-# FastAPI & ASGI server
-fastapi>=0.109.0
-uvicorn[standard]
-
-# Pydantic settings (for config management)
-pydantic-settings
-
-# RAGFlow SDK
-ragflow-sdk
-elasticsearch
-
-# Auth & Testing
-pyjwt
-pytest
-pytest-asyncio
-
-# HTTP Client - Pin for MetaGPT 0.8.1 compatibility
-# OpenAI SDK 1.52.0+ removed 'proxies' arg which MetaGPT still uses
-httpx>=0.23.0,<0.28.0
-openai>=1.0.0,<1.52.0
+-r requirements-core.txt
