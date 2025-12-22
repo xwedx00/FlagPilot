@@ -38,7 +38,25 @@ The FlagPilot backend is a **pure MetaGPT agent server** built with FastAPI. It 
 | **MetaGPT** | Multi-agent orchestration framework |
 | **RAGFlow** | Retrieval-Augmented Generation for knowledge base |
 | **OpenRouter** | LLM gateway for accessing various models |
+| **Elasticsearch** | Memory system (profiles, chat history, wisdom) |
+| **CopilotKit** | Frontend integration SDK |
 | **Redis** | Session caching and real-time pub/sub |
+
+### Multi-Venv Architecture
+
+The backend uses **4 isolated virtual environments** to prevent dependency conflicts:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│   Core (/usr/local)     │  FastAPI, uvicorn, pydantic      │
+├─────────────────────────────────────────────────────────────┤
+│   venv-copilotkit       │  copilotkit, langgraph, openai   │
+├─────────────────────────────────────────────────────────────┤
+│   venv-metagpt          │  metagpt==0.8.1                  │
+├─────────────────────────────────────────────────────────────┤
+│   venv-ragflow          │  ragflow-sdk, elasticsearch      │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -312,40 +330,41 @@ SECRET_KEY=your-secret-key-change-in-prod
 ```
 backend/
 ├── agents/                     # MetaGPT agent system
-│   ├── roles/                  # Agent implementations
-│   │   ├── base_role.py        # Base class for all agents
-│   │   ├── Flagpilot_orchestrator.py
-│   │   ├── contract_guardian.py
-│   │   ├── job_authenticator.py
-│   │   ├── scope_sentinel.py
-│   │   ├── risk_advisor.py
-│   │   └── ... (12 more agents)
+│   ├── roles/                  # Agent implementations (17 agents)
 │   ├── prompts/                # Agent prompt templates
 │   ├── registry.py             # Auto-discovery & registration
-│   ├── team.py                 # Team orchestration logic
-│   └── __init__.py
+│   └── team.py                 # Team orchestration logic
+│
+├── lib/                        # Shared utilities
+│   ├── memory/                 # Elasticsearch Memory System
+│   │   └── manager.py          # MemoryManager (profiles, chat, wisdom)
+│   ├── copilotkit/             # CopilotKit SDK integration
+│   │   ├── graph.py            # LangGraph workflow
+│   │   └── sdk.py              # SDK setup
+│   ├── runners/                # Subprocess runners for isolated venvs
+│   │   ├── copilotkit_runner.py
+│   │   ├── metagpt_runner.py
+│   │   └── ragflow_runner.py
+│   └── auth/                   # Authentication middleware
 │
 ├── routers/                    # FastAPI route handlers
 │   ├── agents.py               # /api/agents endpoints
 │   ├── health.py               # /health endpoints
-│   ├── rag.py                  # /api/rag endpoints
-│   └── __init__.py
-│
-├── lib/                        # Shared utilities
-│   └── patches.py              # MetaGPT compatibility patches
-│
-├── tools/                      # Agent tools & capabilities
+│   └── rag.py                  # /api/rag endpoints
 │
 ├── tests/                      # Test suites
-│   ├── test_agents.py
-│   └── test_stress_global_wisdom.py
+│   ├── test_live_system.py     # Live integration tests (12 tests)
+│   └── integration/            # Integration tests
 │
+├── requirements-core.txt       # Core dependencies
+├── requirements-copilotkit.txt # CopilotKit venv deps
+├── requirements-metagpt.txt    # MetaGPT venv deps
+├── requirements-ragflow.txt    # RAGFlow venv deps
 ├── config.py                   # Pydantic configuration
 ├── main.py                     # FastAPI app entry point
-├── run.py                      # Bootstrap script
-├── requirements.txt            # Python dependencies
-├── Dockerfile                  # Container definition
+├── Dockerfile                  # Multi-venv container build
 ├── BACKEND_API.md              # API documentation
+├── TEST_REPORT.md              # Test verification report
 └── README.md                   # This file
 ```
 
@@ -357,21 +376,25 @@ backend/
 
 ```bash
 # Inside Docker (Recommended)
-docker-compose exec backend pytest backend/tests/test_live_system.py -v
+docker exec Flagpilot-backend pytest tests/test_live_system.py -v
 
-# Run specific test case
-docker-compose exec backend pytest backend/tests/test_live_system.py -k test_05_complex_e2e_flow
+# Verbose with all LLM calls and responses
+docker exec Flagpilot-backend pytest tests/test_live_system.py -v -s --log-cli-level=DEBUG
+
+# All tests (integration + live)
+docker exec Flagpilot-backend pytest tests/ -v
 
 # With coverage
-docker exec Flagpilot-backend python -m pytest tests/ --cov=. --cov-report=html
+docker exec Flagpilot-backend pytest tests/ --cov=. --cov-report=html
 ```
 
 ### Test Categories
 
-| Test File | Description |
-|-----------|-------------|
-| `test_live_system.py` | **Core unified suite**: RAGFlow + OpenRouter + MetaGPT Integration |
-| `test_agents.py` | Individual agent functionality unit tests |
+| Test File | Tests | Description |
+|-----------|-------|-------------|
+| `test_live_system.py` | 12 | Full integration: LLM + RAG + ES Memory + MetaGPT |
+| `integration/test_copilotkit_integration.py` | 14 | API endpoints + subprocess runners |
+| `integration/test_api.py` | 6 | Core API functionality |
 
 ---
 

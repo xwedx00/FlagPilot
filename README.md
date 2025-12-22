@@ -138,8 +138,9 @@ FlagPilot deploys **17 specialized AI agents**, each with a unique role:
 │  │                          Infrastructure Layer                        │   │
 │  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────┐  │   │
 │  │  │  Redis   │  │  MySQL   │  │  MinIO   │  │  Elastic │  │RAGFlow │  │   │
-│  │  │  Cache   │  │    DB    │  │ Storage  │  │  Search  │  │ Server │  │   │
+│  │  │  Cache   │  │    DB    │  │ Storage  │  │Memory+RAG│  │ Server │  │   │
 │  │  └──────────┘  └──────────┘  └──────────┘  └──────────┘  └────────┘  │   │
+│  │                                                                      │   │
 │  └──────────────────────────────────────────────────────────────────────┘   │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -271,24 +272,35 @@ curl -X POST "http://localhost:8000/api/team/chat" \
 
 ## 🧪 Verification & Testing Status
 
-**Current Status (Dec 2025): ✅ STABLE**
+**Current Status (Dec 2025): ✅ STABLE - 11/12 Tests Passing**
 
-The backend has passed a comprehensive "Live System" integration test suite.
-- **Report**: [View Full Test Report](backend/TEST_REPORT.md)
-- **Raw Logs**: [View Raw Output](backend/test_live_output.txt)
+The backend has passed comprehensive live integration tests covering:
+- LLM quality analysis
+- Elasticsearch memory system (profiles, chat, wisdom)
+- RAGFlow knowledge retrieval
+- MetaGPT team orchestration
+
+**Report**: [View Full Test Report](backend/TEST_REPORT.md)
 
 ### Validated Features:
-1.  **RAGFlow Knowledge Base**: Successfully ingests and retrieves documents (Fixes "0 chunks" bug).
-2.  **MetaGPT Orchestration**: Multi-agent collaboration confirmed (Scam Detection, Negotiation).
-3.  **LLM Integration**: OpenRouter connection verified.
+| Feature | Status | Tests |
+|---------|--------|-------|
+| LLM Integration | ✅ Verified | 3 LLM calls |
+| Elasticsearch Memory | ✅ Verified | 4 indices, 50+ CRUD ops |
+| RAGFlow Search | ✅ Verified | Retrieval working |
+| MetaGPT Orchestration | ✅ Verified | Via subprocess runner |
+| CopilotKit Integration | ✅ Verified | API + runners |
 
 ### Run Tests Manually
 ```bash
 # Run the unified live system test suite
-docker-compose exec backend pytest backend/tests/test_live_system.py -v
+docker exec Flagpilot-backend pytest tests/test_live_system.py -v
 
-# Run verification for specific features
-docker-compose exec backend pytest backend/tests/test_live_system.py -k test_03_fast_fail_scam
+# Verbose with all LLM calls and responses
+docker exec Flagpilot-backend pytest tests/test_live_system.py -v -s --log-cli-level=DEBUG
+
+# All tests
+docker exec Flagpilot-backend pytest tests/ -v
 ```
 
 ---
@@ -299,18 +311,18 @@ docker-compose exec backend pytest backend/tests/test_live_system.py -k test_03_
 
 ```
 Flag-Project/
-├── backend/                    # FastAPI backend
-│   ├── agents/                 # MetaGPT agent definitions
-│   │   ├── roles/              # Individual agent implementations
-│   │   ├── prompts/            # Agent prompt templates
-│   │   ├── registry.py         # Agent discovery & registration
-│   │   └── team.py             # Team orchestration logic
+├── backend/                    # FastAPI backend (Multi-Venv Architecture)
+│   ├── agents/                 # MetaGPT agent definitions (17 agents)
+│   ├── lib/
+│   │   ├── memory/             # Elasticsearch Memory System
+│   │   ├── copilotkit/         # CopilotKit SDK integration
+│   │   └── runners/            # Subprocess runners for isolated venvs
 │   ├── routers/                # API route handlers
-│   ├── lib/                    # Shared utilities & patches
-│   ├── tools/                  # Agent tools & capabilities
-│   ├── config.py               # Configuration management
-│   ├── main.py                 # FastAPI application entry
-│   └── Dockerfile              # Backend container definition
+│   ├── tests/                  # Test suites (32+ tests)
+│   ├── requirements-*.txt      # Venv-specific dependencies
+│   ├── Dockerfile              # Multi-venv container build
+│   └── BACKEND_API.md          # API documentation
+├── frontend/                   # Next.js frontend (CopilotKit)
 ├── docker-compose.yml          # Full stack orchestration
 ├── .env                        # Environment configuration
 └── README.md                   # This file

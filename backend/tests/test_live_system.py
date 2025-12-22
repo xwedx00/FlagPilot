@@ -27,47 +27,69 @@ from loguru import logger
 # Output file in project root
 OUTPUT_FILE = "test_live_output.txt"
 
+# Status icons for clean ASCII output
+ICONS = {
+    "SUCCESS": "[OK]",
+    "ERROR": "[!!]",
+    "WARNING": "[??]",
+    "INFO": "[--]",
+    "DEBUG": "[..]",
+    "PASS": "[OK]",
+    "FAIL": "[XX]",
+    "SKIP": "[>>]"
+}
+
 
 def log_output(message: str, level: str = "INFO", console: bool = True):
-    """Write to output file with timestamp and log level"""
+    """Write to output file with timestamp and log level - clean ASCII for file"""
     timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
-    formatted = f"[{timestamp}] [{level}] {message}"
+    icon = ICONS.get(level, "[--]")
+    formatted_file = f"[{timestamp}] {icon} {message}"
+    formatted_console = f"[{timestamp}] [{level}] {message}"
     
     if console:
-        # Use colors based on level
+        # Use colors based on level for console only
         if level == "ERROR":
-            print(f"\033[91m{formatted}\033[0m")  # Red
+            print(f"\033[91m{formatted_console}\033[0m")  # Red
         elif level == "WARNING":
-            print(f"\033[93m{formatted}\033[0m")  # Yellow
+            print(f"\033[93m{formatted_console}\033[0m")  # Yellow
         elif level == "SUCCESS":
-            print(f"\033[92m{formatted}\033[0m")  # Green
+            print(f"\033[92m{formatted_console}\033[0m")  # Green
         elif level == "DEBUG":
-            print(f"\033[90m{formatted}\033[0m")  # Gray
+            print(f"\033[90m{formatted_console}\033[0m")  # Gray
         else:
-            print(formatted)
+            print(formatted_console)
     
+    # Write clean ASCII to file (no ANSI codes)
     with open(OUTPUT_FILE, "a", encoding="utf-8") as f:
-        f.write(f"{formatted}\n")
+        f.write(f"{formatted_file}\n")
 
 
 def log_section(title: str):
-    """Log a major section header"""
-    border = "=" * 70
-    log_output(f"\n{border}")
-    log_output(f"  {title}")
-    log_output(f"{border}\n")
+    """Log a major section header with ASCII box"""
+    width = 70
+    border = "=" * width
+    title_padded = f"  {title}  ".center(width - 4)
+    
+    log_output("")
+    log_output(border.replace("=", "#"))
+    log_output(f"# {title_padded} #")
+    log_output(border.replace("=", "#"))
+    log_output("")
 
 
 def log_subsection(title: str):
     """Log a subsection header"""
-    log_output(f"\n--- {title} ---")
+    log_output(f"\n----- {title} " + "-" * (60 - len(title)))
 
 
 def log_json(data: Any, label: str = "DATA"):
     """Pretty print JSON data"""
     try:
         formatted = json.dumps(data, indent=2, default=str)
-        log_output(f"{label}:\n{formatted}", "DEBUG")
+        log_output(f"{label}:", "DEBUG")
+        for line in formatted.split("\n"):
+            log_output(f"    {line}", "DEBUG")
     except:
         log_output(f"{label}: {data}", "DEBUG")
 
