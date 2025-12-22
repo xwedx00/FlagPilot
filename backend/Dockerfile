@@ -82,15 +82,20 @@ COPY --from=builder /venv-ragflow /app/venv-ragflow
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 ENV GIT_PYTHON_REFRESH=quiet
+# MetaGPT project root (for finding config)
+ENV METAGPT_PROJECT_ROOT=/app
 
 # Venv paths for runners
 ENV COPILOTKIT_VENV=/app/venv-copilotkit
 ENV METAGPT_VENV=/app/venv-metagpt
 ENV RAGFLOW_VENV=/app/venv-ragflow
 
-# Create directories and set permissions
-RUN mkdir -p /app/logs /app/.metagpt /app/metagpt/tools/schemas \
+# Create directories (including MetaGPT config dirs)
+# MetaGPT looks for config in ~/.metagpt/ and METAGPT_ROOT/config/
+RUN mkdir -p /app/logs /app/.metagpt /app/config /root/.metagpt \
+    /app/metagpt/tools/schemas \
     && chmod -R 777 /app/logs \
+    && chmod -R 777 /root/.metagpt \
     && chmod -R 777 /app/venv-metagpt/lib/python3.11/site-packages/metagpt 2>/dev/null || true
 
 EXPOSE 8000
