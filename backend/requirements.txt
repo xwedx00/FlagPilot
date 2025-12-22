@@ -2,3 +2,4 @@
 # Points to individual requirement files
 
 -r requirements-core.txt
+-r requirements-copilotkit.txt

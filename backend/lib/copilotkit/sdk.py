@@ -4,13 +4,14 @@ CopilotKit SDK Setup
 Configures the CopilotKitRemoteEndpoint with FlagPilot agents.
 """
 
-from copilotkit import CopilotKitRemoteEndpoint, LangGraphAgent
+from copilotkit import CopilotKitRemoteEndpoint
+from copilotkit.langgraph_agui_agent import LangGraphAGUIAgent
 from .graph import graph
 
 # Create the CopilotKit SDK with our LangGraph agent
 sdk = CopilotKitRemoteEndpoint(
     agents=[
-        LangGraphAgent(
+        LangGraphAGUIAgent(
             name="flagpilot_orchestrator",
             description="""FlagPilot multi-agent team for freelancer protection.
 
