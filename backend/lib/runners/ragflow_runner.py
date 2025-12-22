@@ -310,7 +310,11 @@ try:
             
             if target_doc:
                 dataset.async_parse_documents([target_doc.id])
-                print(json.dumps({"status": "success", "message": f"Uploaded and triggered parsing for {target_doc.id}"}), file=sys.stdout)
+                print(json.dumps({
+                    "status": "success", 
+                    "message": f"Uploaded and triggered parsing for {target_doc.id}",
+                    "dataset_id": dataset.id
+                }), file=sys.stdout)
             else:
                 print(json.dumps({"status": "warning", "message": "Uploaded but document not found for parsing"}), file=sys.stdout)
         except Exception as upload_err:

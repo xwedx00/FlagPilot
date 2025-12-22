@@ -299,11 +299,12 @@ class TestLiveSystemIntegration:
         
         test_query = "What is FlagPilot?"
         found_chunks = False
+        dataset_id = upload_result.get("dataset_id")
         
         # Try for up to 60 seconds
         for attempt in range(12):
-            log_output(f"Search attempt {attempt+1}/12 for '{test_query}'...", "DEBUG")
-            results = await RAGFlowRunner.search(query=test_query, limit=5, dataset_ids=None) # Passing None to search all or specific if I could filter
+            log_output(f"Search attempt {attempt+1}/12 for '{test_query}' in dataset {dataset_id}...", "DEBUG")
+            results = await RAGFlowRunner.search(query=test_query, limit=5, dataset_ids=[dataset_id] if dataset_id else None)
             
             # Since I can't easily get the dataset ID from the upload result (it returns bool/None sometimes depending on SDK version),
             # I rely on search spanning the KB.
