@@ -45,9 +45,9 @@ GET /api/agents          # List all agents
 GET /api/agents/{id}     # Get agent details
 ```
 
-### RAG Search
+### RAG Operations
 ```
-POST /api/rag/search     # Search knowledge base
+POST /api/v1/rag/ingest  # Ingest document from URL
 ```
 
 ---
