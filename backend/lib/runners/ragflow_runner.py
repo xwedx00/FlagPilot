@@ -69,26 +69,32 @@ try:
     # Try to list datasets first
     datasets = client.list_datasets()
     
-    # Search across datasets
+    # Search across datasets using RAGFlow.retrieve()
     results = []
     query = input_data["query"]
     limit = input_data.get("limit", 5)
+    dataset_ids = input_data.get("dataset_ids")
     
-    for ds in datasets[:3]:  # Search first 3 datasets
-        try:
-            chunks = ds.retrieve(
-                question=query,
-                datasets=[ds.id],
-                top_k=limit
-            )
-            for chunk in chunks:
-                results.append({
-                    "content": getattr(chunk, "content", str(chunk)),
-                    "similarity": getattr(chunk, "similarity", 0.0),
-                    "source": getattr(chunk, "document_name", "unknown")
-                })
-        except Exception as e:
-            pass  # Skip datasets that don't support retrieval
+    # Use specific dataset_ids if provided, otherwise search first 3
+    if not dataset_ids:
+        dataset_ids = [ds.id for ds in datasets[:3]]
+    
+    try:
+        chunks = client.retrieve(
+            question=query,
+            dataset_ids=dataset_ids,
+            page_size=limit,
+            similarity_threshold=0.1,  # Lower threshold for testing
+            keyword=True  # Enable keyword matching as fallback
+        )
+        for chunk in chunks:
+            results.append({
+                "content": getattr(chunk, "content", str(chunk)),
+                "similarity": getattr(chunk, "similarity", 0.0),
+                "source": getattr(chunk, "document_name", "unknown")
+            })
+    except Exception as e:
+        print(f"Retrieve error: {e}", file=sys.stderr)
     
     print(json.dumps(results[:limit]))
     
@@ -264,8 +270,12 @@ try:
         
     if not dataset:
         try:
-            dataset = client.create_dataset(name=dataset_name)
-            print(f"Created dataset: {dataset_name}", file=sys.stderr)
+            # Use OpenAI embedding model via OpenRouter (configured in service_conf.yaml)
+            dataset = client.create_dataset(
+                name=dataset_name,
+                embedding_model="text-embedding-3-small@OpenAI"
+            )
+            print(f"Created dataset: {dataset_name} with OpenAI embeddings", file=sys.stderr)
         except Exception as e:
             # Maybe it exists but listing failed or race condition
             print(f"Create dataset error: {e}", file=sys.stderr)

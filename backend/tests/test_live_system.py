@@ -271,7 +271,8 @@ class TestLiveSystemIntegration:
         
         # 1. Upload Document
         log_subsection("STEP 1: UPLOAD TEST DOCUMENT")
-        dataset_name = "flagpilot_system_test"
+        # Use timestamped name to ensure fresh dataset with OpenAI embeddings
+        dataset_name = f"flagpilot_test_{int(time.time())}"
         doc_content = """
         FlagPilot is an advanced freelancer protection system.
         It helps freelancers verify clients, check contracts for risks, and negotiate better terms.
