@@ -299,8 +299,20 @@ try:
         blob = f.read()
         try:
             res = dataset.upload_documents([{"display_name": blob_name, "blob": blob}])
-            # res might be a list of objects, not serializable
-            print(json.dumps({"status": "success", "message": "Upload call completed"}), file=sys.stdout)
+            
+            # Find the document to trigger parsing
+            docs = dataset.list_documents(keywords=blob_name, page=1, page_size=10)
+            target_doc = None
+            for d in docs:
+                if d.name == blob_name:
+                    target_doc = d
+                    break
+            
+            if target_doc:
+                dataset.async_parse_documents([target_doc.id])
+                print(json.dumps({"status": "success", "message": f"Uploaded and triggered parsing for {target_doc.id}"}), file=sys.stdout)
+            else:
+                print(json.dumps({"status": "warning", "message": "Uploaded but document not found for parsing"}), file=sys.stdout)
         except Exception as upload_err:
              print(json.dumps({"status": "error", "error": str(upload_err)}), file=sys.stdout)
 
