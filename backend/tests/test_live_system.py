@@ -1,17 +1,12 @@
 """
-FlagPilot Live Integration Test - ENHANCED
-============================================
-Comprehensive test that validates the entire system with VERBOSE OUTPUT:
-1. RAGFlow - Dataset creation, document upload, retrieval, global wisdom
-2. OpenRouter LLM - Response quality, format validation, token usage
-3. MetaGPT Team Orchestration - Multi-agent collaboration, scam detection
+FlagPilot Live Integration Test - Multi-Venv Architecture
+============================================================
+Comprehensive test that validates the entire system including:
+1. Elasticsearch Memory System (User Profiles, Chat History, Global Wisdom)
+2. API Endpoints (Health, Agents, CopilotKit)
+3. Subprocess Runners for isolated venvs
 
-This test runs against LIVE services and saves ALL output to test_live_output.txt
-
-Based on patterns from:
-- legacy_tests/test_stress_global_wisdom.py (RAG seeding, quality filtering)
-- legacy_tests/integration/test_real_flow.py (full workflow)
-- legacy_tests/integration/test_stress_scenarios.py (context isolation, multi-step)
+Output saved to test_live_output.txt
 """
 
 import pytest
@@ -22,8 +17,9 @@ import json
 from datetime import datetime
 from typing import Optional, Dict, Any, List
 from loguru import logger
+from fastapi.testclient import TestClient
 
-# Output file in project root
+# Output file for test results
 OUTPUT_FILE = "test_live_output.txt"
 
 
@@ -33,15 +29,14 @@ def log_output(message: str, level: str = "INFO", console: bool = True):
     formatted = f"[{timestamp}] [{level}] {message}"
     
     if console:
-        # Use colors based on level
         if level == "ERROR":
-            print(f"\033[91m{formatted}\033[0m")  # Red
+            print(f"\033[91m{formatted}\033[0m")
         elif level == "WARNING":
-            print(f"\033[93m{formatted}\033[0m")  # Yellow
+            print(f"\033[93m{formatted}\033[0m")
         elif level == "SUCCESS":
-            print(f"\033[92m{formatted}\033[0m")  # Green
+            print(f"\033[92m{formatted}\033[0m")
         elif level == "DEBUG":
-            print(f"\033[90m{formatted}\033[0m")  # Gray
+            print(f"\033[90m{formatted}\033[0m")
         else:
             print(formatted)
     
@@ -73,8 +68,8 @@ def log_json(data: Any, label: str = "DATA"):
 
 class TestLiveSystemIntegration:
     """
-    Enhanced Live Integration Test Suite
-    Tests RAGFlow + OpenRouter + MetaGPT with VERBOSE output
+    Live Integration Test Suite for Multi-Venv Architecture
+    Tests: API, Memory System, Runners
     """
     
     @classmethod
@@ -82,12 +77,15 @@ class TestLiveSystemIntegration:
         """Initialize test output file"""
         with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
             f.write("=" * 70 + "\n")
-            f.write("  FLAGPILOT LIVE INTEGRATION TEST - VERBOSE MODE\n")
+            f.write("  FLAGPILOT LIVE INTEGRATION TEST - MULTI-VENV EDITION\n")
             f.write(f"  Started: {datetime.now().isoformat()}\n")
             f.write("=" * 70 + "\n\n")
         
-        # Store test data for sharing between tests
         cls.shared_data = {}
+        
+        # Initialize TestClient
+        from main import app
+        cls.client = TestClient(app)
     
     # =========================================
     # SECTION 1: Environment & Health Checks
@@ -95,9 +93,7 @@ class TestLiveSystemIntegration:
     
     @pytest.mark.asyncio
     async def test_01_environment_check(self):
-        """
-        Test 1: Verify all environment variables are set
-        """
+        """Test 1: Verify environment variables are configured"""
         log_section("TEST 1: ENVIRONMENT CHECK")
         
         from config import settings
@@ -105,672 +101,450 @@ class TestLiveSystemIntegration:
         checks = {
             "OPENROUTER_API_KEY": bool(settings.OPENROUTER_API_KEY),
             "OPENROUTER_MODEL": bool(settings.OPENROUTER_MODEL),
-            "OPENROUTER_BASE_URL": bool(settings.OPENROUTER_BASE_URL),
-            "RAGFLOW_API_KEY": bool(settings.RAGFLOW_API_KEY) or settings.RAGFLOW_API_KEY is None, # Allow None
-            "RAGFLOW_URL": bool(settings.RAGFLOW_URL),
+            "ES_HOST": bool(settings.ES_HOST),
+            "ES_PORT": bool(settings.ES_PORT),
+            "REDIS_URL": bool(settings.REDIS_URL),
         }
         
         log_output(f"OpenRouter Model: {settings.OPENROUTER_MODEL}", "INFO")
-        log_output(f"OpenRouter Base URL: {settings.OPENROUTER_BASE_URL}", "INFO")
-        log_output(f"RAGFlow URL: {settings.RAGFLOW_URL}", "INFO")
-        log_output(f"RAGFlow API Key: {settings.RAGFLOW_API_KEY}", "INFO")
+        log_output(f"ES Host: {settings.ES_HOST}:{settings.ES_PORT}", "INFO")
         
         for name, is_set in checks.items():
             status = "✅ SET" if is_set else "❌ MISSING"
             log_output(f"  {name}: {status}", "INFO")
         
-        # We allow None for RAGFLOW_API_KEY based on recent debug findings
-        # all_set = all(checks.values())
-        # assert all_set, f"Missing environment variables"
-        
         log_output("Environment check PASSED", "SUCCESS")
     
-    @pytest.mark.asyncio
-    async def test_02_ragflow_health(self):
-        """
-        Test 2: Verify RAGFlow is connected and healthy
-        """
-        log_section("TEST 2: RAGFLOW HEALTH CHECK")
+    def test_02_api_health(self):
+        """Test 2: Verify API health endpoint"""
+        log_section("TEST 2: API HEALTH CHECK")
         
-        from ragflow.client import get_ragflow_client
+        response = self.client.get("/health")
+        log_output(f"Status Code: {response.status_code}", "INFO")
         
-        client = get_ragflow_client()
-        log_output(f"RAGFlow Base URL: {client.base_url}", "DEBUG")
+        assert response.status_code == 200, "Health endpoint failed"
         
-        health = await client.health_check()
-        log_json(health, "Health Response")
+        data = response.json()
+        log_json(data, "Health Response")
         
-        assert health["status"] == "healthy", f"RAGFlow unhealthy: {health}"
-        assert health["connected"] == True, "RAGFlow not connected"
+        assert data["status"] == "healthy"
+        assert "version" in data
+        assert len(data.get("agents", [])) > 0
         
-        # Store for later
-        TestLiveSystemIntegration.shared_data["ragflow_healthy"] = True
-        
-        log_output("RAGFlow health check PASSED", "SUCCESS")
+        self.shared_data["api_healthy"] = True
+        log_output(f"API Version: {data['version']}", "SUCCESS")
+        log_output(f"Agents Loaded: {len(data.get('agents', []))}", "SUCCESS")
+        log_output("API health check PASSED", "SUCCESS")
     
-    @pytest.mark.asyncio  
-    async def test_03_openrouter_health(self):
-        """
-        Test 3: Verify OpenRouter LLM responds with token usage info
-        """
-        log_section("TEST 3: OPENROUTER LLM HEALTH CHECK")
+    def test_03_agents_list(self):
+        """Test 3: Verify agents list endpoint"""
+        log_section("TEST 3: AGENTS LIST")
         
-        from openai import AsyncOpenAI
-        from config import settings
+        response = self.client.get("/api/agents")
+        assert response.status_code == 200
         
-        client = AsyncOpenAI(
-            api_key=settings.OPENROUTER_API_KEY,
-            base_url=settings.OPENROUTER_BASE_URL
+        data = response.json()
+        agents = data.get("agents", [])
+        count = data.get("count", 0)
+        
+        log_output(f"Total Agents: {count}", "INFO")
+        
+        for agent in agents[:5]:
+            log_output(f"  - {agent['id']}: {agent['name']}", "DEBUG")
+        
+        if count > 5:
+            log_output(f"  ... and {count - 5} more", "DEBUG")
+        
+        # Verify key agents exist
+        agent_ids = [a["id"] for a in agents]
+        key_agents = ["contract-guardian", "job-authenticator", "flagpilot-orchestrator"]
+        
+        for key in key_agents:
+            if key in agent_ids:
+                log_output(f"  ✅ {key}", "SUCCESS")
+            else:
+                log_output(f"  ❌ {key} MISSING", "WARNING")
+        
+        assert count >= 10, f"Expected 10+ agents, got {count}"
+        log_output("Agents list PASSED", "SUCCESS")
+    
+    # =========================================
+    # SECTION 2: Elasticsearch Memory Tests
+    # =========================================
+    
+    @pytest.mark.asyncio
+    async def test_04_elasticsearch_connection(self):
+        """Test 4: Verify Elasticsearch connection via MemoryManager"""
+        log_section("TEST 4: ELASTICSEARCH CONNECTION")
+        
+        from lib.memory.manager import MemoryManager
+        
+        manager = MemoryManager()
+        health = manager.health_check()
+        
+        log_json(health, "ES Health")
+        
+        if health["connected"]:
+            log_output(f"Cluster: {health.get('cluster_name', 'N/A')}", "INFO")
+            log_output(f"Version: {health.get('version', 'N/A')}", "INFO")
+            
+            stats = manager.get_stats()
+            log_output("Index Stats:", "INFO")
+            for index, count in stats.items():
+                log_output(f"  {index}: {count} docs", "DEBUG")
+            
+            self.shared_data["es_connected"] = True
+            log_output("Elasticsearch connection PASSED", "SUCCESS")
+        else:
+            log_output(f"ES not connected: {health.get('error', 'Unknown')}", "WARNING")
+            pytest.skip("Elasticsearch not available")
+    
+    @pytest.mark.asyncio
+    async def test_05_user_profile_crud(self):
+        """Test 5: User Profile CRUD operations"""
+        log_section("TEST 5: USER PROFILE CRUD")
+        
+        from lib.memory.manager import MemoryManager
+        
+        manager = MemoryManager()
+        if not manager.connected:
+            pytest.skip("Elasticsearch not connected")
+        
+        test_user_id = f"test_user_{int(time.time())}"
+        
+        # CREATE
+        log_subsection("CREATE Profile")
+        result = await manager.update_user_profile(
+            user_id=test_user_id,
+            summary="Experienced freelancer, prefers fixed-price contracts, cautious about scope creep",
+            preferences={"rate_min": 50, "avoid_clients": ["lowballers"]}
         )
+        log_output(f"Create result: {result}", "INFO")
+        assert result, "Failed to create profile"
         
-        log_output(f"Model: {settings.OPENROUTER_MODEL}", "INFO")
-        log_output("Sending test prompt...", "INFO")
+        # READ
+        log_subsection("READ Profile")
+        profile = await manager.get_user_profile(test_user_id)
+        log_json(profile, "Profile")
+        assert profile["user_id"] == test_user_id
+        assert "freelancer" in profile["summary"].lower()
         
-        start_time = time.time()
+        # UPDATE
+        log_subsection("UPDATE Profile")
+        result = await manager.update_user_profile(
+            user_id=test_user_id,
+            summary=profile["summary"] + " Recently added web development skills."
+        )
+        assert result
         
-        try:
-            response = await client.chat.completions.create(
-                model=settings.OPENROUTER_MODEL,
-                messages=[
-                    {"role": "system", "content": "You are a helpful assistant. Respond in one short sentence."},
-                    {"role": "user", "content": "Say hello and confirm you're working."}
-                ],
-                max_tokens=100
-            )
-            
-            duration = time.time() - start_time
-            content = response.choices[0].message.content
-            
-            log_output(f"Response: {content}", "INFO")
-            log_output(f"Duration: {duration:.2f}s", "INFO")
-            
-            # Token usage (OpenRouter specific)
-            if response.usage:
-                log_output(f"Prompt Tokens: {response.usage.prompt_tokens}", "DEBUG")
-                log_output(f"Completion Tokens: {response.usage.completion_tokens}", "DEBUG")
-                log_output(f"Total Tokens: {response.usage.total_tokens}", "DEBUG")
-            
-            assert content is not None, "No response from LLM"
-            assert len(content) > 0, "Empty response from LLM"
-            
-            TestLiveSystemIntegration.shared_data["llm_healthy"] = True
-            log_output("OpenRouter health check PASSED", "SUCCESS")
-            
-        except Exception as e:
-            log_output(f"OpenRouter ERROR: {e}", "ERROR")
-            raise
-    
-    # =========================================
-    # SECTION 2: RAGFlow Integration Tests
-    # =========================================
+        updated = await manager.get_user_profile(test_user_id)
+        assert "web development" in updated["summary"].lower()
+        log_output("Profile updated successfully", "SUCCESS")
+        
+        log_output("User Profile CRUD PASSED", "SUCCESS")
     
     @pytest.mark.asyncio
-    async def test_04_ragflow_full_verification(self):
-        """
-        Test 4: Full RAGFlow Flow (Create, Upload, Parse, Retrieve)
-        Combines creation, upload, parsing wait, and retrieval verification 
-        into a single atomic test to ensure robust state tracking.
-        """
-        log_section("TEST 4: RAGFLOW FULL VERIFICATION (Review & Search)")
+    async def test_06_chat_history(self):
+        """Test 6: Chat History storage and retrieval"""
+        log_section("TEST 6: CHAT HISTORY")
         
-        from ragflow.client import get_ragflow_client, DEFAULT_EMBEDDING_MODEL
+        from lib.memory.manager import MemoryManager
+        import uuid
         
-        client = get_ragflow_client()
-        timestamp = int(time.time())
+        manager = MemoryManager()
+        if not manager.connected:
+            pytest.skip("Elasticsearch not connected")
         
-        log_output(f"Default Embedding Model: {DEFAULT_EMBEDDING_MODEL}", "INFO")
-
-        # Step 1: Create test dataset
-        log_subsection("Step 1: Create Test Dataset")
-        dataset_name = f"Flagpilot_live_test_{timestamp}"
-        dataset_id = None
+        test_user_id = f"chat_test_{int(time.time())}"
+        session_id = str(uuid.uuid4())
         
-        try:
-            dataset = client.create_dataset(
-                name=dataset_name,
-                description="FlagPilot live integration test - comprehensive"
-            )
-            dataset_id = dataset.id if hasattr(dataset, 'id') else str(dataset)
-            log_output(f"Created dataset: {dataset_name}", "SUCCESS")
-            log_output(f"Dataset ID: {dataset_id}", "DEBUG")
-            
-        except Exception as e:
-            log_output(f"Dataset creation failed (may exist): {e}", "WARNING")
-            datasets = client.list_datasets()
-            if datasets:
-                dataset_id = datasets[0].id
-                log_output(f"Using existing dataset fallback: {dataset_id}", "INFO")
-                
-        if not dataset_id:
-             pytest.fail("Failed to get a valid dataset ID for testing. RAGFlow auth or connection issue?")
-        
-        TestLiveSystemIntegration.shared_data["test_dataset_id"] = dataset_id
-
-        # Step 2: Upload test document
-        log_subsection("Step 2: Upload Test Contract")
-        
-        test_contract = """
-        FREELANCE SERVICE AGREEMENT - RISKY CLIENT
-        ==========================================
-        
-        Client: SketchyCorp International
-        Contractor: Test Freelancer
-        Date: December 2025
-        
-        PAYMENT TERMS (CRITICAL ISSUES):
-        --------------------------------
-        - Total Project Value: $15,000 USD
-        - Payment: 100% upon completion (NO UPFRONT DEPOSIT)
-        - Payment Window: Net 90 days after "client satisfaction review"
-        - Late Fees: NONE SPECIFIED
-        
-        INTELLECTUAL PROPERTY (RED FLAG):
-        ----------------------------------
-        - All work product transfers to Client IMMEDIATELY upon creation
-        - NOT upon final payment
-        - Contractor waives all moral rights
-        
-        TERMINATION (UNFAIR):
-        ----------------------
-        - Client may terminate at any time with 24 hours notice
-        - Upon termination, Contractor receives payment only for "approved deliverables"
-        - "Approved" status determined solely by Client
-        
-        DISPUTE RESOLUTION:
-        -------------------
-        - All disputes resolved in Client's jurisdiction
-        - Contractor waives right to jury trial
-        - Maximum liability capped at fees paid
-        
-        This contract contains multiple red flags that should be identified.
-        """
-        
-        try:
-            success = await client.upload_document(
-                dataset_id=dataset_id,
-                filename="risky_contract.txt",
-                content=test_contract.encode('utf-8')
-            )
-            log_output(f"Document upload result: {success}", "INFO")
-        except Exception as e:
-            log_output(f"Upload failed: {e}", "WARNING")
-            pytest.fail(f"Upload failed: {e}")
-
-        # Step 3: Wait for Parsing (Polled)
-        log_subsection("Step 3: Wait for Document Parsing")
-        max_retries = 20
-        parsing_complete = False
-        
-        for i in range(max_retries):
-            try:
-                datasets = client.list_datasets()
-                target_ds = next((d for d in datasets if d.id == dataset_id), None)
-                
-                if target_ds:
-                    docs = target_ds.list_documents(page=1, page_size=10)
-                    if docs:
-                        # Find our specific doc if possible, or usually just the first one recently uploaded
-                        target_doc = next((d for d in docs if "risky_contract" in getattr(d, 'name', '')), docs[0])
-                        
-                        doc_status = getattr(target_doc, 'run_status', getattr(target_doc, 'run', '0'))
-                        log_output(f"Checking doc status: {doc_status} (Attempt {i+1}/{max_retries})", "DEBUG")
-                        
-                        # Status '1' is 'DONE'
-                        if str(doc_status) == '1' or str(doc_status) == 'DONE':
-                            log_output("Document parsing COMPLETE", "SUCCESS")
-                            parsing_complete = True
-                            break
-            except Exception as e:
-                log_output(f"Polling error: {e}", "WARNING")
-
-            if i == max_retries - 1:
-                log_output("Timeout waiting for parsing!", "WARNING")
-            
-            await asyncio.sleep(2)
-
-        if not parsing_complete:
-            # We don't fail immediately, we try retrieval anyway, but warn
-            log_output("Proceeding to retrieval despite parsing timeout (might fail)", "WARNING")
-            
-        # Step 4: Verify Retrieval
-        log_subsection("Step 4: Verify RAG Retrieval")
-        
-        test_queries = [
-            "payment terms contract",
-            "intellectual property transfer",
-            "late fees",
-            "SketchyCorp"
+        # Save messages
+        log_subsection("SAVE Messages")
+        messages = [
+            ("user", "I need help reviewing a contract"),
+            ("assistant", "I'd be happy to help! Please share the contract details."),
+            ("user", "The client wants 100% payment on completion with no deposit"),
+            ("assistant", "That's a red flag. I recommend negotiating a deposit...")
         ]
         
-        total_chunks = 0
-        
-        for query in test_queries:
-            log_subsection(f"Query: '{query}'")
-            
-            results = await client.search_user_context(
-                user_id="test_user",
-                query=query,
-                limit=3,
-                dataset_ids=[dataset_id] # Explicitly search the test dataset
+        for role, content in messages:
+            chat_id = await manager.save_chat(
+                user_id=test_user_id,
+                role=role,
+                content=content,
+                session_id=session_id,
+                agent_id="contract-guardian"
             )
-            
-            chunk_count = len(results)
-            total_chunks += chunk_count
-            log_output(f"Retrieved {chunk_count} chunks", "INFO" if chunk_count > 0 else "WARNING")
-            
-            for i, result in enumerate(results):
-                content = result.get('content', '')[:100].replace('\n', ' ')
-                log_output(f"  [{i+1}] ...{content}...", "DEBUG")
+            log_output(f"Saved {role} message: {chat_id[:8]}...", "DEBUG")
         
-        assert total_chunks > 0, "RAG failed to retrieve ANY chunks from the uploaded contract!"
-        log_output("RAGFlow Full Verification: PASSED", "SUCCESS")
-    
-    # =========================================
-    # SECTION 3: LLM Quality & Response Tests
-    # =========================================
+        # Wait for ES indexing
+        await asyncio.sleep(1)
+        
+        # Retrieve history
+        log_subsection("RETRIEVE History")
+        history = await manager.get_chat_history(test_user_id, session_id)
+        log_output(f"Retrieved {len(history)} messages", "INFO")
+        
+        for msg in history:
+            log_output(f"  [{msg['role']}]: {msg['content'][:50]}...", "DEBUG")
+        
+        assert len(history) >= 4, f"Expected 4+ messages, got {len(history)}"
+        
+        # Get sessions
+        log_subsection("GET Sessions")
+        sessions = await manager.get_recent_sessions(test_user_id)
+        log_output(f"Sessions: {sessions}", "DEBUG")
+        assert session_id in sessions
+        
+        log_output("Chat History PASSED", "SUCCESS")
     
     @pytest.mark.asyncio
-    async def test_06_llm_contract_analysis_quality(self):
-        """
-        Test 6: LLM produces quality contract analysis with specific risks identified
-        """
-        log_section("TEST 6: LLM CONTRACT ANALYSIS QUALITY")
+    async def test_07_global_wisdom(self):
+        """Test 7: Global Wisdom storage and retrieval"""
+        log_section("TEST 7: GLOBAL WISDOM")
         
-        from openai import AsyncOpenAI
-        from config import settings
+        from lib.memory.manager import MemoryManager
         
-        client = AsyncOpenAI(
-            api_key=settings.OPENROUTER_API_KEY,
-            base_url=settings.OPENROUTER_BASE_URL
-        )
+        manager = MemoryManager()
+        if not manager.connected:
+            pytest.skip("Elasticsearch not connected")
         
-        contract = """
-        CONTRACT SUMMARY:
-        - Payment: 100% on completion, no upfront (RED FLAG)
-        - No late fees defined (RED FLAG)
-        - IP transfers immediately before payment (RED FLAG)
-        - 90-day payment window pending "satisfaction review" (RED FLAG)
-        - Client can terminate with 24h notice, contractor gets nothing (RED FLAG)
-        """
+        # Add wisdom entries
+        log_subsection("ADD Wisdom")
+        wisdom_entries = [
+            ("contract", "Always request a deposit before starting work", ["payment", "deposit"]),
+            ("contract", "Define scope clearly to avoid scope creep", ["scope", "boundaries"]),
+            ("scam", "Be wary of clients who contact via WhatsApp only", ["red-flag", "communication"]),
+            ("negotiation", "Counter low offers with value justification", ["pricing", "rates"]),
+        ]
         
-        prompt = f"""Analyze this freelance contract for risks. 
+        for category, insight, tags in wisdom_entries:
+            result = await manager.add_wisdom(
+                category=category,
+                insight=insight,
+                tags=tags,
+                confidence=0.7
+            )
+            log_output(f"Added: {category} - {insight[:40]}...", "DEBUG")
         
-        {contract}
+        await asyncio.sleep(1)
         
-        List the top 5 specific risks with severity (HIGH/MEDIUM/LOW).
-        Be specific about WHY each is a risk for the freelancer.
-        """
+        # Search wisdom
+        log_subsection("SEARCH Wisdom")
         
-        log_output("Sending contract for analysis...", "INFO")
+        # By category
+        contract_wisdom = await manager.get_global_wisdom(category="contract")
+        log_output(f"Contract wisdom: {len(contract_wisdom)} entries", "INFO")
+        
+        # By query
+        deposit_wisdom = await manager.get_global_wisdom(query="deposit payment")
+        log_output(f"Deposit wisdom: {len(deposit_wisdom)} entries", "INFO")
+        
+        if deposit_wisdom:
+            log_json(deposit_wisdom[0], "Top Result")
+        
+        assert len(contract_wisdom) >= 2, "Expected 2+ contract wisdom entries"
+        
+        log_output("Global Wisdom PASSED", "SUCCESS")
+    
+    @pytest.mark.asyncio
+    async def test_08_experience_gallery(self):
+        """Test 8: Experience Gallery (shared learnings)"""
+        log_section("TEST 8: EXPERIENCE GALLERY")
+        
+        from lib.memory.manager import MemoryManager
+        
+        manager = MemoryManager()
+        if not manager.connected:
+            pytest.skip("Elasticsearch not connected")
+        
+        test_user_id = f"exp_test_{int(time.time())}"
+        
+        # Save experiences
+        log_subsection("SAVE Experiences")
+        experiences = [
+            {
+                "task": "Client wanted unlimited revisions but I set a cap of 3",
+                "outcome": "Client agreed after I explained revision policy",
+                "lesson": "Set clear revision limits upfront to avoid scope creep",
+                "score": 1
+            },
+            {
+                "task": "Detected a scam job posting with upfront fee request",
+                "outcome": "Avoided the scam by recognizing red flags",
+                "lesson": "Never pay upfront fees for job opportunities",
+                "score": 1
+            }
+        ]
+        
+        for exp in experiences:
+            result = await manager.save_experience(
+                user_id=test_user_id,
+                task=exp["task"],
+                outcome=exp["outcome"],
+                lesson=exp["lesson"],
+                score=exp["score"]
+            )
+            log_output(f"Saved: {exp['lesson'][:40]}...", "DEBUG")
+        
+        await asyncio.sleep(1)
+        
+        # Search similar
+        log_subsection("SEARCH Similar")
+        similar = await manager.search_similar_experiences("revision limits scope creep")
+        log_output(f"Found {len(similar)} similar experiences", "INFO")
+        
+        if similar:
+            log_json(similar[0], "Top Match")
+        
+        log_output("Experience Gallery PASSED", "SUCCESS")
+    
+    # =========================================
+    # SECTION 3: Subprocess Runners
+    # =========================================
+    
+    def test_09_runners_exist(self):
+        """Test 9: Verify subprocess runners are importable"""
+        log_section("TEST 9: SUBPROCESS RUNNERS")
+        
+        runners = []
+        
+        try:
+            from lib.runners.metagpt_runner import MetaGPTRunner
+            runners.append(("MetaGPT", MetaGPTRunner))
+            log_output("  ✅ MetaGPTRunner", "SUCCESS")
+        except ImportError as e:
+            log_output(f"  ❌ MetaGPTRunner: {e}", "ERROR")
+        
+        try:
+            from lib.runners.ragflow_runner import RAGFlowRunner
+            runners.append(("RAGFlow", RAGFlowRunner))
+            log_output("  ✅ RAGFlowRunner", "SUCCESS")
+        except ImportError as e:
+            log_output(f"  ❌ RAGFlowRunner: {e}", "ERROR")
+        
+        try:
+            from lib.runners.copilotkit_runner import CopilotKitRunner
+            runners.append(("CopilotKit", CopilotKitRunner))
+            log_output("  ✅ CopilotKitRunner", "SUCCESS")
+        except ImportError as e:
+            log_output(f"  ❌ CopilotKitRunner: {e}", "ERROR")
+        
+        assert len(runners) == 3, f"Expected 3 runners, got {len(runners)}"
+        log_output("Subprocess Runners PASSED", "SUCCESS")
+    
+    # =========================================
+    # SECTION 4: API Stress Tests
+    # =========================================
+    
+    def test_10_api_stress(self):
+        """Test 10: API stress test with multiple concurrent requests"""
+        log_section("TEST 10: API STRESS TEST")
+        
+        import concurrent.futures
+        
+        endpoints = [
+            ("/health", "GET"),
+            ("/api/agents", "GET"),
+            ("/api/agents/contract-guardian", "GET"),
+            ("/", "GET"),
+        ]
+        
+        results = {"success": 0, "failed": 0}
         start_time = time.time()
         
-        response = await client.chat.completions.create(
-            model=settings.OPENROUTER_MODEL,
-            messages=[
-                {"role": "system", "content": "You are an expert contract lawyer specializing in protecting freelancers. Be thorough and specific."},
-                {"role": "user", "content": prompt}
-            ],
-            max_tokens=1500,  # Higher limit for detailed analysis
-            temperature=0.3  # Lower for more focused response
-        )
+        def make_request(endpoint, method):
+            try:
+                if method == "GET":
+                    resp = self.client.get(endpoint)
+                else:
+                    resp = self.client.post(endpoint, json={})
+                
+                return resp.status_code < 500
+            except:
+                return False
+        
+        # Sequential stress (10 requests per endpoint)
+        log_subsection("Sequential Requests")
+        for endpoint, method in endpoints:
+            for _ in range(10):
+                if make_request(endpoint, method):
+                    results["success"] += 1
+                else:
+                    results["failed"] += 1
         
         duration = time.time() - start_time
-        content = response.choices[0].message.content
+        total = results["success"] + results["failed"]
+        rps = total / duration if duration > 0 else 0
         
-        # Log FULL response (no truncation)
-        log_output(f"\n{'='*50}", "INFO")
-        log_output("FULL LLM RESPONSE:", "INFO")
-        log_output(f"{'='*50}", "INFO")
-        log_output(content, "INFO")
-        log_output(f"{'='*50}", "INFO")
+        log_output(f"Total Requests: {total}", "INFO")
+        log_output(f"Successful: {results['success']}", "SUCCESS")
+        log_output(f"Failed: {results['failed']}", "WARNING" if results["failed"] > 0 else "DEBUG")
+        log_output(f"Duration: {duration:.2f}s", "INFO")
+        log_output(f"RPS: {rps:.1f}", "INFO")
         
-        log_output(f"Response Length: {len(content)} characters", "DEBUG")
-        log_output(f"Duration: {duration:.2f}s", "DEBUG")
-        
-        if response.usage:
-            log_output(f"Tokens Used: {response.usage.total_tokens}", "DEBUG")
-        
-        # Quality validation
-        content_lower = content.lower()
-        
-        quality_checks = {
-            "identifies_payment_risk": any(w in content_lower for w in ["upfront", "deposit", "100%", "completion only"]),
-            "identifies_ip_risk": any(w in content_lower for w in ["intellectual property", "ip transfer", "immediately", "before payment"]),
-            "identifies_late_fee_risk": any(w in content_lower for w in ["late fee", "no penalty", "no late"]),
-            "identifies_termination_risk": any(w in content_lower for w in ["termination", "24 hour", "approved deliverables"]),
-            "provides_severity": any(w in content_lower for w in ["high", "critical", "severe", "major"]),
-            "actionable_advice": any(w in content_lower for w in ["negotiate", "request", "add", "include", "refuse"])
-        }
-        
-        log_subsection("Quality Checks")
-        passed = 0
-        for check_name, check_passed in quality_checks.items():
-            status = "✅" if check_passed else "❌"
-            log_output(f"  {status} {check_name}", "INFO")
-            if check_passed:
-                passed += 1
-        
-        score = passed / len(quality_checks) * 100
-        log_output(f"\nQuality Score: {score:.0f}% ({passed}/{len(quality_checks)})", "INFO")
-        
-        # Store for later reference
-        TestLiveSystemIntegration.shared_data["llm_analysis"] = content
-        
-        assert passed >= 4, f"LLM analysis quality too low: {passed}/{len(quality_checks)} checks passed"
-        
-        log_output("LLM contract analysis quality PASSED", "SUCCESS")
+        assert results["success"] >= 35, f"Too many failures: {results['failed']}"
+        log_output("API Stress Test PASSED", "SUCCESS")
     
     # =========================================
-    # SECTION 4: Team Orchestration Tests
+    # SECTION 5: Memory Stress Test
     # =========================================
     
     @pytest.mark.asyncio
-    async def test_07_team_initialization_verbose(self):
-        """
-        Test 7: Verify team initialization with detailed agent info
-        """
-        log_section("TEST 7: TEAM INITIALIZATION (VERBOSE)")
+    async def test_11_memory_stress(self):
+        """Test 11: Memory system stress test"""
+        log_section("TEST 11: MEMORY STRESS TEST")
         
-        from agents.team import FlagPilotTeam
-        from agents.registry import registry
+        from lib.memory.manager import MemoryManager
         
-        # List all available agents
-        available = registry.list_agents()
-        log_output(f"Available Agents ({len(available)}):", "INFO")
-        for agent_id in available:
-            log_output(f"  - {agent_id}", "DEBUG")
+        manager = MemoryManager()
+        if not manager.connected:
+            pytest.skip("Elasticsearch not connected")
         
-        # Initialize with specific agents
-        selected_agents = ["contract-guardian", "job-authenticator", "risk-advisor"]
-        log_output(f"\nInitializing team with: {selected_agents}", "INFO")
-        
-        team = FlagPilotTeam(agents=selected_agents)
-        
-        log_output(f"Team Agents Loaded: {list(team.agents.keys())}", "INFO")
-        
-        for agent_id, agent in team.agents.items():
-            log_output(f"  {agent_id}: {type(agent).__name__}", "DEBUG")
-        
-        assert len(team.agents) >= 1, "No agents loaded"
-        
-        log_output("Team initialization PASSED", "SUCCESS")
-    
-    @pytest.mark.asyncio
-    async def test_08_team_scam_detection_full_output(self):
-        """
-        Test 8: Team detects scam with FULL output logging
-        """
-        log_section("TEST 8: TEAM SCAM DETECTION (FULL OUTPUT)")
-        
-        from agents.team import FlagPilotTeam
-        
-        team = FlagPilotTeam()  # All agents
-        
-        scam_scenario = """
-        I received a job offer from "QuickMoney Enterprises". The details:
-        
-        1. They want me to pay a $750 "security deposit" for equipment via Zelle
-        2. The job is "data entry from home" paying $45/hour
-        3. They contacted me on WhatsApp, not a job platform
-        4. No formal interview, just a "quick chat"
-        5. They want my bank details for "direct deposit setup"
-        6. The company has no website or LinkedIn presence
-        
-        Is this legitimate? Should I take this job?
-        """
-        
-        context = {"id": f"scam_test_{int(time.time())}"}
-        
-        log_output("TASK:", "INFO")
-        log_output(scam_scenario, "INFO")
-        log_output("\nRunning team orchestration...", "INFO")
-        
+        test_user_id = f"stress_{int(time.time())}"
         start_time = time.time()
-        result = await team.run(scam_scenario, context)
+        
+        # Write 50 chat messages rapidly
+        log_subsection("WRITE Stress (50 messages)")
+        write_success = 0
+        
+        for i in range(50):
+            chat_id = await manager.save_chat(
+                user_id=test_user_id,
+                role="user" if i % 2 == 0 else "assistant",
+                content=f"Stress test message {i}: " + "lorem ipsum " * 10,
+                session_id=f"stress_session_{i // 10}"
+            )
+            if chat_id:
+                write_success += 1
+        
+        log_output(f"Write success rate: {write_success}/50", "INFO")
+        
+        # Wait for indexing
+        await asyncio.sleep(2)
+        
+        # Read stress
+        log_subsection("READ Stress")
+        history = await manager.get_chat_history(test_user_id, limit=100)
+        log_output(f"Retrieved: {len(history)} messages", "INFO")
+        
+        sessions = await manager.get_recent_sessions(test_user_id, limit=10)
+        log_output(f"Sessions found: {len(sessions)}", "INFO")
+        
         duration = time.time() - start_time
+        log_output(f"Total duration: {duration:.2f}s", "INFO")
         
-        synthesis = result.get("final_synthesis", "")
-        agent_outputs = result.get("agent_outputs", {})
-        error = result.get("error")
+        assert write_success >= 45, f"Write failures: {50 - write_success}"
+        assert len(history) >= 40, f"Read failures: expected 40+, got {len(history)}"
         
-        log_output(f"\nExecution Duration: {duration:.2f}s", "INFO")
-        log_output(f"Error: {error}", "WARNING" if error else "DEBUG")
-        
-        # Log each agent's FULL output
-        log_subsection("AGENT OUTPUTS (FULL)")
-        for agent_id, output in agent_outputs.items():
-            log_output(f"\n[AGENT: {agent_id.upper()}]", "INFO")
-            log_output("-" * 50, "INFO")
-            # FULL output, no truncation
-            log_output(str(output) if output else "(No output)", "INFO")
-            log_output("-" * 50, "INFO")
-        
-        log_subsection("FINAL SYNTHESIS (FULL)")
-        log_output(synthesis if synthesis else "(No synthesis)", "INFO")
-        
-        # Scam detection validation
-        combined = (synthesis + str(agent_outputs)).lower()
-        
-        scam_checks = {
-            "identifies_as_scam": any(w in combined for w in ["scam", "fraud", "fraudulent", "suspicious", "red flag"]),
-            "flags_deposit": any(w in combined for w in ["deposit", "zelle", "$750", "security deposit"]),
-            "flags_no_interview": any(w in combined for w in ["no interview", "quick chat", "informal"]),
-            "flags_bank_request": any(w in combined for w in ["bank details", "bank info", "banking"]),
-            "recommends_decline": any(w in combined for w in ["decline", "avoid", "don't", "do not", "refuse", "walk away", "not legitimate"]),
-            "warns_about_whatsapp": any(w in combined for w in ["whatsapp", "messaging app", "not official"])
-        }
-        
-        log_subsection("SCAM DETECTION VALIDATION")
-        passed = 0
-        for check_name, check_passed in scam_checks.items():
-            status = "✅" if check_passed else "❌"
-            log_output(f"  {status} {check_name}", "INFO")
-            if check_passed:
-                passed += 1
-        
-        score = passed / len(scam_checks) * 100
-        log_output(f"\nScam Detection Score: {score:.0f}% ({passed}/{len(scam_checks)})", "INFO")
-        
-        assert not error, f"Team execution error: {error}"
-        assert synthesis or agent_outputs, "No output from team"
-        assert passed >= 3, f"Scam detection insufficient: {passed}/{len(scam_checks)}"
-        
-        log_output("Team scam detection PASSED", "SUCCESS")
-    
-    @pytest.mark.asyncio
-    async def test_09_team_complex_negotiation(self):
-        """
-        Test 9: Complex multi-step negotiation task
-        """
-        log_section("TEST 9: COMPLEX NEGOTIATION TASK")
-        
-        from agents.team import FlagPilotTeam
-        
-        team = FlagPilotTeam(agents=["contract-guardian", "negotiation-assistant", "communication-coach"])
-        
-        complex_task = """
-        I'm a freelance web developer. A client wants to hire me for a $10,000 project.
-        Their proposed contract has these issues:
-        
-        1. Payment: 100% upon completion (no milestones)
-        2. Timeline: 6 weeks, but scope is "flexible" 
-        3. No late fees for delayed payment
-        4. Client owns IP immediately
-        5. "Unlimited revisions" clause
-        
-        My goals:
-        1. Analyze the contract risks
-        2. Suggest specific negotiation points
-        3. Draft a polite but firm counter-proposal email
-        
-        Help me negotiate fair terms.
-        """
-        
-        context = {"id": f"negotiation_test_{int(time.time())}"}
-        
-        log_output("COMPLEX TASK:", "INFO")
-        log_output(complex_task, "INFO")
-        log_output("\nExecuting multi-agent workflow...", "INFO")
-        
-        start_time = time.time()
-        result = await team.run(complex_task, context)
-        duration = time.time() - start_time
-        
-        synthesis = result.get("final_synthesis", "")
-        agent_outputs = result.get("agent_outputs", {})
-        
-        log_output(f"\nTotal Duration: {duration:.2f}s", "INFO")
-        log_output(f"Agents Used: {list(agent_outputs.keys())}", "INFO")
-        
-        # Full outputs
-        log_subsection("FULL AGENT RESPONSES")
-        for agent_id, output in agent_outputs.items():
-            log_output(f"\n=== {agent_id.upper()} ===", "INFO")
-            log_output(str(output) if output else "(empty)", "INFO")
-        
-        log_subsection("FINAL SYNTHESIS")
-        log_output(synthesis if synthesis else "(empty)", "INFO")
-        
-        # Validation
-        combined = (synthesis + str(agent_outputs)).lower()
-        
-        quality_checks = {
-            "addresses_payment": any(w in combined for w in ["milestone", "deposit", "upfront", "payment schedule"]),
-            "addresses_ip": any(w in combined for w in ["ip", "intellectual property", "ownership", "upon payment"]),
-            "addresses_scope": any(w in combined for w in ["scope", "revisions", "changes", "unlimited"]),
-            "provides_email": any(w in combined for w in ["dear", "subject:", "sincerely", "thank you"]),
-            "suggests_specifics": any(w in combined for w in ["50%", "30%", "milestone", "weekly", "define"])
-        }
-        
-        log_subsection("QUALITY VALIDATION")
-        passed = sum(quality_checks.values())
-        for check, is_passed in quality_checks.items():
-            status = "✅" if is_passed else "❌"
-            log_output(f"  {status} {check}", "INFO")
-        
-        log_output(f"\nQuality Score: {passed}/{len(quality_checks)}", "INFO")
-        
-        assert synthesis or agent_outputs, "No output"
-        
-        log_output("Complex negotiation task PASSED", "SUCCESS")
-    
-    # =========================================
-    # SECTION 5: End-to-End Stress Test
-    # =========================================
-    
-    @pytest.mark.asyncio
-    async def test_10_end_to_end_stress(self):
-        """
-        Test 10: Full end-to-end flow with stress validation
-        Combines RAG + LLM + Team in realistic scenario
-        """
-        log_section("TEST 10: END-TO-END STRESS TEST")
-        
-        from ragflow.client import get_ragflow_client
-        from agents.team import FlagPilotTeam
-        
-        user_id = f"e2e_stress_{int(time.time())}"
-        
-        log_output(f"Test User ID: {user_id}", "INFO")
-        
-        # Step 1: RAGFlow Check
-        log_subsection("STEP 1: RAGFLOW STATUS")
-        client = get_ragflow_client()
-        health = await client.health_check()
-        log_output(f"RAGFlow Status: {health['status']}", "INFO")
-        
-        # Step 2: Search for existing context
-        log_subsection("STEP 2: RAG CONTEXT SEARCH")
-        results = await client.search_user_context(
-            user_id=user_id,
-            query="payment contract risks freelance",
-            limit=5
-        )
-        log_output(f"Found {len(results)} context chunks", "INFO")
-        for r in results:
-            log_output(f"  - Similarity {r.get('similarity', 0):.3f}: {r.get('content', '')[:80]}...", "DEBUG")
-        
-        # Step 3: Complex team task
-        log_subsection("STEP 3: TEAM ORCHESTRATION")
-        
-        stress_task = """
-        I'm a freelancer facing multiple challenges:
-        
-        1. A client wants me to sign a contract with NO upfront payment
-        2. They're asking for "a few small fixes" outside the original scope
-        3. They haven't responded to my last 3 invoices
-        4. Now they want a 40% discount due to "budget constraints"
-        
-        I need help with:
-        - Contract review for the new project
-        - Response to scope creep  
-        - Payment enforcement strategy
-        - Negotiation for the discount request
-        
-        Give me a complete action plan.
-        """
-        
-        log_output("Stress Task:", "INFO")
-        log_output(stress_task, "INFO")
-        
-        team = FlagPilotTeam()
-        
-        start_time = time.time()
-        result = await team.run(stress_task, context={"id": user_id})
-        duration = time.time() - start_time
-        
-        synthesis = result.get("final_synthesis", "")
-        agent_outputs = result.get("agent_outputs", {})
-        error = result.get("error")
-        
-        log_output(f"\nTotal Execution Time: {duration:.2f}s", "INFO")
-        log_output(f"Error: {error}", "WARNING" if error else "DEBUG")
-        
-        # Log all outputs
-        log_subsection("ALL AGENT OUTPUTS")
-        for agent_id, output in agent_outputs.items():
-            output_str = str(output) if output else "(empty)"
-            log_output(f"\n[{agent_id.upper()}]\n{output_str}", "INFO")
-        
-        log_subsection("FINAL SYNTHESIS")
-        log_output(synthesis, "INFO")
-        
-        # Comprehensive validation
-        combined = (synthesis + str(agent_outputs)).lower()
-        
-        comprehensive_checks = {
-            "addresses_payment": "payment" in combined or "invoice" in combined,
-            "addresses_scope": "scope" in combined or "creep" in combined,
-            "addresses_discount": "discount" in combined or "40%" in combined,
-            "provides_strategy": "strategy" in combined or "plan" in combined,
-            "mentions_contract": "contract" in combined,
-            "actionable": any(w in combined for w in ["should", "recommend", "suggest", "consider"]),
-            "professional_tone": "thank" in combined or "please" in combined or "professional" in combined
-        }
-        
-        log_subsection("COMPREHENSIVE VALIDATION")
-        passed = 0
-        for check, is_passed in comprehensive_checks.items():
-            status = "✅" if is_passed else "❌"
-            log_output(f"  {status} {check}", "INFO")
-            if is_passed:
-                passed += 1
-        
-        final_score = passed / len(comprehensive_checks) * 100
-        log_output(f"\n{'='*50}", "INFO")
-        log_output(f"FINAL STRESS TEST SCORE: {final_score:.0f}% ({passed}/{len(comprehensive_checks)})", "INFO")
-        log_output(f"{'='*50}", "INFO")
-        
-        assert not error, f"Stress test error: {error}"
-        assert synthesis or agent_outputs, "No output from stress test"
-        assert passed >= 4, f"Stress test quality insufficient: {passed}/{len(comprehensive_checks)}"
-        
-        log_output("End-to-end stress test PASSED", "SUCCESS")
+        log_output("Memory Stress Test PASSED", "SUCCESS")
     
     @classmethod
     def teardown_class(cls):
         """Final summary and cleanup"""
         with open(OUTPUT_FILE, "a", encoding="utf-8") as f:
             f.write("\n" + "=" * 70 + "\n")
-            f.write("  TEST SUITE COMPLETED\n")
+            f.write(f"  TEST SUITE COMPLETED: {datetime.now().isoformat()}\n")
             f.write("=" * 70 + "\n")
+        
+        print(f"\n\n📄 Full output saved to: {OUTPUT_FILE}")

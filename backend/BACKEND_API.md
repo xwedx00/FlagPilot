@@ -83,6 +83,64 @@ POST /api/rag/search     # Search knowledge base
 | `RAGFLOW_URL` | RAGFlow server URL |
 | `RAGFLOW_API_KEY` | RAGFlow API key |
 | `REDIS_URL` | Redis connection string |
+| `ES_HOST` | Elasticsearch host |
+| `ES_PORT` | Elasticsearch port (default: 9200) |
+
+---
+
+## Elasticsearch Memory System
+
+The backend uses Elasticsearch for persistent memory management with 4 indices:
+
+### Indices
+
+| Index | Purpose |
+|-------|---------|
+| `flagpilot_user_profiles` | Dynamic user learning profiles |
+| `flagpilot_chat_history` | Conversation logs with session tracking |
+| `flagpilot_experience_gallery` | Shared learnings from successful interactions |
+| `flagpilot_global_wisdom` | Aggregated insights across all users |
+
+### Features
+
+1. **Dynamic User Profiles**
+   - Auto-learns from interactions
+   - LLM-powered profile synthesis
+   - Preferences and behavior patterns
+
+2. **Chat History**
+   - Complete conversation storage
+   - Session-based organization
+   - Agent-tagged messages
+
+3. **Global Wisdom**
+   - Anonymized best practices
+   - Confidence scoring
+   - Category-based search
+
+4. **Experience Gallery**
+   - Successful interaction examples
+   - Similar case search
+   - Feedback scoring
+
+### Usage (in code)
+```python
+from lib.memory.manager import get_memory_manager
+
+manager = get_memory_manager()
+
+# User profiles
+profile = await manager.get_user_profile("user123")
+await manager.update_user_profile("user123", summary="...")
+
+# Chat history
+await manager.save_chat("user123", "user", "Help with contract")
+history = await manager.get_chat_history("user123")
+
+# Global wisdom
+await manager.add_wisdom("contract", "Always get deposits")
+wisdom = await manager.get_global_wisdom(category="contract")
+```
 
 ---
 
@@ -98,6 +156,8 @@ backend/
 │   ├── copilotkit/            # CopilotKit SDK integration
 │   │   ├── graph.py           # LangGraph workflow
 │   │   └── sdk.py             # SDK setup
+│   ├── memory/                # Elasticsearch Memory System
+│   │   └── manager.py         # MemoryManager class
 │   └── runners/               # Subprocess runners for venvs
 │       ├── copilotkit_runner.py
 │       ├── metagpt_runner.py
