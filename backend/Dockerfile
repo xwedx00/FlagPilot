@@ -35,21 +35,21 @@ RUN --mount=type=cache,target=/root/.cache/pip \
 # ============================================
 # VENV 2: CopilotKit (isolated)
 # ============================================
-RUN python -m venv /venv-copilotkit
+RUN python -m venv --copies /venv-copilotkit
 RUN --mount=type=cache,target=/root/.cache/pip \
     /venv-copilotkit/bin/pip install --prefer-binary -r requirements-copilotkit.txt
 
 # ============================================
 # VENV 3: MetaGPT (isolated)
 # ============================================
-RUN python -m venv /venv-metagpt
+RUN python -m venv --copies /venv-metagpt
 RUN --mount=type=cache,target=/root/.cache/pip \
     /venv-metagpt/bin/pip install --prefer-binary -r requirements-metagpt.txt
 
 # ============================================
 # VENV 4: RAGFlow (isolated)
 # ============================================
-RUN python -m venv /venv-ragflow
+RUN python -m venv --copies /venv-ragflow
 RUN --mount=type=cache,target=/root/.cache/pip \
     /venv-ragflow/bin/pip install --prefer-binary -r requirements-ragflow.txt
 
@@ -74,9 +74,10 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 COPY . .
 
 # Copy isolated virtual environments AFTER app code (prevents overwrite)
-COPY --from=builder /venv-copilotkit /app/venv-copilotkit
-COPY --from=builder /venv-metagpt /app/venv-metagpt
-COPY --from=builder /venv-ragflow /app/venv-ragflow
+# Copy venvs to /opt/ to avoid being overwritten by volume mounts
+COPY --from=builder /venv-copilotkit /opt/venv-copilotkit
+COPY --from=builder /venv-metagpt /opt/venv-metagpt
+COPY --from=builder /venv-ragflow /opt/venv-ragflow
 
 # Environment variables
 ENV PYTHONPATH=/app
@@ -86,9 +87,10 @@ ENV GIT_PYTHON_REFRESH=quiet
 ENV METAGPT_PROJECT_ROOT=/app
 
 # Venv paths for runners
-ENV COPILOTKIT_VENV=/app/venv-copilotkit
-ENV METAGPT_VENV=/app/venv-metagpt
-ENV RAGFLOW_VENV=/app/venv-ragflow
+# Venv paths for runners (in /opt to persist through volume mounts)
+ENV COPILOTKIT_VENV=/opt/venv-copilotkit
+ENV METAGPT_VENV=/opt/venv-metagpt
+ENV RAGFLOW_VENV=/opt/venv-ragflow
 
 # Create directories (including MetaGPT config dirs)
 # MetaGPT looks for config in ~/.metagpt/ and METAGPT_ROOT/config/
@@ -96,7 +98,7 @@ RUN mkdir -p /app/logs /app/.metagpt /app/config /root/.metagpt \
     /app/metagpt/tools/schemas \
     && chmod -R 777 /app/logs \
     && chmod -R 777 /root/.metagpt \
-    && chmod -R 777 /app/venv-metagpt/lib/python3.11/site-packages/metagpt 2>/dev/null || true
+    && chmod -R 777 /opt/venv-metagpt/lib/python3.11/site-packages/metagpt 2>/dev/null || true
 
 EXPOSE 8000
 

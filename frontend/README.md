@@ -78,17 +78,19 @@ This project uses **BetterAuth** with PostgreSQL (Drizzle ORM).
 - `/lib`: Utilities, database connection, and auth configuration.
 - `/public`: Static assets.
 
-## Integration with Backend (AG-UI)
-The frontend communicates with the FastAPI backend via the **AG-UI Protocol**:
+## Integration with Backend (CopilotKit/AG-UI)
+The frontend communicates with the FastAPI backend via the **CopilotKit AG-UI Protocol**:
 
-1.  **Proxy Configuration**:
-    - `next.config.ts` proxies `/api/agui/*` -> `http://127.0.0.1:8000/api/agui/*`.
+1.  **CopilotKit Route**:
+    - `app/api/copilotkit/route.ts` uses `ExperimentalEmptyAdapter` since the backend handles all LLM calls.
+    - Backend endpoint: `http://127.0.0.1:8000/copilotkit`
     
 2.  **CopilotKit Runtime**:
-    - Root Layout (`app/layout.tsx`) configures `<CopilotKit runtimeUrl="/api/agui" />`.
+    - Root Layout configures `<CopilotKit runtimeUrl="/api/copilotkit" />`.
     - This enables auto-discovery of agents like `flagpilot_orchestrator`.
 
 3.  **Authentication**:
     - Better Auth sessions are managed via `lib/auth.ts`.
-    - Future: Session tokens will be passed to `/api/agui` headers for backend context.
+    - Session tokens can be passed to `/api/copilotkit` headers for backend context.
+
 

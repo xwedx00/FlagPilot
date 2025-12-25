@@ -28,7 +28,7 @@ The intelligent core of **FlagPilot**—an AI-driven multi-agent system that pro
 
 ## 🎯 Overview
 
-The FlagPilot backend is a **pure MetaGPT agent server** built with FastAPI. It orchestrates 17 specialized AI agents that collaborate to analyze contracts, verify job leads, detect scams, and provide strategic advice to freelancers.
+The FlagPilot backend is a **pure MetaGPT agent server** built with FastAPI. It orchestrates 15 specialized AI agents that collaborate to analyze contracts, verify job leads, detect scams, and provide strategic advice to freelancers.
 
 ### Key Technologies
 
@@ -36,10 +36,12 @@ The FlagPilot backend is a **pure MetaGPT agent server** built with FastAPI. It 
 |------------|---------|
 | **FastAPI** | Async web framework with native SSE support |
 | **MetaGPT** | Multi-agent orchestration framework |
+| **CopilotKit** | AG-UI protocol for frontend-agent communication |
+| **LangGraph** | LangGraph workflow for agent state management |
 | **RAGFlow** | Retrieval-Augmented Generation for knowledge base |
 | **OpenRouter** | LLM gateway for accessing various models |
 | **Elasticsearch** | Memory system (profiles, chat history, wisdom) |
-| **CopilotKit** | Frontend integration SDK |
+| **PostgreSQL** | User auth, sessions, and billing (frontend) |
 | **Redis** | Session caching and real-time pub/sub |
 
 ### Multi-Venv Architecture
@@ -48,13 +50,14 @@ The backend uses **4 isolated virtual environments** to prevent dependency confl
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│   Core (/usr/local)     │  FastAPI, uvicorn, pydantic      │
+│   Core (/usr/local)     │  FastAPI, uvicorn, pydantic       │
 ├─────────────────────────────────────────────────────────────┤
-│   venv-copilotkit       │  copilotkit, langgraph, openai   │
+│   /opt/venv-copilotkit  │  copilotkit, langgraph, openai    │
+│                         │  (AG-UI Protocol Server)          │
 ├─────────────────────────────────────────────────────────────┤
-│   venv-metagpt          │  metagpt==0.8.1                  │
+│   /opt/venv-metagpt     │  metagpt==0.8.1                   │
 ├─────────────────────────────────────────────────────────────┤
-│   venv-ragflow          │  ragflow-sdk, elasticsearch      │
+│   /opt/venv-ragflow     │  ragflow-sdk, elasticsearch       │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -353,7 +356,7 @@ backend/
 │   └── rag.py                  # /api/rag endpoints
 │
 ├── tests/                      # Test suites
-│   ├── test_live_system.py     # Live integration tests (12 tests)
+│   ├── test_live_system.py     # Live integration tests (17 tests)
 │   └── integration/            # Integration tests
 │
 ├── requirements-core.txt       # Core dependencies
@@ -397,6 +400,7 @@ The backend has passed a fully comprehensive live integration test suite.
 # Run the unified live system test suite (Verbose)
 docker exec Flagpilot-backend pytest tests/test_live_system.py -v -s --log-cli-level=DEBUG
 ```
+```bash
 # With coverage
 docker exec Flagpilot-backend pytest tests/ --cov=. --cov-report=html
 ```
@@ -405,7 +409,7 @@ docker exec Flagpilot-backend pytest tests/ --cov=. --cov-report=html
 
 | Test File | Tests | Description |
 |-----------|-------|-------------|
-| `test_live_system.py` | 12 | Full integration: LLM + RAG + ES Memory + MetaGPT |
+| `test_live_system.py` | 17 | Full integration: LLM + RAG + ES Memory + MetaGPT |
 | `integration/test_copilotkit_integration.py` | 14 | API endpoints + subprocess runners |
 | `integration/test_api.py` | 6 | Core API functionality |
 

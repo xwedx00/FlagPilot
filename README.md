@@ -7,7 +7,7 @@
 <p align="center">
   <strong>Your AI-Powered Freelancer Protection Platform</strong>
   <br>
-  <em>17 specialized AI agents working together to protect you from bad clients, scams, and scope creep</em>
+  <em>15 specialized AI agents working together to protect you from bad clients, scams, and scope creep</em>
 </p>
 
 <p align="center">
@@ -39,7 +39,7 @@
 
 ## 🎯 What is FlagPilot?
 
-**FlagPilot** is an intelligent AI platform designed specifically for freelancers. Built on top of [MetaGPT](https://github.com/geekan/MetaGPT) and [RAGFlow](https://github.com/infiniflow/ragflow), it orchestrates a team of 17 specialized AI agents that work together to:
+**FlagPilot** is an intelligent AI platform designed specifically for freelancers. Built on top of [MetaGPT](https://github.com/geekan/MetaGPT) and [RAGFlow](https://github.com/infiniflow/ragflow), it orchestrates a team of 15 specialized AI agents that work together to:
 
 - **Analyze contracts** for legal risks and unfavorable terms
 - **Detect scams** and verify job leads before you commit
@@ -82,7 +82,7 @@ The system automatically optimizes workflows:
 
 ## 🤖 AI Agent Roster
 
-FlagPilot deploys **17 specialized AI agents**, each with a unique role:
+FlagPilot deploys **15 specialized AI agents**, each with a unique role:
 
 | Agent | Role | Description |
 |-------|------|-------------|
@@ -112,15 +112,14 @@ FlagPilot deploys **17 specialized AI agents**, each with a unique role:
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  ┌─────────────────────────────────────────────────────────────────────┐    │
-│  │                       Frontend (Vercel AI Chatbot)                  │    │
-│  │                    Auth · Chat UI · Workflow Visualization          │    │
-│  └───────────────────────────────────┬─────────────────────────────────┘    │
-│                                      │ SSE/REST                             │
-│  ┌───────────────────────────────────▼─────────────────────────────────┐    │
-│  │                         FastAPI Backend (:8000)                     │    │
+│  │                       Frontend (Next.js + CopilotKit)                 │    │
+│  │                 Auth · Chat UI · AG-UI Protocol Client                │    │
+│  └─────────────────────────────────────┬───────────────────────────────┘    │
+│                                      │ AG-UI Protocol                       │
+│  ┌─────────────────────────────────────▼───────────────────────────────┐    │
+│  │                    FastAPI Backend + CopilotKit SDK                  │    │
 │  │  ┌─────────────────────────────────────────────────────────────┐    │    │
-│  │  │                   FlagPilot Orchestrator                    │    │    │
-│  │  │              DAG-based Multi-Agent Coordination             │    │    │
+│  │  │             LangGraph Workflow + FlagPilot Orchestrator           │    │    │
 │  │  └───────────────────────────┬─────────────────────────────────┘    │    │
 │  │                              │                                      │    │
 │  │  ┌───────────────────────────▼─────────────────────────────────┐    │    │
@@ -138,9 +137,12 @@ FlagPilot deploys **17 specialized AI agents**, each with a unique role:
 │  │                          Infrastructure Layer                        │   │
 │  │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────┐  │   │
 │  │  │  Redis   │  │  MySQL   │  │  MinIO   │  │  Elastic │  │RAGFlow │  │   │
-│  │  │  Cache   │  │    DB    │  │ Storage  │  │Memory+RAG│  │ Server │  │   │
+│  │  │  Cache   │  │(RAGFlow) │  │ Storage  │  │ Memory   │  │ Server │  │   │
 │  │  └──────────┘  └──────────┘  └──────────┘  └──────────┘  └────────┘  │   │
-│  │                                                                      │   │
+│  │                         ┌────────────┐                               │   │
+│  │                         │ PostgreSQL │                               │   │
+│  │                         │ Auth/Users │                               │   │
+│  │                         └────────────┘                               │   │
 │  └──────────────────────────────────────────────────────────────────────┘   │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
@@ -225,12 +227,13 @@ docker compose up --build
 
 ```yaml
 services:
-  backend:        # FastAPI + MetaGPT (port 8000)
-  redis:          # Session & cache (port 6379)
-  es01:           # ElasticSearch vector store
-  minio:          # Object storage (ports 9000, 9001)
-  mysql:          # RAGFlow database
-  ragflow:        # RAGFlow server (port 9380)
+  backend:        # FastAPI + MetaGPT + CopilotKit (port 8000)
+  redis:          # Session cache & pub/sub (port 6379)
+  es01:           # Elasticsearch - FlagPilot memory system (port 9200)
+  minio:          # Object storage for RAGFlow (ports 9000, 9001)
+  mysql:          # RAGFlow internal database (NOT used by FlagPilot)
+  ragflow:        # RAGFlow knowledge engine (port 9380)
+  postgres:       # User auth & billing - frontend only (port 5432)
 ```
 
 ---

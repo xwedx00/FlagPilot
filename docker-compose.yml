@@ -1,7 +1,7 @@
 # FlagPilot Docker Compose
 # ========================
-# Services: Backend + Redis + RAGFlow Stack (Latest Versions)
-# No PostgreSQL - Backend is database-free
+# Services: Backend + Redis + RAGFlow Stack + PostgreSQL
+# Full stack with all dependencies
 
 services:
   # ===========================================
@@ -28,13 +28,17 @@ services:
       # RAGFlow
       - RAGFLOW_URL=http://ragflow:80
       - RAGFLOW_API_KEY=${RAGFLOW_API_KEY:-}
+      # Database URL (used by frontend, exposed here for consistency)
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-Flagpilot}
     volumes:
-      # NOTE: Do NOT mount ./backend:/app - it shadows isolated venvs
+      - ./backend:/app
       - backend_logs:/app/logs
     depends_on:
       redis:
         condition: service_healthy
       ragflow:
+        condition: service_healthy
+      postgres:
         condition: service_healthy
     networks:
       - Flagpilot-network
@@ -69,7 +73,8 @@ services:
   # RAGFlow Stack (Latest Versions)
   # ===========================================
 
-  # 1. ElasticSearch 9.0.2 (Latest - Vector Store)
+  # 1. ElasticSearch 9.0.2 (Vector Store + FlagPilot Memory System)
+  # Used by: RAGFlow (embeddings) AND FlagPilot (profiles, chat, wisdom)
   es01:
     container_name: ragflow-es01
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION:-9.0.2}
@@ -130,7 +135,9 @@ services:
       retries: 5
       start_period: 30s
 
-  # 3. MySQL (8.0 - RAGFlow DB - stable version)
+  # 3. MySQL 8.0 - RAGFlow Internal Database
+  # NOTE: This is ONLY used by RAGFlow for its internal metadata.
+  # FlagPilot does NOT use MySQL - it uses Elasticsearch for memory.
   mysql:
     container_name: ragflow-mysql
     image: mysql:8.0

@@ -10,11 +10,11 @@ FlagPilot Backend uses a **4-environment isolation architecture** to ensure zero
 ├─────────────────────────────────────────────────────────────┤
 │    CORE (/usr/local)          │  FastAPI, uvicorn, pydantic │
 ├─────────────────────────────────────────────────────────────┤
-│    venv-copilotkit            │  copilotkit, langgraph      │
+│    /opt/venv-copilotkit       │  copilotkit, langgraph      │
 ├─────────────────────────────────────────────────────────────┤
-│    venv-metagpt               │  metagpt==0.8.1             │
+│    /opt/venv-metagpt          │  metagpt==0.8.1             │
 ├─────────────────────────────────────────────────────────────┤
-│    venv-ragflow               │  ragflow-sdk, elasticsearch │
+│    /opt/venv-ragflow          │  ragflow-sdk, elasticsearch │
 └─────────────────────────────────────────────────────────────┘
 ```
 
