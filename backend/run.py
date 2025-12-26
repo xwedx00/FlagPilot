@@ -59,4 +59,11 @@ print(f"[Bootstrap] OPENAI_API_KEY in env: {bool(os.environ.get('OPENAI_API_KEY'
 if __name__ == "__main__":
     import uvicorn
     # Enable reload for development with bind mounts
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True, reload_dirs=["/app"])
+    uvicorn.run(
+            "main:app",
+            host="0.0.0.0",
+            port=8000,
+            log_level="debug",
+            reload=True,
+            reload_dirs=["/app", "/venv-copilotkit/lib/python3.11/site-packages"]
+        )

@@ -1,17 +1,11 @@
 "use client";
 
 import { useCopilotChat } from "@copilotkit/react-core";
-import { CopilotChat } from "@copilotkit/react-ui";
-// import { TextMessage, MessageRole } from "@copilotkit/runtime-client-gql";
-
-import { Send, User, Bot, AlertTriangle, Shield, CheckCircle, Loader2, Brain } from "lucide-react";
+import { Send, User, Bot, Shield, Loader2, Brain } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { authClient } from "@/lib/auth-client";
 
@@ -21,13 +15,13 @@ import { useFlagPilotState, useFlagPilotStateRenderer } from "@/lib/hooks/use-fl
 import { AgentStatusDisplay } from "@/components/chat/agent-status";
 import { MemoryPanel } from "@/components/chat/memory-panel";
 
-
 export function ChatInterface() {
     // 1. Get Session for Auth Headers
     const { data: session } = authClient.useSession();
 
-    // 2. Pass headers to useCopilotChat
+    // 2. Pass headers to useCopilotChat and specify the agent
     const { visibleMessages, appendMessage, isLoading } = useCopilotChat({
+        agent: "flagpilot_orchestrator",
         headers: session?.user?.id ? {
             "Authorization": `Bearer ${session.user.id}`
         } : {}
@@ -37,7 +31,7 @@ export function ChatInterface() {
     const { agentState } = useFlagPilotActions();
 
     // 4. Shared state with backend LangGraph agent
-    const { state: coAgentState, isProcessing, riskLevel } = useFlagPilotState();
+    const { state: coAgentState, isProcessing } = useFlagPilotState();
 
     // 5. Agent State Renderer (shows agent progress in chat via Generative UI)
     useFlagPilotStateRenderer();
@@ -46,8 +40,6 @@ export function ChatInterface() {
     const [showMemory, setShowMemory] = useState(false);
 
     const messages = visibleMessages || [];
-    console.log("Render: messages count:", messages.length);
-
     const [input, setInput] = useState("");
     const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -58,18 +50,7 @@ export function ChatInterface() {
         }
     }, [messages]);
 
-    // Connectivity Test
-    useEffect(() => {
-        console.log("Testing connectivity to backend...");
-        fetch("/api/health")
-            .then(res => res.text())
-            .then(txt => console.log("Health Check Result:", txt))
-            .catch(err => console.error("Health Check Failed:", err));
-    }, []);
-
-    // In handleSend
     const handleSend = async () => {
-        console.log("handleSend called with input:", input);
         if (!input.trim()) return;
 
         try {
@@ -83,17 +64,13 @@ export function ChatInterface() {
                 isActionExecutionMessage: () => false,
                 isResultMessage: () => false,
             };
-            console.log("Appending message (duck-typed):", msg);
             await appendMessage(msg);
-            console.log("Message appended successfully");
         } catch (e) {
-            console.error("Failed to append message:", e);
+            // Error handling silently or via UI notification if preferred
         }
 
         setInput("");
     };
-
-
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "Enter" && !e.shiftKey) {
@@ -196,7 +173,6 @@ export function ChatInterface() {
                                 >
                                     {msg.content}
                                 </div>
-                                {/* Timestamp or status could go here */}
                             </div>
                         </div>
                     ))}

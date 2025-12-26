@@ -100,7 +100,17 @@ async def orchestrate_node(state: FlagPilotState, config) -> FlagPilotState:
     Main orchestration node - runs the FlagPilotTeam.
     Uses isolated MetaGPT runner to avoid dependency conflicts.
     """
-    from lib.runners.metagpt_runner import MetaGPTRunner
+    try:
+        from lib.runners.metagpt_runner import MetaGPTRunner
+    except ImportError:
+        logger.warning("MetaGPTRunner not available (dependency missing). Skipping orchestration.")
+        return {
+            **state,
+            "status": "error",
+            "error": "MetaGPT backend is currently disabled for debugging.",
+            "final_synthesis": "I am currently in maintenance mode (MetaGPT offline). Please check back later."
+        }
+
     
     task = state.get("task", "")
     context = state.get("context", {})

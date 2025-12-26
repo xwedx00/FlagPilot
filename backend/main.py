@@ -71,6 +71,21 @@ except ImportError as e:
     logger.warning(f"CopilotKit not available: {e}")
 
 # =============================================================================
+# DEBUG: Agent Inspection Endpoint
+# =============================================================================
+try:
+    @app.get("/debug/agents")
+    async def debug_agents():
+        """Debug endpoint to list registered CopilotKit agents"""
+        return {
+            "agents": [a.name for a in sdk.agents],
+            "sdk_type": str(type(sdk)),
+            "agent_types": [str(type(a)) for a in sdk.agents]
+        }
+except Exception as e:
+    logger.error(f"Failed to create debug endpoint: {e}")
+
+# =============================================================================
 # Legacy Routers (RAG, Health)
 # =============================================================================
 try:
