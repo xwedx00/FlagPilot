@@ -30,12 +30,6 @@ Thumbs.db
 # Docker
 .docker/
 
-# MetaGPT & App Data
-.metagpt/
-backend/workspace/
-backend/metagpt/
-workspace/
-
 # Frontend (if applicable)
 node_modules/
 dist/

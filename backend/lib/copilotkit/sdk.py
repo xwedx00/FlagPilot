@@ -1,46 +1,42 @@
 """
-CopilotKit SDK Setup
-====================
+CopilotKit SDK Setup - LangGraph Integration
+=============================================
 Configures the CopilotKitRemoteEndpoint with FlagPilot agents.
 
-Uses LangGraphAgent (the standard agent type for LangGraph integrations).
-The agent wraps the MetaGPT orchestration through a LangGraph workflow.
+Uses LangGraphAgent for native LangGraph workflow integration.
 """
 
-from copilotkit import CopilotKitRemoteEndpoint
-from copilotkit import LangGraphAgent
+from copilotkit import CopilotKitRemoteEndpoint, LangGraphAgent
 from .graph import graph
 
-# Patch LangGraphAgent to add missing dict_repr
-class FixedLangGraphAgent(LangGraphAgent):
-    def dict_repr(self):
-        return {
-            'name': self.name,
-            'description': self.description or ''
-        }
-
-# Create the CopilotKit SDK with our LangGraph agent
+# Create the CopilotKit SDK with FlagPilot LangGraph agent
 sdk = CopilotKitRemoteEndpoint(
     agents=[
-        FixedLangGraphAgent(
+        LangGraphAgent(
             name="flagpilot_orchestrator",
-            description="""FlagPilot multi-agent team for freelancer protection.
+            description="""FlagPilot - AI-powered freelancer protection team.
 
-Capabilities:
-- Contract analysis for legal risks and unfair clauses
-- Job posting authentication and scam detection
-- Payment enforcement and invoice tracking
-- Scope creep detection and prevention
-- Client communication coaching
-- Dispute mediation
-- Profile optimization
-- Rate negotiation assistance
+🛡️ **Capabilities:**
+• **Contract Analysis** - Review contracts for legal risks and unfair clauses
+• **Scam Detection** - Verify job postings and detect fraudulent offers (Fast-Fail enabled)
+• **Payment Protection** - Track invoices and create collection strategies
+• **Scope Creep Detection** - Identify boundary violations and extra work requests
+• **Client Communication** - Draft professional messages and proposals
+• **Rate Negotiation** - Get market data and negotiation strategies
+• **Dispute Resolution** - Navigate conflicts and platform disputes
+• **Profile Optimization** - Vet clients and improve your freelance profile
 
-The team coordinates 17 specialized AI agents to provide comprehensive protection for freelancers.""",
+🤖 **Powered by 14 specialized LangGraph AI agents** working together to protect your freelance business.
+
+⚡ **Smart Features:**
+• Real-time risk assessment
+• RAG-enhanced knowledge base
+• Persistent memory across sessions
+• Fast-fail on critical risks (scams, fraud)""",
             graph=graph,
         )
     ]
 )
 
-# Debug: Print loaded agents
+# Log initialization
 print(f"[CopilotKit SDK] Initialized with agents: {[a.name for a in sdk.agents]}")

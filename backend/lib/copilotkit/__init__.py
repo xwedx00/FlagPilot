@@ -1,7 +1,7 @@
 """
 CopilotKit Integration for FlagPilot
 =====================================
-LangGraph workflow that wraps MetaGPT agents for CopilotKit compatibility.
+LangGraph workflow for CopilotKit AG-UI protocol compatibility.
 """
 
 from .graph import graph, FlagPilotState

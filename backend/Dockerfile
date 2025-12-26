@@ -1,12 +1,6 @@
-# FlagPilot Backend - Multi-Venv Isolation Architecture
-# ======================================================
-# 4 completely isolated virtual environments:
-# - Core: FastAPI web server (main Python)
-# - CopilotKit: AI integration SDK
-# - MetaGPT: Multi-agent framework
-# - RAGFlow: Knowledge retrieval SDK
-#
-# Each venv has its complete dependency tree - zero conflicts possible.
+# FlagPilot Backend - LangChain Architecture
+# ===========================================
+# Single unified Python environment with LangChain/LangGraph
 
 FROM python:3.11-slim-bookworm AS builder
 
@@ -19,39 +13,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy all requirements files
+# Copy requirements files
 COPY requirements-core.txt \
-    requirements-copilotkit.txt \
-    requirements-metagpt.txt \
     requirements-ragflow.txt \
     ./
 
-# ============================================
-# VENV 1: Core (installed in main Python)
-# ============================================
+# Install all dependencies in single environment
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --prefer-binary -r requirements-core.txt
-
-# ============================================
-# VENV 2: CopilotKit (isolated)
-# ============================================
-RUN python -m venv --copies /venv-copilotkit
-RUN --mount=type=cache,target=/root/.cache/pip \
-    /venv-copilotkit/bin/pip install --prefer-binary -r requirements-copilotkit.txt
-
-# ============================================
-# VENV 3: MetaGPT (isolated)
-# ============================================
-RUN python -m venv --copies /venv-metagpt
-RUN --mount=type=cache,target=/root/.cache/pip \
-    /venv-metagpt/bin/pip install --prefer-binary -r requirements-metagpt.txt
-
-# ============================================
-# VENV 4: RAGFlow (isolated)
-# ============================================
-RUN python -m venv --copies /venv-ragflow
-RUN --mount=type=cache,target=/root/.cache/pip \
-    /venv-ragflow/bin/pip install --prefer-binary -r requirements-ragflow.txt
+    pip install --prefer-binary -r requirements-core.txt -r requirements-ragflow.txt
 
 # ============================================
 # Runtime Stage
@@ -66,44 +35,25 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy installed packages from builder (core env)
+# Copy installed packages from builder
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Copy application code FIRST
+# Copy application code
 COPY . .
-
-# Copy isolated virtual environments AFTER app code (prevents overwrite)
-# Copy venvs to /opt/ to avoid being overwritten by volume mounts
-COPY --from=builder /venv-copilotkit /opt/venv-copilotkit
-COPY --from=builder /venv-metagpt /opt/venv-metagpt
-COPY --from=builder /venv-ragflow /opt/venv-ragflow
 
 # Environment variables
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 ENV GIT_PYTHON_REFRESH=quiet
-# MetaGPT project root (for finding config)
-ENV METAGPT_PROJECT_ROOT=/app
 
-# Venv paths for runners
-# Venv paths for runners (in /opt to persist through volume mounts)
-ENV COPILOTKIT_VENV=/opt/venv-copilotkit
-ENV METAGPT_VENV=/opt/venv-metagpt
-ENV RAGFLOW_VENV=/opt/venv-ragflow
-
-# Create directories (including MetaGPT config dirs)
-# MetaGPT looks for config in ~/.metagpt/ and METAGPT_ROOT/config/
-RUN mkdir -p /app/logs /app/.metagpt /app/config /root/.metagpt \
-    /app/metagpt/tools/schemas \
-    && chmod -R 777 /app/logs \
-    && chmod -R 777 /root/.metagpt \
-    && chmod -R 777 /opt/venv-metagpt/lib/python3.11/site-packages/metagpt 2>/dev/null || true
+# Create directories
+RUN mkdir -p /app/logs && chmod -R 777 /app/logs
 
 EXPOSE 8000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=5 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 CMD ["python", "run.py"]

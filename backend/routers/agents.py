@@ -2,7 +2,7 @@
 FlagPilot Agents Router
 =======================
 Provides agent metadata endpoints.
-MetaGPT agents run in isolated environment via CopilotKit -> LangGraph -> MetaGPTRunner.
+Agents are implemented using LangGraph and orchestrated via the multi-agent supervisor.
 """
 
 from fastapi import APIRouter
@@ -12,7 +12,7 @@ from loguru import logger
 
 router = APIRouter(prefix="/api", tags=["Agents"])
 
-# Static agent metadata (MetaGPT is in isolated venv)
+# Agent metadata - matches the LangGraph agent registry
 AGENTS = {
     "contract-guardian": {
         "id": "contract-guardian",
@@ -66,9 +66,9 @@ AGENTS = {
     "profile-analyzer": {
         "id": "profile-analyzer",
         "name": "Profile Analyzer",
-        "description": "Analyzes and optimizes freelancer profiles",
-        "profile": "Profile Optimization Expert",
-        "goal": "Maximize profile effectiveness"
+        "description": "Analyzes client profiles and reputation",
+        "profile": "Profile Analysis Expert",
+        "goal": "Help vet potential clients"
     },
     "ghosting-shield": {
         "id": "ghosting-shield",
@@ -80,9 +80,9 @@ AGENTS = {
     "risk-advisor": {
         "id": "risk-advisor",
         "name": "Risk Advisor",
-        "description": "Provides overall risk assessment and mitigation",
+        "description": "Provides critical safety protocols for high-risk situations",
         "profile": "Risk Management Consultant",
-        "goal": "Minimize freelancer business risks"
+        "goal": "Protect freelancers from fraud and scams"
     },
     "talent-vet": {
         "id": "talent-vet",
@@ -111,13 +111,6 @@ AGENTS = {
         "description": "Plans and organizes complex workflows",
         "profile": "Strategic Planner",
         "goal": "Optimize workflow execution"
-    },
-    "flagpilot-orchestrator": {
-        "id": "flagpilot-orchestrator",
-        "name": "FlagPilot Orchestrator",
-        "description": "Coordinates all agents for complex tasks",
-        "profile": "Multi-Agent Coordinator",
-        "goal": "Orchestrate optimal agent collaboration"
     }
 }
 
@@ -127,14 +120,14 @@ async def list_agents():
     """List all available agents"""
     return {
         "agents": list(AGENTS.values()),
-        "count": len(AGENTS)
+        "count": len(AGENTS),
+        "framework": "LangGraph"
     }
 
 
 @router.get("/agents/{agent_id}")
 async def get_agent_details(agent_id: str):
     """Get detailed information about a specific agent"""
-    # Normalize the ID
     normalized_id = agent_id.lower().replace("_", "-")
     
     if normalized_id in AGENTS:

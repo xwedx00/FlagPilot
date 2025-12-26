@@ -33,6 +33,3 @@ workspace/
 # OS
 .DS_Store
 Thumbs.db
-
-# MetaGPT
-.metagpt/

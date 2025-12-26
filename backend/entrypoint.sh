@@ -1,14 +1,10 @@
 #!/bin/bash
 # FlagPilot Backend Entrypoint
-# Fixes metagpt schema permissions at runtime (needed for volume mounts)
+# LangGraph-based multi-agent system
 
-# Create metagpt schemas directory if it doesn't exist
-mkdir -p /app/metagpt/tools/schemas
-chmod -R 777 /app/metagpt/tools/schemas 2>/dev/null || true
-
-# Create .metagpt config directory
-mkdir -p /app/.metagpt
-chmod 777 /app/.metagpt 2>/dev/null || true
+# Create logs directory if needed
+mkdir -p /app/logs
+chmod -R 777 /app/logs 2>/dev/null || true
 
 # Start the application
 exec python run.py "$@"

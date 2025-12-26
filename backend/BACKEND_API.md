@@ -1,168 +1,185 @@
-# FlagPilot Backend API Documentation
+# FlagPilot Backend API Reference
 
-## Multi-Venv Isolation Architecture
+## Overview
 
-FlagPilot Backend uses a **4-environment isolation architecture** to ensure zero dependency conflicts between packages:
+FlagPilot Backend v6.0 is a **LangGraph-based multi-agent system** for freelancer protection, integrated with CopilotKit for frontend connectivity.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                   Docker Container                          │
-├─────────────────────────────────────────────────────────────┤
-│    CORE (/usr/local)          │  FastAPI, uvicorn, pydantic │
-├─────────────────────────────────────────────────────────────┤
-│    /opt/venv-copilotkit       │  copilotkit, langgraph      │
-├─────────────────────────────────────────────────────────────┤
-│    /opt/venv-metagpt          │  metagpt==0.8.1             │
-├─────────────────────────────────────────────────────────────┤
-│    /opt/venv-ragflow          │  ragflow-sdk, elasticsearch │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Benefits
-- **Zero conflicts**: Each SDK manages its own dependencies
-- **Future-proof**: No dependency pinning needed (except MetaGPT 0.8.1)
-- **Easy upgrades**: Update any venv independently
+**Base URL**: `http://localhost:8000`
 
 ---
 
-## API Endpoints
+## Endpoints
 
-### Health Check
+### Health & Status
+
+#### `GET /`
+Service information and available endpoints.
+
+**Response**:
+```json
+{
+  "name": "FlagPilot Agent API",
+  "version": "6.0.0",
+  "agents": 14,
+  "architecture": "LangGraph + CopilotKit"
+}
 ```
-GET /health
+
+#### `GET /health`
+Health check with feature list.
+
+**Response**:
+```json
+{
+  "status": "healthy",
+  "version": "6.0.0",
+  "agents": ["contract-guardian", "job-authenticator", ...],
+  "features": ["LangGraph Team Orchestration", "RAGFlow Integration", ...]
+}
 ```
-Returns server status, agents list, and version.
+
+---
 
 ### CopilotKit Integration
-```
-POST /copilotkit
-```
-Primary frontend integration endpoint. CopilotKit SDK handles streaming.
 
-### Agents
-```
-GET /api/agents          # List all agents
-GET /api/agents/{id}     # Get agent details
+#### `POST /copilotkit`
+Primary endpoint for CopilotKit AG-UI protocol.
+
+**Request**: CopilotKit AG-UI message format
+**Response**: Server-Sent Events (SSE) stream
+
+This endpoint handles:
+- Message extraction from CopilotKit
+- LangGraph orchestrator invocation
+- State emissions via `copilotkit_emit_state`
+- Message streaming via `copilotkit_emit_message`
+
+---
+
+### Agent Metadata
+
+#### `GET /api/agents`
+List all available agents.
+
+**Response**:
+```json
+{
+  "agents": [
+    {
+      "id": "contract-guardian",
+      "name": "Contract Guardian",
+      "description": "Analyzes legal contracts for risks",
+      "profile": "Senior Legal AI Analyst"
+    },
+    ...
+  ],
+  "count": 14,
+  "framework": "LangGraph"
+}
 ```
 
-### RAG Operations
-```
-POST /api/v1/rag/ingest  # Ingest document from URL
+#### `GET /api/agents/{agent_id}`
+Get details for a specific agent.
+
+**Response**:
+```json
+{
+  "id": "contract-guardian",
+  "name": "Contract Guardian",
+  "description": "Analyzes legal contracts for risks and unfair clauses",
+  "profile": "Senior Legal AI Analyst",
+  "goal": "Protect freelancers from unfair contracts"
+}
 ```
 
 ---
 
-## Agent List (15 Specialists)
+### RAG Integration
 
-| ID | Name | Purpose |
-|----|------|---------|
-| contract-guardian | Contract Guardian | Legal contract analysis |
-| job-authenticator | Job Authenticator | Scam detection |
-| scope-sentinel | Scope Sentinel | Scope creep prevention |
-| payment-enforcer | Payment Enforcer | Payment recovery |
-| dispute-mediator | Dispute Mediator | Conflict resolution |
-| communication-coach | Communication Coach | Professional messaging |
-| negotiation-assistant | Negotiation Assistant | Rate negotiation |
-| profile-analyzer | Profile Analyzer | Profile optimization |
-| ghosting-shield | Ghosting Shield | Client ghosting recovery |
-| risk-advisor | Risk Advisor | Risk assessment |
-| talent-vet | Talent Vet | Candidate evaluation |
-| application-filter | Application Filter | Job filtering |
-| feedback-loop | Feedback Loop | Continuous improvement |
-| planner-role | Planner Role | Workflow planning |
-| flagpilot-orchestrator | Orchestrator | Multi-agent coordination |
+#### `POST /api/v1/rag/ingest`
+Ingest a document into the RAGFlow knowledge base.
 
----
+**Request Body**:
+```json
+{
+  "user_id": "user-123",
+  "url": "https://example.com/document.pdf",
+  "metadata": {"type": "contract"}
+}
+```
 
-## Environment Variables
-
-| Variable | Description |
-|----------|-------------|
-| `OPENROUTER_API_KEY` | OpenRouter API key |
-| `OPENROUTER_MODEL` | Model to use (e.g., anthropic/claude-3.5-sonnet) |
-| `RAGFLOW_URL` | RAGFlow server URL |
-| `RAGFLOW_API_KEY` | RAGFlow API key |
-| `REDIS_URL` | Redis connection string |
-| `ES_HOST` | Elasticsearch host |
-| `ES_PORT` | Elasticsearch port (default: 9200) |
-
----
-
-## Elasticsearch Memory System
-
-The backend uses Elasticsearch for persistent memory management with 4 indices:
-
-### Indices
-
-| Index | Purpose |
-|-------|---------|
-| `flagpilot_user_profiles` | Dynamic user learning profiles |
-| `flagpilot_chat_history` | Conversation logs with session tracking |
-| `flagpilot_experience_gallery` | Shared learnings from successful interactions |
-| `flagpilot_global_wisdom` | Aggregated insights across all users |
-
-### Features
-
-1. **Dynamic User Profiles**
-   - Auto-learns from interactions
-   - LLM-powered profile synthesis
-   - Preferences and behavior patterns
-
-2. **Chat History**
-   - Complete conversation storage
-   - Session-based organization
-   - Agent-tagged messages
-
-3. **Global Wisdom**
-   - Anonymized best practices
-   - Confidence scoring
-   - Category-based search
-
-4. **Experience Gallery**
-   - Successful interaction examples
-   - Similar case search
-   - Feedback scoring
-
-### Usage (in code)
-```python
-from lib.memory.manager import get_memory_manager
-
-manager = get_memory_manager()
-
-# User profiles
-profile = await manager.get_user_profile("user123")
-await manager.update_user_profile("user123", summary="...")
-
-# Chat history
-await manager.save_chat("user123", "user", "Help with contract")
-history = await manager.get_chat_history("user123")
-
-# Global wisdom
-await manager.add_wisdom("contract", "Always get deposits")
-wisdom = await manager.get_global_wisdom(category="contract")
+**Response**:
+```json
+{
+  "success": true,
+  "document_id": "doc-456"
+}
 ```
 
 ---
 
-## File Structure
+### Debug
 
+#### `GET /debug/agents`
+Debug endpoint showing registered CopilotKit agents.
+
+**Response**:
+```json
+{
+  "agents": ["flagpilot_orchestrator"],
+  "agent_types": ["LangGraphAgent"]
+}
 ```
-backend/
-├── requirements-core.txt       # FastAPI, uvicorn, pydantic
-├── requirements-copilotkit.txt # copilotkit, langgraph
-├── requirements-metagpt.txt    # metagpt==0.8.1
-├── requirements-ragflow.txt    # ragflow-sdk
-├── lib/
-│   ├── copilotkit/            # CopilotKit SDK integration
-│   │   ├── graph.py           # LangGraph workflow
-│   │   └── sdk.py             # SDK setup
-│   ├── memory/                # Elasticsearch Memory System
-│   │   └── manager.py         # MemoryManager class
-│   └── runners/               # Subprocess runners for venvs
-│       ├── copilotkit_runner.py
-│       ├── metagpt_runner.py
-│       └── ragflow_runner.py
-├── agents/                    # MetaGPT agent definitions
-├── routers/                   # FastAPI routers
-└── Dockerfile                 # Multi-venv build
+
+---
+
+## Agent Capabilities
+
+| Agent | Specialization |
+|-------|----------------|
+| contract-guardian | Legal contract analysis |
+| job-authenticator | Scam detection, job verification |
+| risk-advisor | Critical risk protocols (fast-fail) |
+| scope-sentinel | Scope creep detection |
+| payment-enforcer | Invoice collection |
+| negotiation-assistant | Rate negotiation |
+| communication-coach | Message drafting |
+| dispute-mediator | Conflict resolution |
+| ghosting-shield | Client recovery |
+| profile-analyzer | Client vetting |
+| talent-vet | Candidate evaluation |
+| application-filter | Application screening |
+| feedback-loop | Outcome learning |
+| planner-role | Task planning |
+
+---
+
+## Orchestration Flow
+
+```mermaid
+graph LR
+    A[User Message] --> B[CopilotKit Endpoint]
+    B --> C[LangGraph Workflow]
+    C --> D{Fast-Fail Check}
+    D -->|Scam| E[Risk Advisor]
+    D -->|Safe| F[Agent Selection]
+    F --> G[Parallel Execution]
+    G --> H[Synthesis]
+    H --> I[Response]
 ```
+
+---
+
+## Error Responses
+
+| Status | Description |
+|--------|-------------|
+| 404 | Agent or resource not found |
+| 500 | Server error |
+
+---
+
+## Version History
+
+- **v6.0.0** - LangGraph architecture
+- **v5.x** - MetaGPT architecture (deprecated)

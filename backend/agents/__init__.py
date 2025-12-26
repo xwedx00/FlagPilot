@@ -1,91 +1,40 @@
 """
-FlagPilot Agents - MetaGPT-based Multi-Agent System
-====================================================
-13 specialized agents using MetaGPT Role class with Team orchestration.
-
-Agents can work:
-1. Independently - Direct API calls to single agents
-2. As a Team - Orchestrated by FlagPilot agent using MetaGPT Environment
+FlagPilot Agents Package
+========================
+LangGraph-based multi-agent system for freelancer protection.
 """
 
-from .roles import (
+from agents.agents import (
+    FlagPilotAgent,
+    get_agent,
+    get_all_agents,
+    list_agents,
+    AGENTS,
+    # Individual agents
     ContractGuardian,
     JobAuthenticator,
-    PaymentEnforcer,
-    TalentVet,
-    GhostingShield,
+    RiskAdvisor,
     ScopeSentinel,
-    DisputeMediator,
-    ProfileAnalyzer,
-    CommunicationCoach,
+    PaymentEnforcer,
     NegotiationAssistant,
+    CommunicationCoach,
+    DisputeMediator,
+    GhostingShield,
+    ProfileAnalyzer,
+    TalentVet,
     ApplicationFilter,
     FeedbackLoop,
-    FlagPilotOrchestrator,
-    RiskAdvisor,
+    PlannerRole,
 )
-
-from .team import FlagPilotTeam, run_team_task
+from agents.orchestrator import orchestrator_graph, run_orchestrator, OrchestratorState
 
 __all__ = [
-    # Individual Roles
-    "ContractGuardian",
-    "JobAuthenticator", 
-    "PaymentEnforcer",
-    "TalentVet",
-    "GhostingShield",
-    "ScopeSentinel",
-    "DisputeMediator",
-    "ProfileAnalyzer",
-    "CommunicationCoach",
-    "NegotiationAssistant",
-    "ApplicationFilter",
-    "FeedbackLoop",
-    "FlagPilotOrchestrator",
-    # Team
-    "FlagPilotTeam",
-    "run_team_task",
+    "FlagPilotAgent",
+    "get_agent",
+    "get_all_agents", 
+    "list_agents",
+    "AGENTS",
+    "orchestrator_graph",
+    "run_orchestrator",
+    "OrchestratorState",
 ]
-
-# Agent registry for API
-AGENT_REGISTRY = {
-    "contract-guardian": ContractGuardian,
-    "job-authenticator": JobAuthenticator,
-    "payment-enforcer": PaymentEnforcer,
-    "talent-vet": TalentVet,
-    "ghosting-shield": GhostingShield,
-    "scope-sentinel": ScopeSentinel,
-    "dispute-mediator": DisputeMediator,
-    "profile-analyzer": ProfileAnalyzer,
-    "communication-coach": CommunicationCoach,
-    "negotiation-assistant": NegotiationAssistant,
-    "application-filter": ApplicationFilter,
-    "feedback-loop": FeedbackLoop,
-    "Flagpilot": FlagPilotOrchestrator,
-    "risk-advisor": RiskAdvisor,
-}
-
-
-
-# Centralized mapping from backend agent IDs to frontend agent IDs
-# Frontend has different naming for some agents
-AGENT_ID_MAP = {
-    "contract-guardian": "legal-eagle",
-    "job-authenticator": "job-authenticator",
-    "payment-enforcer": "payment-enforcer",
-    "talent-vet": "coach",
-    "ghosting-shield": "connector",
-    "scope-sentinel": "scope-sentinel",
-    "dispute-mediator": "adjudicator",
-    "profile-analyzer": "coach",
-    "communication-coach": "connector",
-    "negotiation-assistant": "negotiator",
-    "application-filter": "job-authenticator",
-    "feedback-loop": "scribe",
-    "Flagpilot": "Flagpilot",
-}
-
-def get_frontend_agent_id(backend_id: str) -> str:
-    """Convert backend agent ID to frontend agent ID"""
-    return AGENT_ID_MAP.get(backend_id, backend_id)
-

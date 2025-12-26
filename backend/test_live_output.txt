@@ -1,941 +1,364 @@
-======================================================================
-  FLAGPILOT LIVE INTEGRATION TEST - MULTI-VENV EDITION
-  Started: 2025-12-25T22:56:23.839670
-======================================================================
+================================================================================
+  FLAGPILOT LIVE INTEGRATION TEST - LANGGRAPH EDITION v6.0
+  Started: 2025-12-26T16:32:07.727423
+================================================================================
 
-[22:56:23.841] [--] 
-[22:56:23.843] [--] ######################################################################
-[22:56:23.844] [--] #                     TEST 1: ENVIRONMENT CHECK                      #
-[22:56:23.846] [--] ######################################################################
-[22:56:23.847] [--] 
-[22:56:23.849] [--] OpenRouter Model: kwaipilot/kat-coder-pro:free
-[22:56:23.851] [--] OpenRouter Base URL: https://openrouter.ai/api/v1
-[22:56:23.853] [--] RAGFlow URL: http://ragflow:80
-[22:56:23.855] [--] ES Host: es01:9200
-[22:56:23.857] [--]   OPENROUTER_API_KEY: ✅ SET
-[22:56:23.859] [--]   OPENROUTER_MODEL: ✅ SET
-[22:56:23.861] [--]   OPENROUTER_BASE_URL: ✅ SET
-[22:56:23.863] [--]   RAGFLOW_API_KEY: ✅ SET
-[22:56:23.866] [--]   RAGFLOW_URL: ✅ SET
-[22:56:23.868] [--]   ES_HOST: ✅ SET
-[22:56:23.870] [--]   ES_PORT: ✅ SET
-[22:56:23.872] [OK] Environment check PASSED
-[22:56:23.878] [--] 
-[22:56:23.881] [--] ######################################################################
-[22:56:23.882] [--] #                    TEST 2: RAGFLOW HEALTH CHECK                    #
-[22:56:23.884] [--] ######################################################################
-[22:56:23.888] [--] 
-[22:56:23.960] [--] Checking RAGFlow health via isolated venv runner...
-[22:56:24.254] [..] Health Response:
-[22:56:24.256] [..]     {
-[22:56:24.257] [..]       "status": "healthy",
-[22:56:24.259] [..]       "connected": true,
-[22:56:24.261] [..]       "datasets_count": 12
-[22:56:24.262] [..]     }
-[22:56:24.265] [--] RAGFlow Status: healthy
-[22:56:24.266] [--] Datasets Count: 12
-[22:56:24.269] [OK] RAGFlow health check PASSED
-[22:56:24.275] [--] 
-[22:56:24.277] [--] ######################################################################
-[22:56:24.279] [--] #                TEST 3: OPENROUTER LLM HEALTH CHECK                 #
-[22:56:24.281] [--] ######################################################################
-[22:56:24.283] [--] 
-[22:56:24.706] [--] Model: kwaipilot/kat-coder-pro:free
-[22:56:24.708] [--] Sending test prompt...
-[22:56:27.768] [--] Response: Hello! I'm working and ready to help you.
-[22:56:27.770] [--] Duration: 3.06s
-[22:56:27.772] [..] Prompt Tokens: 33
-[22:56:27.774] [..] Completion Tokens: 12
-[22:56:27.775] [..] Total Tokens: 45
-[22:56:27.777] [OK] OpenRouter health check PASSED
-[22:56:27.784] [--] 
-[22:56:27.787] [--] ######################################################################
-[22:56:27.789] [--] #                TEST 4: ELASTICSEARCH MEMORY SYSTEM                 #
-[22:56:27.791] [--] ######################################################################
-[22:56:27.794] [--] 
-[22:56:27.955] [..] ES Health:
-[22:56:27.956] [..]     {
-[22:56:27.958] [..]       "status": "healthy",
-[22:56:27.960] [..]       "connected": true,
-[22:56:27.963] [..]       "cluster_name": "ragflow-cluster",
-[22:56:27.966] [..]       "version": "9.0.2"
-[22:56:27.968] [..]     }
-[22:56:27.971] [--] Cluster: ragflow-cluster
-[22:56:27.973] [--] Version: 9.0.2
-[22:56:28.025] [--] Index Stats:
-[22:56:28.027] [..]   flagpilot_user_profiles: 18 docs
-[22:56:28.029] [..]   flagpilot_chat_history: 320 docs
-[22:56:28.030] [..]   flagpilot_experience_gallery: 46 docs
-[22:56:28.032] [..]   flagpilot_global_wisdom: 89 docs
-[22:56:28.033] [OK] Elasticsearch health check PASSED
-[22:56:28.039] [--] 
-[22:56:28.041] [--] ######################################################################
-[22:56:28.043] [--] #                  TEST 5: RAGFLOW UPLOAD & SEARCH                   #
-[22:56:28.046] [--] ######################################################################
-[22:56:28.047] [--] 
-[22:56:28.049] [--] 
------ STEP 1: UPLOAD TEST DOCUMENT --------------------------------
-[22:56:28.051] [--] Uploading doc to 'flagpilot_test_1766703388'...
-[22:56:29.629] [..] Upload Internal Log:
-Created dataset: flagpilot_test_1766703388 with OpenAI embeddings
-Uploading flagpilot_overview.txt to flagpilot_test_1766703388...
+[16:32:07.780] [--] 
+[16:32:07.782] [--] ################################################################################
+[16:32:07.784] [--] #                          TEST 1: ENVIRONMENT CHECK                           #
+[16:32:07.786] [--] ################################################################################
+[16:32:07.787] [--] 
+[16:32:07.789] [--] OpenRouter Model: kwaipilot/kat-coder-pro:free
+[16:32:07.790] [--] Base URL: https://openrouter.ai/api/v1
+[16:32:07.791] [--] RAGFlow: http://ragflow:80
+[16:32:07.792] [--] Elasticsearch: es01:9200
+[16:32:07.793] [??] LangSmith: Not configured
+[16:32:07.794] [OK] Environment: 5/5 configured
+[16:32:07.799] [--] 
+[16:32:07.801] [--] ################################################################################
+[16:32:07.802] [--] #                         TEST 2: LANGCHAIN LLM HEALTH                         #
+[16:32:07.804] [--] ################################################################################
+[16:32:07.806] [--] 
+[16:32:08.775] [--] Model: kwaipilot/kat-coder-pro:free
+[16:32:10.556] [OK] Response: FlagPilot online
+[16:32:10.558] [--] Latency: 1.78s
+[16:32:10.564] [--] 
+[16:32:10.566] [--] ################################################################################
+[16:32:10.567] [--] #                            TEST 3: AGENT REGISTRY                            #
+[16:32:10.569] [--] ################################################################################
+[16:32:10.570] [--] 
+[16:32:10.660] [--] Registered agents: 14
+[16:32:10.661] [--] 
+----- AGENT LIST ------------------------------------------------------------
+[16:32:10.662] [..]   application-filter: OK (cost: 5)
+[16:32:10.664] [..]   communication-coach: OK (cost: 5)
+[16:32:10.665] [..]   contract-guardian: OK (cost: 25)
+[16:32:10.667] [..]   dispute-mediator: OK (cost: 15)
+[16:32:10.668] [..]   feedback-loop: OK (cost: 3)
+[16:32:10.670] [..]   ghosting-shield: OK (cost: 5)
+[16:32:10.671] [..]   job-authenticator: OK (cost: 5)
+[16:32:10.672] [..]   negotiation-assistant: OK (cost: 20)
+[16:32:10.673] [..]   payment-enforcer: OK (cost: 10)
+[16:32:10.674] [..]   planner-role: OK (cost: 5)
+[16:32:10.675] [..]   profile-analyzer: OK (cost: 10)
+[16:32:10.676] [..]   risk-advisor: OK (cost: 0)
+[16:32:10.678] [..]   scope-sentinel: OK (cost: 10)
+[16:32:10.679] [..]   talent-vet: OK (cost: 15)
+[16:32:10.681] [OK] Agent Registry: 14 agents ready
+[16:32:10.686] [--] 
+[16:32:10.687] [--] ################################################################################
+[16:32:10.688] [--] #                       TEST 4: FAST-FAIL SCAM DETECTION                       #
+[16:32:10.689] [--] ################################################################################
+[16:32:10.690] [--] 
+[16:32:10.691] [--] 
+----- SCAM SIGNAL TESTS -----------------------------------------------------
+[16:32:10.692] [--]   Detected 0 signals (expected >=0): PASS
+[16:32:10.693] [..]     Text: Normal job: Looking for a web developer for my e-commerce si...
+[16:32:10.695] [..]     Signals: []
+[16:32:10.696] [--]   Detected 2 signals (expected >=1): PASS
+[16:32:10.698] [..]     Text: Contact me on Telegram for the job details...
+[16:32:10.699] [..]     Signals: ['telegram', 'suspicious_contact_in_job_offer']
+[16:32:10.700] [--]   Detected 1 signals (expected >=3): FAIL
+[16:32:10.701] [..]     Text: Send you a check for equipment then return excess...
+[16:32:10.702] [..]     Signals: ['send you a check']
+[16:32:10.703] [--]   Detected 7 signals (expected >=5): PASS
+[16:32:10.704] [..]     Text: No experience required, $45/hr data entry work from home via...
+[16:32:10.705] [..]     Signals: ['whatsapp', 'no experience required', 'data entry', '$45/hr', 'work from home', 'suspicious_contact_in_job_offer', 'too_good_to_be_true']
+[16:32:10.706] [--]   Detected 2 signals (expected >=4): FAIL
+[16:32:10.707] [..]     Text: Pay security deposit via Zelle before starting...
+[16:32:10.708] [..]     Signals: ['zelle', 'security deposit']
+[16:32:10.709] [OK] Fast-fail detection: 8 signals for test scam
+[16:32:10.714] [--] 
+[16:32:10.716] [--] ################################################################################
+[16:32:10.717] [--] #                         TEST 5: ORCHESTRATOR ROUTING                         #
+[16:32:10.718] [--] ################################################################################
+[16:32:10.719] [--] 
+[16:32:10.721] [--] 
+----- ROUTING TESTS ---------------------------------------------------------
+[16:32:10.722] [--]   Review this contract for legal issues... -> ['contract-guardian', 'dispute-mediator', 'profile-analyzer'] [PASS]
+[16:32:10.723] [--]   Is this job posting a scam?... -> ['job-authenticator'] [PASS]
+[16:32:10.724] [--]   Client hasn't paid my invoice for 30 day... -> ['payment-enforcer', 'profile-analyzer'] [PASS]
+[16:32:10.725] [--]   Help me negotiate a better rate... -> ['negotiation-assistant'] [PASS]
+[16:32:10.726] [--]   The client is asking for more features... -> ['profile-analyzer'] [FAIL]
+[16:32:10.727] [--]   Draft a professional response to client... -> ['communication-coach', 'profile-analyzer'] [PASS]
+[16:32:10.728] [OK] Routing logic validated
+[16:32:10.733] [--] 
+[16:32:10.735] [--] ################################################################################
+[16:32:10.736] [--] #                    TEST 6: ORCHESTRATOR - SCAM DETECTION                     #
+[16:32:10.737] [--] ################################################################################
+[16:32:10.738] [--] 
+[16:32:10.740] [--] Task: Obvious scam job offer
+[16:32:10.741] [--] Running orchestrator...
+[16:32:17.959] [--] Duration: 7.22s
+[16:32:17.961] [--] Status: RISK_DETECTED
+[16:32:17.963] [--] Risk Level: CRITICAL
+[16:32:17.965] [--] Critical Risk: True
+[16:32:17.966] [--] 
+----- RESPONSE --------------------------------------------------------------
+[16:32:17.967] [--] # 🚨 CRITICAL RISK DETECTED
 
-[22:56:29.631] [OK] Upload successful. Waiting for indexing...
-[22:56:29.633] [--] 
------ STEP 2: VERIFY RETRIEVAL ------------------------------------
-[22:56:29.635] [..] Search attempt 1/12 for 'What is FlagPilot?' in dataset f2f685c8e1e411f096c142700381d335...
-[22:56:33.039] [--] No relevant chunks yet, waiting 5s...
-[22:56:38.046] [..] Search attempt 2/12 for 'What is FlagPilot?' in dataset f2f685c8e1e411f096c142700381d335...
-[22:56:41.064] [OK] Found chunk: 
-        FlagPilot is an advanced freelancer protection system.        It helps freelancers verify c...
-[22:56:41.066] [OK] RAGFlow retrieval VERIFIED
-[22:56:41.068] [--] 
------ STEP 3: STANDARD QUERIES (VERBOSE) --------------------------
-[22:56:45.100] [--] Query: 'freelance contract payment terms' -> 2 results
-[22:56:45.101] [..]   [1] {'content': '\n        FlagPilot is an advanced freelancer protection system.        It helps freelancers verify clients, check contracts for risks, and negotiate better terms.        FlagPilot uses A...
-[22:56:45.103] [..]   [2] {'content': '\n        FlagPilot is an advanced freelancer protection system.        It helps freelancers verify clients, check contracts for risks, and negotiate better terms.        FlagPilot uses A...
-[22:56:48.573] [--] Query: 'scope creep prevention' -> 0 results
-[22:56:48.575] [..]   (No results - expected if KB empty)
-[22:56:48.580] [--] 
-[22:56:48.582] [--] ######################################################################
-[22:56:48.584] [--] #               TEST 6: LLM CONTRACT ANALYSIS QUALITY                #
-[22:56:48.586] [--] ######################################################################
-[22:56:48.588] [--] 
-[22:56:48.633] [--] Sending contract for analysis...
-[22:56:58.268] [--] 
-==================================================
-[22:56:58.270] [--] FULL LLM RESPONSE:
-[22:56:58.271] [--] ==================================================
-[22:56:58.273] [--] Based on my analysis of this freelance contract, here are the top 5 specific risks with their severity levels:
+## Risk Advisor
 
-**1. IP Transfer Before Payment (HIGH SEVERITY)**
-- **Risk**: The contract requires immediate intellectual property transfer to the client before any payment is made
-- **Why it's dangerous**: Once IP is transferred, the freelancer loses all leverage for payment collection. The client could receive completed work, own the rights, and then refuse to pay with minimal legal recourse for the freelancer
-- **Impact**: Complete financial loss with no ability to reclaim work or sue effectively
+## 🚨 CRITICAL RISK ALERT
 
-**2. 100% Payment on Completion with 90-Day "Satisfaction Review" (HIGH SEVERITY)**
-- **Risk**: No upfront payment + 90-day review period before any compensation
-- **Why it's dangerous**: The freelancer must complete all work with zero financial security, then wait up to 90 days for subjective "satisfaction" determination. The client can unilaterally decide the work is unsatisfactory and withhold all payment
-- **Impact**: Months of unpaid work with no guaranteed compensation
+### What We Detected
+**Check fraud scam** - "QuickMoney LLC" is using a classic overpayment scam pattern
 
-**3. Client Can Terminate with 24 Hours Notice for No Payment (HIGH SEVERITY)**
-- **Risk**: Client can cancel the contract at any time with 24 hours notice and owes nothing to the freelancer
-- **Why it's dangerous**: The freelancer could invest significant time and resources into the project, only to be terminated without compensation. This creates extreme financial vulnerability
-- **Impact**: Total loss of time investment and potential income with no recourse
+### Why This Is Dangerous
+- **Fake check scam**: They'll send a $3000 check that appears legitimate but will bounce after you deposit it
+- **Overpayment trap**: They'll ask you to wire back the "extra" money (usually $2500) before the check bounces
+- **Bank liability**: You'll be responsible for the full $3000 when the check is discovered as fraudulent
+- **No real job**: This is purely a money laundering scheme disguised as employment
 
-**4. No Late Payment Penalties or Interest (MEDIUM SEVERITY)**
-- **Risk**: No consequences defined for late payment beyond the 90-day review period
-- **Why it's dangerous**: If the client delays payment after the review period, the freelancer has no contractual mechanism to recover additional costs or incentivize timely payment
-- **Impact**: Cash flow problems and inability to recover costs associated with payment delays
+### Immediate Protective Actions
+1. **STOP ALL COMMUNICATION** with @quickmoney_hiring immediately
+2. **DO NOT** provide any bank details or personal information
+3. **DO NOT** accept any checks from them
+4. **BLOCK** the Telegram contact
 
-**5. Subjective "Satisfaction Review" Standard (MEDIUM SEVERITY)**
-- **Risk**: Payment depends on client's subjective satisfaction with undefined quality standards
-- **Why it's dangerous**: The client can claim dissatisfaction without objective criteria, making payment entirely at their discretion regardless of work quality
-- **Impact**: Payment becomes arbitrary rather than based on agreed-upon deliverables or industry standards
+### If You Already:
+- **Deposited a check**: Contact your bank IMMEDIATELY to stop payment
+- **Shared bank details**: Monitor your accounts closely and consider placing a fraud alert
+- **Wired money**: Contact your bank and file a report with the FTC
 
-**Recommendation**: This contract heavily favors the client and exposes the freelancer to extreme financial risk. I strongly advise renegotiating payment terms (at minimum 50% upfront), removing the satisfaction review clause, adding objective deliverable criteria, and including late payment penalties before considering acceptance.
-[22:56:58.275] [--] ==================================================
-[22:56:58.277] [..] Response Length: 2744 characters
-[22:56:58.279] [..] Duration: 9.63s
-[22:56:58.281] [..] Tokens Used: 703
-[22:56:58.283] [--] 
------ Quality Checks ----------------------------------------------
-[22:56:58.284] [--]   ✅ identifies_payment_risk
-[22:56:58.286] [--]   ✅ identifies_ip_risk
-[22:56:58.289] [--]   ✅ identifies_late_fee_risk
-[22:56:58.291] [--]   ✅ identifies_termination_risk
-[22:56:58.293] [--]   ✅ provides_severity
-[22:56:58.295] [--]   ✅ actionable_advice
-[22:56:58.297] [--] 
-Quality Score: 100% (6/6)
-[22:56:58.299] [OK] LLM contract analysis quality PASSED
-[22:56:58.307] [--] 
-[22:56:58.309] [--] ######################################################################
-[22:56:58.311] [--] #                  TEST 7: USER PROFILE OPERATIONS                   #
-[22:56:58.313] [--] ######################################################################
-[22:56:58.315] [--] 
-[22:56:58.330] [--] 
------ CREATE Profile ----------------------------------------------
-[22:56:58.491] [--] Create result: True
-[22:56:58.494] [--] 
------ READ Profile ------------------------------------------------
-[22:56:58.512] [..] Profile:
-[22:56:58.514] [..]     {
-[22:56:58.516] [..]       "user_id": "live_test_user_1766703418",
-[22:56:58.518] [..]       "summary": "Experienced freelancer, prefers fixed-price contracts, cautious about scope creep. Recent focus on web development projects.",
-[22:56:58.520] [..]       "preferences": {
-[22:56:58.521] [..]         "rate_min": 50,
-[22:56:58.523] [..]         "avoid_clients": [
-[22:56:58.525] [..]           "lowballers",
-[22:56:58.526] [..]           "scope creepers"
-[22:56:58.528] [..]         ]
-[22:56:58.530] [..]       },
-[22:56:58.532] [..]       "last_updated": "2025-12-25T22:56:58.332246",
-[22:56:58.534] [..]       "created_at": "2025-12-25T22:56:58.332246"
-[22:56:58.536] [..]     }
-[22:56:58.537] [--] 
------ UPDATE Profile ----------------------------------------------
-[22:56:58.580] [OK] Profile updated successfully
-[22:56:58.582] [OK] User Profile operations PASSED
-[22:56:58.588] [--] 
-[22:56:58.590] [--] ######################################################################
-[22:56:58.591] [--] #                  TEST 8: CHAT HISTORY OPERATIONS                   #
-[22:56:58.593] [--] ######################################################################
-[22:56:58.595] [--] 
-[22:56:58.611] [--] 
------ SAVE Conversation Messages ----------------------------------
-[22:56:58.637] [..] Saved user message: 71d47410...
-[22:56:58.650] [..] Saved assistant message: b4e6b8fd...
-[22:56:58.664] [..] Saved user message: 19f03395...
-[22:56:58.678] [..] Saved assistant message: d7dffd79...
-[22:56:59.680] [--] 
------ RETRIEVE Chat History ---------------------------------------
-[22:56:59.688] [--] Retrieved 4 messages
-[22:56:59.690] [..]   [user]: I need help reviewing a contract from a new client...
-[22:56:59.691] [..]   [assistant]: I'd be happy to help! Please share the contract details and ...
-[22:56:59.693] [..]   [user]: The client wants 100% payment on completion with no deposit....
-[22:56:59.695] [..]   [assistant]: That's a significant red flag. I recommend negotiating at le...
-[22:56:59.696] [--] 
------ GET Recent Sessions -----------------------------------------
-[22:56:59.707] [..] Sessions: ['8f376011-3271-47a9-97e4-83cd25681252']...
-[22:56:59.710] [OK] Chat History operations PASSED
-[22:56:59.716] [--] 
-[22:56:59.717] [--] ######################################################################
-[22:56:59.719] [--] #                  TEST 9: GLOBAL WISDOM OPERATIONS                  #
-[22:56:59.721] [--] ######################################################################
-[22:56:59.723] [--] 
-[22:56:59.740] [--] 
------ ADD Wisdom Entries ------------------------------------------
-[22:56:59.765] [..] Added: [contract] Always request a deposit before starting work - at...
-[22:56:59.780] [..] Added: [contract] Define scope clearly with a change order process t...
-[22:56:59.796] [..] Added: [scam] Be wary of clients who contact via WhatsApp only a...
-[22:56:59.810] [..] Added: [negotiation] Counter low offers by explaining value delivered, ...
-[22:56:59.824] [..] Added: [payment] Include late payment penalties (1.5-2% monthly) in...
-[22:57:00.828] [--] 
------ SEARCH Wisdom by Category -----------------------------------
-[22:57:00.836] [--] Contract wisdom: 10 entries
-[22:57:00.837] [--] 
------ SEARCH Wisdom by Query --------------------------------------
-[22:57:00.847] [--] Deposit-related wisdom: 10 entries
-[22:57:00.849] [..] Top Deposit Wisdom:
-[22:57:00.851] [..]     {
-[22:57:00.853] [..]       "category": "freelancing",
-[22:57:00.855] [..]       "insight": "Set clear revision limits upfront to avoid scope creep",
-[22:57:00.857] [..]       "source_count": 18,
-[22:57:00.859] [..]       "confidence_score": 1.0,
-[22:57:00.862] [..]       "tags": [
-[22:57:00.864] [..]         "freelancing"
-[22:57:00.866] [..]       ],
-[22:57:00.868] [..]       "created_at": "2025-12-22T12:17:06.234292",
-[22:57:00.870] [..]       "last_updated": "2025-12-25T22:54:06.369824"
-[22:57:00.872] [..]     }
-[22:57:00.874] [OK] Global Wisdom operations PASSED
-[22:57:00.881] [--] 
-[22:57:00.882] [--] ######################################################################
-[22:57:00.885] [--] #                    TEST 10: EXPERIENCE GALLERY                     #
-[22:57:00.887] [--] ######################################################################
-[22:57:00.889] [--] 
-[22:57:00.907] [--] 
------ SAVE Successful Experiences ---------------------------------
-[22:57:00.958] [..] Saved: Always set clear revision limits upfront to preven...
-[22:57:00.996] [..] Saved: Legitimate employers never ask freelancers to pay ...
-[22:57:02.001] [--] 
------ SEARCH Similar Experiences ----------------------------------
-[22:57:02.009] [--] Found 5 similar experiences
-[22:57:02.011] [..] Top Match:
-[22:57:02.013] [..]     {
-[22:57:02.015] [..]       "user_id": "exp_test_1766405826",
-[22:57:02.016] [..]       "task_type": "freelancing",
-[22:57:02.018] [..]       "input_query": "Client wanted unlimited revisions but I set a cap of 3",
-[22:57:02.019] [..]       "outcome": "Client agreed after I explained revision policy",
-[22:57:02.021] [..]       "lesson": "Set clear revision limits upfront to avoid scope creep",
-[22:57:02.023] [..]       "feedback_score": 1,
-[22:57:02.025] [..]       "is_public": true,
-[22:57:02.026] [..]       "created_at": "2025-12-22T12:17:06.204149"
-[22:57:02.028] [..]     }
-[22:57:02.030] [OK] Experience Gallery PASSED
-[22:57:02.035] [--] 
-[22:57:02.037] [--] ######################################################################
-[22:57:02.039] [--] #                  TEST 11: METAGPT TEAM VIA RUNNER                  #
-[22:57:02.042] [--] ######################################################################
-[22:57:02.044] [--] 
-[22:57:02.045] [--] TASK:
-[22:57:02.047] [--] 
-        I received a job offer from "QuickMoney Enterprises". The details:
-        
-        1. They want me to pay a $750 "security deposit" for equipment via Zelle
-        2. The job is "data entry from home" paying $45/hour
-        3. They contacted me on WhatsApp, not a job platform
-        4. No formal interview, just a "quick chat"
-        5. They want my bank details for "direct deposit setup"
-        
-        Is this legitimate? Should I take this job?
-        
-[22:57:02.049] [--] 
-Running MetaGPT team via isolated venv...
-[22:57:19.540] [--] Duration: 17.49s
-[22:57:19.543] [--] 
------ AGENT COLLABORATION -----------------------------------------
-[22:57:19.545] [..] [job-authenticator] output:
-[22:57:19.548] [..] {
-    "is_critical_risk": true,
-    "risk_level": "CRITICAL",
-    "risk_summary": "This is a classic advance fee scam with multiple red flags including upfront payment demands and unrealistic compensation.",
-    "override_instruction": "DO NOT PAY ANY MONEY OR SHARE FINANCIAL INFORMATION. BLOCK THE NUMBER AND REPORT TO FTC/IC3 IMMEDIATELY.",
-    "score": 1,
-    "analysis": "# Job Posting Analysis: CRITICAL SCAM DETECTED\n\n## Red Flags (Critical)\n- **Upfront Payment Required**: Demanding $750 s...
-[22:57:19.551] [..] [payment-enforcer] output:
-[22:57:19.553] [..] Based on the details you've provided, this is **NOT** a legitimate job offer. This is a classic advance fee scam, often referred to as a "job scam" or "employment scam."
+### Red Flags Identified
+- Job offer via Telegram (unprofessional)
+- No experience required for $50/hr
+- Sending checks for "equipment"
+- Requesting bank details upfront
+- Suspicious Telegram username
 
-## 1. SITUATION ASSESSMENT
-
-**Severity:** HIGH - This is a scam attempt, not a payment collection issue
-**Leverage:** None - You have no legitimate business relationship with this entity
-**Risk:** You will lose your $750 deposit and potentially face identity theft if you provide bank details
-
-**Red Flags Identified:**
-- Advance...
-[22:57:19.555] [--] 
------ METAGPT INTERNAL LOGS ---------------------------------------
-[22:57:19.558] [..] [LOG] 2025-12-25 22:57:06.847 | INFO     | agents.registry:initialize:25 - 🕵️ Discovering agents...
-[22:57:19.560] [..] [LOG] 2025-12-25 22:57:07.004 | INFO     | agents.registry:initialize:59 - ✅ Registered 15 agents
-[22:57:19.563] [..] [LOG] 2025-12-25 22:57:07.600 | INFO     | agents.team:_init_team:112 - FlagPilot Team initialized with 15 specialist capabilities
-[22:57:19.565] [..] [LOG] 2025-12-25 22:57:07.600 | INFO     | agents.team:run:123 - Starting team task: 
-[22:57:19.567] [..] [LOG] 2025-12-25 22:57:07.621 | WARNING  | agents.team:run:159 - Failed to inject RAG context/memory: No module named 'elasticsearch'
-[22:57:19.569] [..] [LOG] 2025-12-25 22:57:07.621 | INFO     | agents.team:run:173 - Step 1: Orchestrator analyzing task...
-[22:57:19.572] [..] [LOG] 2025-12-25 22:57:07.622 | WARNING  | agents.roles.flagpilot_orchestrator:analyze:188 - 🚨 SCAM SIGNALS DETECTED: ['whatsapp', 'data entry', 'suspicious_contact_method_in_job_offer']
-[22:57:19.574] [..] [LOG] 2025-12-25 22:57:07.622 | INFO     | agents.team:run:237 - Step 2: Relevant agents identified: ['job-authenticator', 'payment-enforcer']
-[22:57:19.577] [..] [LOG] 2025-12-25 22:57:07.622 | INFO     | agents.team:run:240 - Step 3: Running specialist agents...
-[22:57:19.579] [..] [LOG] 2025-12-25 22:57:15.301 | WARNING  | metagpt.provider.openai_api:_calc_usage:244 - usage calculation failed: num_tokens_from_messages() is not implemented for model kwaipilot/kat-coder-pro:free. See https://cookbook.openai.com/examples/how_to_count_tokens_with_tiktoken for information on how messages are converted to tokens.
-[22:57:19.581] [..] [LOG] 2025-12-25 22:57:18.957 | WARNING  | metagpt.provider.openai_api:_calc_usage:244 - usage calculation failed: num_tokens_from_messages() is not implemented for model kwaipilot/kat-coder-pro:free. See https://cookbook.openai.com/examples/how_to_count_tokens_with_tiktoken for information on how messages are converted to tokens.
-[22:57:19.583] [..] [LOG] 2025-12-25 22:57:18.958 | WARNING  | agents.team:run:286 - 🚨 CRITICAL RISK SIGNAL received from job-authenticator
-[22:57:19.586] [..] [LOG] 2025-12-25 22:57:18.958 | WARNING  | agents.team:run:297 - 🚨 ABORTING MISSION: Critical Risks Detected.
-[22:57:19.588] [--] 
------ RESULT ------------------------------------------------------
-[22:57:19.590] [--] **MISSION ABORTED DUE TO CRITICAL RISKS**
-
-CRITICAL RISK detected by job-authenticator; SCAM WARNING from job-authenticator; SCAM WARNING from payment-enforcer
-
-Please review the warnings above immediately. Do not proceed.
-[22:57:19.593] [--] Scam detected: ✅ YES
-[22:57:19.595] [OK] MetaGPT runner PASSED
-[22:57:19.602] [--] 
-[22:57:19.604] [--] ######################################################################
-[22:57:19.606] [--] #                  TEST 12: END-TO-END WITH MEMORY                   #
-[22:57:19.607] [--] ######################################################################
-[22:57:19.609] [--] 
-[22:57:19.654] [--] Test User ID: e2e_test_1766703439
-[22:57:19.656] [--] 
------ STEP 1: GET USER PROFILE ------------------------------------
-[22:57:19.671] [--] Profile: ...
-[22:57:19.673] [--] 
------ STEP 2: RAG CONTEXT SEARCH ----------------------------------
-[22:57:23.084] [--] RAG Context: 3 chunks (Expected 0 if KB empty)
-[22:57:23.085] [--] 
------ STEP 3: GLOBAL WISDOM ---------------------------------------
-[22:57:23.094] [--] Wisdom entries: 3
-[22:57:23.096] [--] 
------ STEP 4: LLM WITH FULL CONTEXT -------------------------------
-[22:57:23.098] [--] Sending to LLM with full context...
-[22:57:29.146] [--] 
-LLM RESPONSE:
-I recommend **NOT** agreeing to 100% payment on completion without protections. Here's what you should negotiate:
-
-## **Critical Negotiation Points:**
-
-### 1. **Payment Schedule**
-- **Request 50% upfront** before starting work
-- **Request 30% at major milestone** (e.g., draft delivery)
-- **Request 20% upon completion**
-- This protects you from non-payment and shows client commitment
-
-### 2. **Milestone-Based Payments**
-- Break the project into clear phases
-- Tie payments to specific deliverables
-- Example: "30% due upon delivery of initial design concepts"
-
-### 3. **Escrow Protection**
-- Suggest using an escrow service (like Escrow.com)
-- Client deposits full payment upfront but you're paid incrementally
-- Removes payment risk entirely
-
-### 4. **Kill Fee Protection**
-- Include clause for partial payment if client cancels
-- Example: "Client agrees to pay 50% of project value if cancellation occurs after work has begun"
-
-### 5. **Scope Protection**
-- Define project scope clearly to prevent scope creep
-- Include change order process for additional work
-- Specify what's included vs. excluded
-
-## **Your Negotiation Script:**
-*"I understand your preference for payment on completion. To ensure both parties are protected, I typically require 50% upfront and 30% at key milestones. This allows me to dedicate the necessary time and resources to deliver quality work. Would you be open to a payment schedule that protects both of us?"*
-
-## **Red Flags to Watch:**
-- Client refuses any upfront payment
-- Vague project requirements
-- Pressure to sign immediately
-- No clear scope definition
-
-If they absolutely refuse any modification, consider declining the project - it's likely a high-risk client.
-[22:57:29.148] [--] 
------ STEP 5: SAVE TO CHAT HISTORY --------------------------------
-[22:57:29.174] [OK] Interaction saved to chat history
-[22:57:29.177] [--] 
------ VALIDATION --------------------------------------------------
-[22:57:29.178] [--]   ✅ addresses_payment
-[22:57:29.180] [--]   ✅ provides_advice
-[22:57:29.182] [--]   ✅ actionable
-[22:57:29.185] [OK] End-to-end with memory PASSED
-[22:57:29.191] [--] 
-[22:57:29.193] [--] ######################################################################
-[22:57:29.195] [--] #                  TEST 13: SCAM DETECTION SCENARIO                  #
-[22:57:29.197] [--] ######################################################################
-[22:57:29.200] [--] 
-[22:57:29.202] [--] SCAM SCENARIO:
-[22:57:29.204] [--] 
-        I received a job offer from "Global Payments Processing LLC" with these details:
-        
-        1. Position: "Payment Processor" - $35/hour, 20 hours/week
-        2. Job: Receive payments from their "international clients" into my personal bank account
-        3. Keep 15% commission, wire the rest to their "overseas office" via Western Union
-        4. They found me on LinkedIn, never saw my resume
-        5. They want me to start immediately, no interview needed
-        6. Contact is via Telegram only, no company email
-        7. They'll send a $5000 "test payment" to my account first
-        
-        Is this job legitimate? Should I take it?
-        
-[22:57:29.206] [--] 
-Analyzing via MetaGPT runner...
-[22:57:50.195] [--] Duration: 20.99s
-[22:57:50.197] [--] Risk Level: HIGH
-[22:57:50.198] [--] 
------ AGENT COLLABORATION -----------------------------------------
-[22:57:50.200] [..] [job-authenticator] output:
-[22:57:50.202] [..] {
-    "is_critical_risk": true,
-    "risk_level": "CRITICAL",
-    "risk_summary": "This is a classic money mule scam where you will be used to launder stolen funds and face criminal charges.",
-    "override_instruction": "STOP ALL COMMUNICATION IMMEDIATELY. DO NOT ACCEPT ANY MONEY OR SEND ANY PAYMENTS. REPORT THIS TO YOUR BANK AND LAW ENFORCEMENT.",
-    "score": 1,
-    "analysis": "# CRITICAL SCAM ANALYSIS - DO NOT ENGAGE\n\n## Red Flags (Multiple Critical)\n- **Telegram-only contact**: Legitima...
-[22:57:50.204] [..] [payment-enforcer] output:
-[22:57:50.207] [..] ## 1. SITUATION ASSESSMENT
-
-**SEVERITY: EXTREME - POTENTIAL CRIMINAL ACTIVITY**
-
-This is **NOT** a legitimate job offer. This is a sophisticated money laundering scheme that could land you in serious legal trouble.
-
-**RED FLAGS IDENTIFIED:**
-- Money laundering operation using your personal bank account
-- No legitimate business interview process
-- Communication only via untraceable Telegram
-- "Test payment" is likely stolen/fraudulent funds
-- 15% commission is payment for laundering services
-- We...
-[22:57:50.209] [..] [talent-vet] output:
-[22:57:50.210] [..] # Talent Vet Assessment
-
-## 1. MATCH SCORE: 1/10
-
-This is not a legitimate job opportunity - this is a classic advance fee fraud/scam operation.
-
-## 2. KEY STRENGTHS
-**None identified** - This is not a genuine employment opportunity.
-
-## 3. RED FLAGS / INCONSISTENCIES
-
-**CRITICAL WARNING SIGNS:**
-- **Money laundering scheme**: Using personal bank accounts to receive and forward international payments is a common money laundering tactic
-- **Advance fee fraud**: The $5,000 "test payment" will like...
-[22:57:50.212] [..] [communication-coach] output:
-[22:57:50.214] [..] ## 1. TONE CHECK
-
-**Issue:** The message is overly casual and lacks professional framing. It reads like a personal anecdote rather than a business inquiry.
-
-**Problems:**
-- No professional greeting or context
-- Informal language ("Is this job legitimate? Should I take it?")
-- Missing professional context about who you're asking
-- No clear purpose or desired outcome stated
-
-## 2. CLARITY CHECK
-
-**Issue:** The call to action is unclear. You're asking for validation but haven't specified what kind ...
-[22:57:50.216] [--] 
------ METAGPT INTERNAL LOGS ---------------------------------------
-[22:57:50.217] [..] [LOG] 2025-12-25 22:57:33.836 | INFO     | agents.registry:initialize:25 - 🕵️ Discovering agents...
-[22:57:50.218] [..] [LOG] 2025-12-25 22:57:33.972 | INFO     | agents.registry:initialize:59 - ✅ Registered 15 agents
-[22:57:50.220] [..] [LOG] 2025-12-25 22:57:34.611 | INFO     | agents.team:_init_team:112 - FlagPilot Team initialized with 15 specialist capabilities
-[22:57:50.221] [..] [LOG] 2025-12-25 22:57:34.612 | INFO     | agents.team:run:123 - Starting team task: 
-[22:57:50.223] [..] [LOG] 2025-12-25 22:57:34.612 | INFO     | agents.team:run:173 - Step 1: Orchestrator analyzing task...
-[22:57:50.225] [..] [LOG] 2025-12-25 22:57:34.612 | WARNING  | agents.roles.flagpilot_orchestrator:analyze:188 - 🚨 SCAM SIGNALS DETECTED: ['telegram', 'suspicious_contact_method_in_job_offer']
-[22:57:50.227] [..] [LOG] 2025-12-25 22:57:34.612 | INFO     | agents.team:run:237 - Step 2: Relevant agents identified: ['job-authenticator', 'payment-enforcer', 'talent-vet', 'communication-coach']
-[22:57:50.228] [..] [LOG] 2025-12-25 22:57:34.613 | INFO     | agents.team:run:240 - Step 3: Running specialist agents...
-[22:57:50.230] [..] [LOG] 2025-12-25 22:57:41.701 | WARNING  | metagpt.provider.openai_api:_calc_usage:244 - usage calculation failed: num_tokens_from_messages() is not implemented for model kwaipilot/kat-coder-pro:free. See https://cookbook.openai.com/examples/how_to_count_tokens_with_tiktoken for information on how messages are converted to tokens.
-[22:57:50.231] [..] [LOG] 2025-12-25 22:57:43.981 | WARNING  | metagpt.provider.openai_api:_calc_usage:244 - usage calculation failed: num_tokens_from_messages() is not implemented for model kwaipilot/kat-coder-pro:free. See https://cookbook.openai.com/examples/how_to_count_tokens_with_tiktoken for information on how messages are converted to tokens.
-[22:57:50.233] [..] [LOG] 2025-12-25 22:57:47.050 | WARNING  | metagpt.provider.openai_api:_calc_usage:244 - usage calculation failed: num_tokens_from_messages() is not implemented for model kwaipilot/kat-coder-pro:free. See https://cookbook.openai.com/examples/how_to_count_tokens_with_tiktoken for information on how messages are converted to tokens.
-[22:57:50.234] [..] [LOG] 2025-12-25 22:57:49.587 | WARNING  | metagpt.provider.openai_api:_calc_usage:244 - usage calculation failed: num_tokens_from_messages() is not implemented for model kwaipilot/kat-coder-pro:free. See https://cookbook.openai.com/examples/how_to_count_tokens_with_tiktoken for information on how messages are converted to tokens.
-[22:57:50.236] [..] [LOG] 2025-12-25 22:57:49.587 | WARNING  | agents.team:run:286 - 🚨 CRITICAL RISK SIGNAL received from job-authenticator
-[22:57:50.238] [..] [LOG] 2025-12-25 22:57:49.588 | WARNING  | agents.team:run:297 - 🚨 ABORTING MISSION: Critical Risks Detected.
-[22:57:50.240] [--] 
------ ANALYSIS RESULT ---------------------------------------------
-[22:57:50.242] [--] **MISSION ABORTED DUE TO CRITICAL RISKS**
-
-CRITICAL RISK detected by job-authenticator; SCAM WARNING from payment-enforcer
-
-Please review the warnings above immediately. Do not proceed.
-[22:57:50.244] [--] 
------ SCAM DETECTION VALIDATION -----------------------------------
-[22:57:50.246] [--]   ✅ identifies_scam
-[22:57:50.247] [--]   ✅ identifies_bank_risk
-[22:57:50.249] [--]   ✅ warns_payment_scheme
-[22:57:50.250] [--]   ✅ recommends_decline
-[22:57:50.252] [--] Scam Detection Score: 4/4
-[22:57:50.254] [OK] Scam detection scenario PASSED
-[22:57:50.261] [--] 
-[22:57:50.263] [--] ######################################################################
-[22:57:50.265] [--] #                   TEST 14: SCOPE CREEP DETECTION                   #
-[22:57:50.267] [--] ######################################################################
-[22:57:50.268] [--] 
-[22:57:50.270] [--] SCOPE CREEP SCENARIO:
-[22:57:50.272] [--] 
-        I'm a freelance web developer. Original contract was for:
-        - 5-page WordPress website
-        - Contact form
-        - Basic SEO setup
-        - Price: $2,500, timeline: 2 weeks
-        
-        After delivering, the client says:
-        "Great work! But can you also quickly add:
-        - E-commerce with 50 products
-        - Customer login system
-        - Newsletter integration  
-        - Mobile app version
-        - 'It should only take a few hours since you already know the project'"
-        
-        They're refusing to pay the original invoice until these are done.
-        
-        How should I handle this? Give me a professional response.
-        
-[22:57:50.302] [--] 
-Sending to LLM for analysis...
-[22:58:00.352] [--] 
------ LLM RESPONSE ------------------------------------------------
-[22:58:00.354] [--] Here's a professional response that protects your rights while maintaining a good relationship:
+### Resources
+- FTC: reportfraud.ftc.gov
+- FBI IC3: ic3.gov
+- Your bank's fraud department
 
 ---
+⛔ **DO NOT PROCEED with this opportunity.** This is a confirmed scam pattern designed to steal
+[16:32:17.968] [OK] Scam correctly detected and flagged
+[16:32:17.972] [--] 
+[16:32:17.973] [--] ################################################################################
+[16:32:17.974] [--] #                   TEST 7: ORCHESTRATOR - CONTRACT ANALYSIS                   #
+[16:32:17.975] [--] ################################################################################
+[16:32:17.977] [--] 
+[16:32:17.978] [--] Task: High-risk contract review
+[16:32:53.607] [--] Duration: 35.63s
+[16:32:53.610] [--] Agents used: ['contract-guardian', 'payment-enforcer', 'scope-sentinel', 'negotiation-assistant']
+[16:32:53.612] [--] 
+----- CONTRACT ANALYSIS -----------------------------------------------------
+[16:32:53.613] [--] # 🚨 Contract Review & Negotiation Guide
 
-**Subject: Project Completion and Additional Services**
+## ⚠️ CRITICAL WARNING
+This contract contains **multiple predatory clauses** that put you at severe financial risk. **DO NOT SIGN** without major revisions.
+
+## 🔍 Key Findings
+
+### Payment Structure (CRITICAL RISK)
+- **100% post-completion payment** - No financial protection
+- **No upfront deposit** - Zero cash flow protection
+- **90-day payment window** - Cash flow disaster
+- **No late fees** - No incentive for timely payment
+
+### Intellectual Property (CRITICAL RISK)
+- **IP transfers before payment** - Client gets rights without paying
+- **Removes your leverage** - No recourse if client doesn't pay
+
+### Termination Clause (CRITICAL RISK)
+- **24-hour termination with no payment** - Can lose all completed work
+- **No kill fee** - No protection against project cancellation
+
+### Scope Creep (HIGH RISK)
+- **Unlimited revisions** - Open-ended liability
+- **No scope boundaries** - Client can demand endless changes
+
+## 📋 Recommended Actions
+
+### 1. **Refuse Current Terms**
+- Do not sign the contract as written
+- Present counter-proposal with standard freelance terms
+
+### 2. **Negotiate Payment Terms**
+- Demand **50% upfront** before starting work
+- Set **50% due on delivery**
+- Reduce payment window to **14-30 days maximum**
+- Add **1.5% monthly late fees**
+
+### 3. **Protect IP Rights**
+- **IP transfer only after full payment received**
+- Never transfer rights before being paid
+
+### 4. **Limit Scope Creep**
+- Cap revisions at **3 rounds maximum**
+- Charge **$150/hour** for additional revisions
+- Define clear project scope
+
+### 5. **Add Termination Protection**
+- Require **pro-rata payment** for all work completed
+- Add **50% kill fee** for client-initiated termination
+- Remove 24-hour no-payment clause
+
+### 6. **Industry Standard Terms to Demand**
+- 50% upfront, 50% on delivery
+- IP transfer after payment
+- 14-30 day payment terms with late fees
+- 3 rounds of revisions maximum
+- Kill fee for client termination
+- Clear scope definit
+[16:32:53.614] [OK] Quality checks: 3/3
+[16:32:53.620] [--] 
+[16:32:53.621] [--] ################################################################################
+[16:32:53.623] [--] #                         TEST 8: ELASTICSEARCH MEMORY                         #
+[16:32:53.624] [--] ################################################################################
+[16:32:53.625] [--] 
+[16:32:53.988] [--] ES Cluster: ragflow-cluster
+[16:32:53.990] [--] ES Version: 9.0.2
+[16:32:53.992] [--] 
+----- PROFILE OPS -----------------------------------------------------------
+[16:32:54.168] [OK] Profile created: True
+[16:32:54.237] [--] Profile retrieved: test_1766766773
+[16:32:54.240] [OK] Elasticsearch Memory: OK
+[16:32:54.246] [--] 
+[16:32:54.248] [--] ################################################################################
+[16:32:54.250] [--] #                         TEST 9: RAGFLOW INTEGRATION                          #
+[16:32:54.252] [--] ################################################################################
+[16:32:54.255] [--] 
+[16:32:54.285] [??] RAGFlow not available: No module named 'ragflow_sdk'
+[16:32:54.302] [--] 
+[16:32:54.304] [--] ################################################################################
+[16:32:54.306] [--] #                         TEST 10: END-TO-END WORKFLOW                         #
+[16:32:54.307] [--] ################################################################################
+[16:32:54.309] [--] 
+[16:32:54.311] [--] Running complete analysis workflow...
+[16:33:18.039] [--] Total Duration: 23.73s
+[16:33:18.042] [--] Status: COMPLETED
+[16:33:18.044] [--] Risk Level: LOW
+[16:33:18.045] [--] Agents: ['contract-guardian', 'payment-enforcer', 'scope-sentinel', 'communication-coach']
+[16:33:18.046] [--] 
+----- FULL ANALYSIS ---------------------------------------------------------
+[16:33:18.048] [--] # Project Risk Assessment & Recommendations
+
+## 🚨 CRITICAL WARNING
+
+This project exhibits **multiple serious red flags** that indicate a high-risk, potentially exploitative client. All specialist agents strongly recommend **declining this project** unless the client agrees to completely renegotiate the terms.
+
+## Key Findings
+
+### Red Flags Identified
+- **No deposit required** - Removes client's financial commitment
+- **NDA before requirements** - Unusual practice that prevents scope assessment
+- **Unlimited revisions** - Scope-creep trap that can lead to unpaid work
+- **Previous developer failures** - Pattern suggests unrealistic expectations
+- **Fixed price without scope** - Dangerous for custom development work
+
+### Risk Assessment
+- **Payment Risk**: CRITICAL (No upfront payment)
+- **Scope Risk**: CRITICAL (Unlimited revisions)
+- **Client Risk**: HIGH (3 previous developer failures)
+- **Legal Risk**: MEDIUM (NDA before requirements)
+
+## Recommended Actions
+
+### 1. **Immediate Actio
+[16:33:18.049] [--] ns**
+- **Do not sign any agreements** until terms are renegotiated
+- **Refuse the NDA** until you see detailed project requirements
+- **Request explanation** for previous developer failures
+
+### 2. **If Client is Serious, Negotiate These Terms**
+- **40-50% deposit upfront** ($2,000-2,500)
+- **40% at major milestone** (design approval)
+- **20% upon completion**
+- **Maximum 3 rounds of revisions** per phase
+- **Detailed scope definition** before any work begins
+- **Weekly progress updates** and milestone reviews
+
+### 3. **Alternative Approach**
+- **Propose a smaller pilot project** ($500-1,000) to build trust
+- **Increase budget** to $8,000+ for 2-month timeline (market rate)
+- **Or significantly reduce scope** to fit $5,000 budget
+
+### 4. **If Client Refuses to Negotiate**
+- **Politely decline** the project
+- **Block the client** on Upwork to prevent future contact
+- **Document this interaction** in your client notes
+
+## Communication Templates
+
+### Template 1: Professional Decline
+```
+
+[16:33:18.050] [--] Subject: Project Collaboration - Payment Terms and Scope Discussion
 
 Hi [Client Name],
 
-Thank you for your feedback on the completed website. I'm glad you're pleased with the initial deliverables.
+Thank you for reaching out about your e-commerce project. I appreciate you considering me for this work.
 
-I want to clarify the scope of our original agreement. Our contract specifically covered:
-- 5-page WordPress website
-- Contact form implementation
-- Basic SEO setup
-- Total investment: $2,500
+After reviewing your proposal, I have some concerns about the terms that would make this project challenging for me to take on successfully. I've had excellent experiences working with clients who follow industry-standard practices, and I'd like to suggest a more collaborative approach:
 
-The website has been delivered according to these specifications and is ready for your use.
+**Current Concerns:**
+- No deposit makes it difficult to commit resources upfront
+- NDA before requirements prevents proper scope assessment
+- "Unlimited revisions" can lead to scope creep and unclear expectations
+- Fixed price without detailed requirements is risky for both parties
 
-Regarding the additional features you've requested (e-commerce functionality, customer login system, newsletter integration, and mobile app), these represent a significant expansion of the original project scope. These features would require:
+**My Standard Terms:**
+- 30% deposit to begin work
+- 40% at major milestone (e.g., design approval)
+- 30% upon completion
+- Clear scope defined in writing before starting
+- 2 rounds of revisions included, additional revisions at hou
+[16:33:18.052] [--] rly rate
+- Weekly progress updates and check-ins
 
-- Custom development and plugin integration
-- Product catalog setup and management
-- Database architecture changes
-- Additional testing and deployment
-- Estimated timeline: 40-60 hours of development work
+Would you be open to discussing a more structured approach? I'd be happy to review your requirements and provide a detailed proposal with clear deliverables and timelines.
 
-I'd be happy to provide a detailed proposal for these additional services. However, I must note that our original agreement is complete and the invoice for the delivered work is now due according to our payment terms.
-
-Would you like me to prepare a separate proposal for the additional features you'd like to implement?
+If these terms don't align with your expectations, I completely understand and wish you success finding a developer who can accommodate your needs.
 
 Best regards,
 [Your Name]
-
----
-
-**Key points this response covers:**
-
-1. **Acknowledges their satisfaction** with the delivered work
-2. **Clearly references the original scope** to establish boundaries
-3. **Explains why the new requests are separate work** (not "quick additions")
-4. **Provides a realistic time estimate** to counter their "few hours" assumption
-5. **Separates payment for completed work** from future discussions
-6. **Offers to help with additional work** through proper channels
-7. **Maintains professionalism** while being firm
-
-**Next steps if they continue to refuse payment:**
-- Send a formal invoice reminder
-- Consider sending a demand letter
-- Document all communications
-- Be prepared to escalate if necessary (small claims court, collections)
-
-Never feel pressured to do additional work for free, even if the client seems friendly or complimentary.
-[22:58:00.356] [..] 
-Duration: 10.05s
-[22:58:00.357] [--] 
------ SCOPE CREEP VALIDATION --------------------------------------
-[22:58:00.359] [--]   ✅ identifies_scope_creep
-[22:58:00.361] [--]   ✅ addresses_payment
-[22:58:00.362] [--]   ❌ suggests_change_order
-[22:58:00.364] [--]   ✅ provides_response
-[22:58:00.366] [--] Scope Creep Score: 3/4
-[22:58:00.367] [OK] Scope creep detection PASSED
-[22:58:00.373] [--] 
-[22:58:00.375] [--] ######################################################################
-[22:58:00.377] [--] #               TEST 15: GHOSTING PREVENTION SCENARIO                #
-[22:58:00.379] [--] ######################################################################
-[22:58:00.381] [--] 
-[22:58:00.394] [--] GHOSTING SCENARIO:
-[22:58:00.396] [--] 
-        I completed a $3,000 branding project 45 days ago:
-        - Delivered all files
-        - Client confirmed receipt
-        - Said "invoice approved, payment processing"
-        
-        Since then:
-        - 3 emails with no response
-        - 2 phone calls went to voicemail
-        - LinkedIn message was read but no reply
-        - Payment is now 30 days overdue
-        
-        The client is a small business, seemed legitimate initially.
-        
-        What are my escalation options? How do I get paid?
-        
-[22:58:00.398] [--] 
------ GETTING WISDOM FROM MEMORY ----------------------------------
-[22:58:00.406] [--] Found 3 relevant wisdom entries
-[22:58:00.436] [--] 
-Sending to LLM with wisdom context...
-[22:58:16.148] [--] 
------ GHOSTING PREVENTION ADVICE ----------------------------------
-[22:58:16.150] [--] I'm going to help you recover your $3,000 payment. Let me give you a comprehensive action plan with immediate steps and escalation strategies.
-
-## IMMEDIATE ACTIONS (Start Today)
-
-**1. Send a Certified Demand Letter**
-- Draft a final demand letter with 5-day payment deadline
-- Send via certified mail with return receipt
-- Email a copy simultaneously
-
-**2. Document Everything**
-- Compile all communications (emails, call logs, messages)
-- Gather contract/Agreement terms
-- Create timeline of deliverables and client acknowledgments
-
-## ESCALATION TIMELINE
-
-### 30-45 Days Past Due (NOW)
-- **Day 1**: Send final demand letter (template below)
-- **Day 3**: Follow up with concise email reminder
-- **Day 5**: Send "last chance" notice
-
-### 60 Days Past Due
-- **Small Claims Court filing** (if in your jurisdiction)
-- **Demand letter from attorney** (even if you can't afford representation, many lawyers will send one letter for $200-500)
-- **Credit reporting** (if client is a business)
-
-### 90 Days Past Due
-- **Formal legal action** or collections agency
-- **Public pressure** (professional networks, industry groups)
-
-## PROFESSIONAL BUT FIRM MESSAGE TEMPLATES
-
-### Template 1: Final Demand (Send Today)
 ```
-Subject: FINAL NOTICE: Payment Required Within 5 Days - [Project Name]
 
-Dear [Client Name],
+### Template 2: Direct Decline (if preferred)
+```
+Hi [Client Name],
 
-This is our final notice regarding the outstanding balance of $3,000.00 for the [Project Name] completed on [Date].
+I appreciate your interest, but I'm unable to accept projects with the terms you've outlined. The combination of no deposit, unlimited revisions, and undefined scope creates too much risk for me as a freelancer.
 
-Despite multiple attempts to contact you (emails on [Dates], calls on [Dates]), we have not received payment or communication regarding this matter.
+I work exclusively with clients who follow standard industry practices including deposits, defined scope, and reasonable revision limits. This approach ensures successful outcomes for both parties.
 
-**FINAL DEMAND**: Payment of $3,000.00 is due within 5 business days of this notice (by [Date]).
+If you're looking for a developer who can work under these terms, I wish you the best in finding someone suitable.
 
-If payment is not received by the deadline, we will have no choice but to pursue all available legal remedies, including but not limited to:
-- Filing in Small Claims Court
-- Reporting this delinquency to business credit agencies
-- Engaging a collections attorney
 
-We prefer to resolve this matter amicably and avoid additional costs and legal action.
-
-Please remit payment immediately via [Payment Method] or contact us to discuss resolution.
-
-Sincerely,
+[16:33:18.053] [--] Regards,
 [Your Name]
 ```
 
-### Template 2: 3-Day Follow-Up
-```
-Subject: URGENT: Payment Still Outstanding
+## Final Recommendation
 
-[Client Name],
+**DECLINE this project** unless the client agrees to completely standard professional terms. The combination of red flags strongly suggests this client is looking for someone to exploit rather than a professional partnership. Focus your energy on higher-quality leads that respect industry standards and professional boundaries.
 
-We sent our final demand on [Date]. To date, we have not received payment or any communication from you.
+**Trust your instincts** - if something feels off about the terms, it probably is. Your time and expertise are valuable, and you deserve clients who understand and respect that.
+[16:33:18.055] [--] 
+----- QUALITY ASSESSMENT ----------------------------------------------------
+[16:33:18.056] [OK]   risk_identified: PASS
+[16:33:18.057] [OK]   deposit_mentioned: PASS
+[16:33:18.058] [OK]   revisions_addressed: PASS
+[16:33:18.059] [OK]   actionable: PASS
+[16:33:18.060] [OK] 
+Overall Quality: 4/4
+[16:33:18.065] [--] 
+[16:33:18.066] [--] ################################################################################
+[16:33:18.067] [--] #                        TEST 11: GREETING & EDGE CASES                        #
+[16:33:18.069] [--] ################################################################################
+[16:33:18.070] [--] 
+[16:33:27.540] [--] Greeting test:
+[16:33:27.542] [--]   Status: COMPLETED
+[16:33:27.544] [--]   Agent outputs: 2
+[16:33:27.546] [OK]   Welcome message returned
+[16:33:27.548] [--] 
+----- EMPTY TASK ------------------------------------------------------------
+[16:33:45.793] [--]   Empty task handled: COMPLETED
 
-This is our final attempt to resolve this matter without legal action. Payment of $3,000.00 is due immediately.
-
-Please respond today with payment confirmation or a concrete payment plan.
-
-If we do not hear from you by end of business tomorrow, we will proceed with legal action.
-
-[Your Name]
-```
-
-## LEGAL OPTIONS
-
-### 1. Small Claims Court
-- **Filing fee**: Usually $30-100
-- **Maximum claim**: Varies by state (typically $5,000-10,000)
-- **Process**: Simple, no attorney required
-- **Timeline**: 30-90 days to hearing
-
-**What you'll need**:
-- Copy of contract/agreement
-- Invoice and proof of delivery
-- Communication records
-- Proof client received and approved work
-
-### 2. Collections Agency
-- **Fee**: 25-50% of recovered amount
-- **Use when**: You want to avoid court but need professional pressure
-- **Best for**: Cases where you want to preserve some business relationship
-
-### 3. Attorney Letter
-- **Cost**: $200-800 for demand letter
-- **Effectiveness**: High - many clients pay immediately upon attorney contact
-- **Next step**: If no response, attorney can file suit
-
-## CRITICAL NEXT STEPS
-
-**Today**:
-1. Send the final demand letter via certified mail
-2. Email the same content
-3. Document all your evidence
-
-**This Week**:
-1. If no response by Day 5, file in Small Claims Court
-2. Research your local court's online filing system
-3. Prepare your evidence packet
-
-**If Client Pays**:
-- Get payment in writing before resuming work
-- Require 50% upfront for future projects
-- Add stronger contract terms
-
-## PREVENTION FOR FUTURE PROJECTS
-
-**Contract Improvements**:
-- 50% upfront, 50% upon completion
-- Clear late fees (1.5% monthly)
-- Arbitration clause
-- Jurisdiction clause
-
-**Client Screening**:
-- Check reviews and references
-- Require deposit before starting
-- Use escrow services for larger projects
-
-**Payment Terms**:
-- Net 7 or Net 15 (not Net 30)
-- Multiple payment milestones for long projects
-- Clear consequences for late payment
-
-Would you like me to help you draft the specific demand letter with your client's details, or do you need guidance on filing in Small Claims Court in your area?
-[22:58:16.153] [--] 
------ GHOSTING PREVENTION VALIDATION ------------------------------
-[22:58:16.154] [--]   ✅ provides_escalation
-[22:58:16.157] [--]   ✅ mentions_collection
-[22:58:16.158] [--]   ✅ provides_template
-[22:58:16.160] [--]   ✅ professional_tone
-[22:58:16.161] [--] Ghosting Prevention Score: 4/4
-[22:58:16.163] [OK] Ghosting prevention scenario PASSED
-[22:58:16.169] [--] 
-[22:58:16.171] [--] ######################################################################
-[22:58:16.172] [--] #             TEST 16: CONTRACT NEGOTIATION WITH MEMORY              #
-[22:58:16.174] [--] ######################################################################
-[22:58:16.176] [--] 
-[22:58:16.191] [--] CONTRACT TERMS FOR NEGOTIATION:
-[22:58:16.193] [--] 
-        New client contract proposal for a $25,000 enterprise software project:
-        
-        PROBLEMATIC TERMS:
-        1. Payment: Net 90 after "full stakeholder approval"
-        2. IP: All work becomes client property immediately upon creation
-        3. Revisions: "Unlimited revisions until satisfaction"
-        4. Warranty: 2-year free maintenance and bug fixes
-        5. Liability: Developer liable for all business losses from software bugs
-        6. Termination: Client can terminate without payment if "unsatisfied"
-        7. Non-compete: Cannot work with competitors for 3 years
-        
-        I really want this project but these terms seem harsh.
-        What should I counter with? Give me specific negotiation language.
-        
-[22:58:16.217] [..] Saved query to chat history (session: 73952127...)
-[22:58:16.219] [--] 
------ GATHERING CONTEXT FROM MEMORY -------------------------------
-[22:58:16.229] [--] Contract wisdom: 5 entries
-[22:58:16.241] [--] Similar experiences: 5 found
-[22:58:16.279] [--] 
-Generating negotiation strategy...
-[22:58:35.353] [--] 
------ NEGOTIATION STRATEGY ----------------------------------------
-[22:58:35.355] [--] ## Risk Assessment & Counter-Proposal Strategy
-
-### 1. Payment: Net 90 after "full stakeholder approval"
-**Risk: HIGH** - Cash flow killer with vague approval criteria
-**Counter:**
-- 50% upfront, 40% upon milestone completion, 10% within 15 days of final delivery
-- Define "stakeholder approval" as written sign-off within 10 business days of delivery
-- Include late fees: 1.5% monthly interest on overdue payments
-
-### 2. IP: All work becomes client property immediately upon creation
-**Risk: MEDIUM** - Standard for custom work but timing matters
-**Counter:**
-- IP transfers upon full payment completion
-- Retain rights to pre-existing tools, frameworks, and reusable components
-- License for client use during development phase
-
-### 3. Revisions: "Unlimited revisions until satisfaction"
-**Risk: HIGH** - Scope creep nightmare
-**Counter:**
-- Include 3 rounds of revisions in base price
-- Additional revisions: $150/hour with 5-business-day turnaround
-- Define "satisfaction" as meeting agreed-upon specifications
-
-### 4. Warranty: 2-year free maintenance and bug fixes
-**Risk: HIGH** - Unsustainable for custom software
-**Counter:**
-- 90-day warranty covering critical bugs only
-- Post-warranty: $125/hour with priority response
-- Exclude issues from client modifications or third-party integrations
-
-### 5. Liability: Developer liable for all business losses from software bugs
-**Risk: HIGH** - Unlimited financial exposure
-**Counter:**
-- Limit liability to total contract value
-- Exclude consequential damages (lost profits, data, reputation)
-- Require client to maintain appropriate business insurance
-
-### 6. Termination: Client can terminate without payment if "unsatisfied"
-**Risk: HIGH** - No protection for work completed
-**Counter:**
-- Termination for convenience: pay for completed milestones + 20% of remaining contract
-- Termination for cause: only for material breach with 15-day cure period
-- Kill fee: 25% of remaining contract value for non-cause termination
-
-### 7. Non-compete: Cannot work with competitors for 3 years
-**Risk: MEDIUM** - Overly restrictive timeframe
-**Counter:**
-- 6-month non-compete limited to direct competitors in same industry
-- Exclude general skills, methodologies, and publicly available information
-- Geographic limitation to client's primary market area
-
-## Professional Counter-Offer Email Template
-
-Subject: Contract Terms Discussion - [Project Name]
-
-Dear [Client Name],
-
-Thank you for the opportunity to work on this exciting project. I've reviewed the proposed terms and have some suggestions to ensure a successful partnership for both parties.
-
-**Payment Terms:**
-I propose a milestone-based payment schedule: 50% upfront to begin development, 40% upon completion of the core functionality milestone, and the remaining 10% within 15 days of final delivery and written sign-off. This structure supports the significant development resources required while providing you with clear progress checkpoints.
-
-**Intellectual Property:**
-To protect both our interests, I suggest IP transfers upon full payment completion. This is standard practice that allows me to maintain security over the development process while ensuring you receive full ownership once the project is complete.
-
-**Project Scope & Revisions:**
-The base project includes 3 rounds of revisions to refine the deliverables. Additional revisions can be accommodated at $150/hour with a 5-business-day turnaround. This approach ensures we stay on schedule while maintaining flexibility for necessary adjustments.
-
-**Warranty & Support:**
-I propose a 90-day warranty covering critical bugs, followed by optional maintenance support at $125/hour. This balances quality assurance with sustainable long-term support.
-
-**Risk Management:**
-To ensure project stability, I suggest limiting liability to the total contract value and excluding consequential damages. For termination, I propose payment for completed work plus a reasonable fee for non-cause termination to cover sunk costs.
-
-**Non-Compete:**
-I recommend a 6-month limitation focused on direct competitors in your specific industry, which better aligns with standard industry practices.
-
-These terms reflect industry standards for projects of this scope and ensure I can dedicate the necessary resources to deliver exceptional results. I'm confident this structure will support a successful project outcome.
-
-Would you like to discuss these proposals? I'm available [your availability] for a call.
-
-Best regards,
-[Your Name]
-
-## Walk-Away Points (Non-Negotiable)
-
-**ABSOLUTE MUST-HAVES:**
-1. **Payment terms** - No Net 90, must have upfront payment and reasonable payment schedule
-2. **Liability cap** - Cannot accept unlimited liability; must be limited to contract value
-3. **Termination protection** - Must receive payment for completed work regardless of termination reason
-4. **Revision limits** - Cannot accept unlimited revisions; must have defined scope or hourly rate
-
-**FLEXIBLE BUT IMPORTANT:**
-- IP transfer timing (can negotiate 50% upfront, 50% at completion)
-- Warranty period (can negotiate 6 months vs 90 days)
-- Non-compete duration (can negotiate 12 months vs 6 months)
-
-**RED FLAGS - WALK AWAY IF:**
-- Client refuses any upfront payment
-- Client demands unlimited liability exposure
-- Client won't guarantee payment for completed work
-- Client insists on unlimited revisions without additional compensation
-
-The key is presenting these as standard industry practices that protect both parties, not as personal demands. Most reasonable clients will understand these are necessary for sustainable business operations.
-[22:58:35.357] [..] 
-Duration: 19.07s
-[22:58:35.458] [..] Saved response and experience to memory
-[22:58:35.461] [--] 
------ NEGOTIATION QUALITY VALIDATION ------------------------------
-[22:58:35.463] [--]   ✅ addresses_payment
-[22:58:35.466] [--]   ✅ addresses_ip
-[22:58:35.468] [--]   ✅ addresses_revisions
-[22:58:35.470] [--]   ✅ addresses_liability
-[22:58:35.472] [--]   ✅ provides_language
-[22:58:35.474] [--]   ✅ has_email_template
-[22:58:35.476] [--] 
-Negotiation Quality Score: 100% (6/6)
-[22:58:35.478] [OK] Contract negotiation with memory PASSED
-[22:58:35.484] [--] 
-[22:58:35.486] [--] ######################################################################
-[22:58:35.487] [--] #                  TEST 17: COPILOTKIT INTEGRATION                   #
-[22:58:35.489] [--] ######################################################################
-[22:58:35.491] [--] 
-[22:58:36.161] [--] 
------ GET /api/agents ---------------------------------------------
-[22:58:36.167] [--] Status Code: 200
-[22:58:36.169] [OK] Found 15 agents registered via CopilotKit/LangGraph
-[22:58:36.171] [..] Registered Agents:
-[22:58:36.173] [..]   - [contract-guardian] Analyzes legal contracts for risks and unfair clauses...
-[22:58:36.175] [..]   - [job-authenticator] Verifies job postings and detects scams...
-[22:58:36.176] [..]   - [scope-sentinel] Detects scope creep and project boundary violations...
-[22:58:36.178] [..]   - [payment-enforcer] Tracks payments and creates collection strategies...
-[22:58:36.179] [..]   - [dispute-mediator] Mediates conflicts between freelancers and clients...
-[22:58:36.181] [..]   - [communication-coach] Helps craft professional messages and proposals...
-[22:58:36.182] [..]   - [negotiation-assistant] Provides rate negotiation strategies and benchmarks...
-[22:58:36.184] [..]   - [profile-analyzer] Analyzes and optimizes freelancer profiles...
-[22:58:36.185] [..]   - [ghosting-shield] Detects client ghosting patterns and provides recovery...
-[22:58:36.187] [..]   - [risk-advisor] Provides overall risk assessment and mitigation...
-[22:58:36.189] [..]   - [talent-vet] Evaluates candidates and team members...
-[22:58:36.191] [..]   - [application-filter] Filters and prioritizes job applications...
-[22:58:36.192] [..]   - [feedback-loop] Learns from user interactions and improves...
-[22:58:36.194] [..]   - [planner-role] Plans and organizes complex workflows...
-[22:58:36.195] [..]   - [flagpilot-orchestrator] Coordinates all agents for complex tasks...
-[22:58:36.197] [--] 
------ GET /api/agents/contract-guardian ---------------------------
-[22:58:36.201] [OK] Agent Found: contract-guardian
-[22:58:36.203] [..] Description: Analyzes legal contracts for risks and unfair clauses
-[22:58:36.205] [..] Goal: Protect freelancers from unfair contracts
-[22:58:36.207] [OK] CopilotKit integration PASSED
-
-======================================================================
-  TEST SUITE COMPLETED: 2025-12-25T22:58:36.219175
-======================================================================
+================================================================================
+  COMPLETED: 2025-12-26T16:33:45.798398
+================================================================================

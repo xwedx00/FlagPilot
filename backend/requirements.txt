@@ -1,5 +1,6 @@
-# Combined requirements (for backwards compatibility)
-# Points to individual requirement files
+# FlagPilot Backend Requirements
+# ===============================
+# Single unified requirements file
 
 -r requirements-core.txt
--r requirements-copilotkit.txt
+-r requirements-ragflow.txt

@@ -1,18 +1,19 @@
 """
-FlagPilot LangGraph Workflow
-============================
-Wraps MetaGPT agents in a LangGraph workflow for CopilotKit integration.
+FlagPilot LangGraph Workflow for CopilotKit
+============================================
+Wraps the multi-agent orchestrator in a CopilotKit-compatible workflow.
 
-The workflow:
-1. Receives user task from CopilotKit
-2. Runs FlagPilotTeam orchestration (MetaGPT)
-3. Emits progress updates via CopilotKit SDK
-4. Returns final synthesis
+Features:
+- Message extraction from CopilotKit
+- State emission via copilotkit_emit_state
+- Message streaming via copilotkit_emit_message
+- Proper exit signaling
 """
 
-from typing import TypedDict, Optional, Dict, Any, List, Annotated
+from typing import TypedDict, Optional, Dict, Any, Annotated, List
 from langgraph.graph import StateGraph, END
 from langgraph.graph.message import add_messages
+from langgraph.checkpoint.memory import MemorySaver
 from loguru import logger
 
 # CopilotKit LangGraph SDK imports
@@ -23,7 +24,9 @@ try:
         copilotkit_exit,
         copilotkit_customize_config
     )
+    COPILOTKIT_AVAILABLE = True
 except ImportError:
+    COPILOTKIT_AVAILABLE = False
     # Fallback for environments without copilotkit
     async def copilotkit_emit_state(config, state):
         pass
@@ -36,7 +39,7 @@ except ImportError:
 
 
 class FlagPilotState(TypedDict):
-    """State schema for FlagPilot LangGraph workflow"""
+    """State schema for FlagPilot CopilotKit workflow"""
     # CopilotKit message history
     messages: Annotated[list, add_messages]
     
@@ -50,18 +53,18 @@ class FlagPilotState(TypedDict):
     agent_outputs: Dict[str, str]
     
     # Results
-    orchestrator_analysis: Optional[Dict[str, Any]]
     final_synthesis: Optional[str]
     risk_level: str
+    is_critical_risk: bool
     
     # Error handling
     error: Optional[str]
 
 
-async def extract_task_node(state: FlagPilotState, config) -> FlagPilotState:
+async def extract_task_node(state: FlagPilotState, config) -> Dict[str, Any]:
     """
-    Extract the task from incoming messages.
-    This is the entry point for CopilotKit messages.
+    Extract the task from incoming CopilotKit messages.
+    This is the entry point for the workflow.
     """
     logger.info("Extracting task from messages...")
     
@@ -78,7 +81,9 @@ async def extract_task_node(state: FlagPilotState, config) -> FlagPilotState:
             
         # Check if it's a user message
         role = getattr(msg, "role", None) or (msg.get("role") if isinstance(msg, dict) else None)
-        if role in ["user", "human"]:
+        msg_type = getattr(msg, "type", None) or (msg.get("type") if isinstance(msg, dict) else None)
+        
+        if role in ["user", "human"] or msg_type == "human":
             task = content
             break
     
@@ -89,70 +94,49 @@ async def extract_task_node(state: FlagPilotState, config) -> FlagPilotState:
     logger.info(f"Task extracted: {task[:100]}...")
     
     return {
-        **state,
         "task": task,
         "status": "task_extracted"
     }
 
 
-async def orchestrate_node(state: FlagPilotState, config) -> FlagPilotState:
+async def orchestrate_node(state: FlagPilotState, config) -> Dict[str, Any]:
     """
-    Main orchestration node - runs the FlagPilotTeam.
-    Uses isolated MetaGPT runner to avoid dependency conflicts.
+    Main orchestration node - runs the FlagPilot multi-agent team.
+    Uses the new LangGraph orchestrator directly.
     """
-    try:
-        from lib.runners.metagpt_runner import MetaGPTRunner
-    except ImportError:
-        logger.warning("MetaGPTRunner not available (dependency missing). Skipping orchestration.")
-        return {
-            **state,
-            "status": "error",
-            "error": "MetaGPT backend is currently disabled for debugging.",
-            "final_synthesis": "I am currently in maintenance mode (MetaGPT offline). Please check back later."
-        }
-
+    from agents.orchestrator import run_orchestrator
     
     task = state.get("task", "")
-    context = state.get("context", {})
+    context = state.get("context", {}) or {}
     
     if not task:
         logger.warning("No task provided to orchestrate")
         return {
-            **state,
             "status": "error",
             "error": "No task provided",
             "final_synthesis": "I didn't receive a message. How can I help you?"
         }
     
-    logger.info(f"Starting FlagPilot Team orchestration for: {task[:100]}...")
+    logger.info(f"Starting FlagPilot orchestration for: {task[:100]}...")
     
     try:
-        # Emit initial state
+        # Emit initial planning state
         await copilotkit_emit_state(config, {
             "status": "planning",
             "agents": [],
-            "current_agent": None,
+            "current_agent": "orchestrator",
             "risk_level": "none"
         })
         
-        # Emit planning status
-        await copilotkit_emit_state(config, {
-            "status": "executing",
-            "current_agent": "orchestrator"
-        })
-        
-        # Run the orchestration in isolated MetaGPT environment
-        result = await MetaGPTRunner.run_team(task=task, context=context)
+        # Run the orchestrator
+        result = await run_orchestrator(task=task, context=context)
         
         # Extract results
         agent_outputs = result.get("agent_outputs", {})
         final_synthesis = result.get("final_synthesis", "")
         status = result.get("status", "COMPLETED")
-        risk_level = result.get("risk_level", "none")
-        error = result.get("error")
-        
-        if error:
-            logger.warning(f"MetaGPT execution had error: {error}")
+        risk_level = result.get("risk_level", "LOW")
+        is_critical = result.get("is_critical_risk", False)
         
         # Emit progress for each agent that ran
         for agent_id in agent_outputs.keys():
@@ -175,13 +159,13 @@ async def orchestrate_node(state: FlagPilotState, config) -> FlagPilotState:
         logger.info(f"Orchestration complete. Status: {status}")
         
         return {
-            **state,
             "status": status,
             "agent_outputs": agent_outputs,
             "final_synthesis": final_synthesis,
             "risk_level": risk_level,
+            "is_critical_risk": is_critical,
             "current_agent": None,
-            "error": error
+            "error": None
         }
         
     except Exception as e:
@@ -194,14 +178,13 @@ async def orchestrate_node(state: FlagPilotState, config) -> FlagPilotState:
         })
         
         return {
-            **state,
             "status": "ERROR",
             "error": str(e),
             "final_synthesis": error_message
         }
 
 
-async def finalize_node(state: FlagPilotState, config) -> FlagPilotState:
+async def finalize_node(state: FlagPilotState, config) -> Dict[str, Any]:
     """
     Finalize the workflow and signal completion to CopilotKit.
     """
@@ -210,21 +193,7 @@ async def finalize_node(state: FlagPilotState, config) -> FlagPilotState:
     # Signal CopilotKit that the agent is done
     await copilotkit_exit(config)
     
-    return state
-
-
-def should_continue(state: FlagPilotState) -> str:
-    """Determine if we should continue or end the workflow."""
-    status = state.get("status", "")
-    error = state.get("error")
-    
-    if error or status in ["ERROR", "BLOCKED", "ABORTED_ON_RISK"]:
-        return "finalize"
-    
-    if status in ["COMPLETED", "COMPLETED_DIRECT", "WAITING_FOR_USER"]:
-        return "finalize"
-    
-    return "orchestrate"
+    return {}
 
 
 # Build the LangGraph workflow
@@ -243,5 +212,6 @@ workflow.add_edge("extract_task", "orchestrate")
 workflow.add_edge("orchestrate", "finalize")
 workflow.add_edge("finalize", END)
 
-# Compile the graph
-graph = workflow.compile()
+# Compile with memory saver for persistence
+memory = MemorySaver()
+graph = workflow.compile(checkpointer=memory)

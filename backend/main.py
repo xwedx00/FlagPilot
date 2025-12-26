@@ -1,14 +1,15 @@
 """
 FlagPilot Backend API
 ======================
-MetaGPT Agent Server with CopilotKit Integration
+LangGraph Multi-Agent Server with CopilotKit Integration
 
 Architecture:
-- Main environment: FastAPI + CopilotKit + LangGraph (latest versions)
-- MetaGPT environment: Isolated venv with MetaGPT 0.8.1 (executed via subprocess)
-
-This dual-venv approach resolves dependency conflicts between CopilotKit
-(requires OpenAI 1.52+) and MetaGPT 0.8.1 (requires OpenAI <1.52).
+- FastAPI web framework
+- LangGraph for multi-agent orchestration
+- CopilotKit for frontend integration
+- RAGFlow for knowledge retrieval
+- Elasticsearch for memory persistence
+- LangSmith for observability
 
 NOTE: Auth and chat persistence are handled by the frontend.
 """
@@ -31,14 +32,21 @@ os.makedirs("logs", exist_ok=True)
 # Configure logging
 logger.add("logs/Flagpilot.log", rotation="500 MB", level="INFO")
 
+# Configure LangSmith (if API key is set)
+from config import settings
+if settings.configure_langsmith():
+    logger.info("✅ LangSmith tracing enabled")
+else:
+    logger.info("ℹ️ LangSmith tracing disabled (no API key)")
+
 
 # =============================================================================
 # App Setup
 # =============================================================================
 app = FastAPI(
     title="FlagPilot Agent API",
-    description="MetaGPT multi-agent server with CopilotKit integration. 17 AI agents with team orchestration and RAGFlow.",
-    version="5.0.0",
+    description="LangGraph multi-agent server with CopilotKit integration. 14 AI agents with team orchestration and RAGFlow.",
+    version="6.0.0",
 )
 
 # CORS - Allow frontend origins
@@ -86,7 +94,7 @@ except Exception as e:
     logger.error(f"Failed to create debug endpoint: {e}")
 
 # =============================================================================
-# Legacy Routers (RAG, Health)
+# Routers
 # =============================================================================
 try:
     from routers import health
@@ -117,7 +125,7 @@ except ImportError:
 # Core Endpoints
 # =============================================================================
 
-# Agent list (static for when MetaGPT is isolated)
+# Agent list
 AVAILABLE_AGENTS = [
     "contract-guardian",
     "job-authenticator",
@@ -133,7 +141,6 @@ AVAILABLE_AGENTS = [
     "application-filter",
     "feedback-loop",
     "planner-role",
-    "flagpilot-orchestrator",
 ]
 
 
@@ -150,10 +157,10 @@ async def root():
     """API root - service information"""
     return {
         "name": "FlagPilot Agent API",
-        "version": "5.0.0",
-        "description": "MetaGPT multi-agent server with CopilotKit integration",
+        "version": "6.0.0",
+        "description": "LangGraph multi-agent server with CopilotKit integration",
         "agents": len(AVAILABLE_AGENTS),
-        "architecture": "Dual-venv (CopilotKit isolated from MetaGPT)",
+        "architecture": "LangGraph + CopilotKit",
         "docs": "/docs",
         "endpoints": {
             "copilotkit": "/copilotkit",
@@ -170,13 +177,14 @@ async def health_check():
     return HealthResponse(
         status="healthy",
         timestamp=datetime.utcnow().isoformat(),
-        version="5.0.0",
+        version="6.0.0",
         agents=AVAILABLE_AGENTS,
         features=[
-            "MetaGPT Team Orchestration (Isolated)",
+            "LangGraph Team Orchestration",
             "RAGFlow Integration",
             "CopilotKit Protocol Streaming",
-            "Dual-Venv Architecture",
+            "LangSmith Observability",
+            "Elasticsearch Memory",
         ]
     )
 

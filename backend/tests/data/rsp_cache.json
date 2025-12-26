@@ -1,5 +1,0 @@
-{
-    "_comment": "Response cache for reproducible LLM tests (MetaGPT pattern)",
-    "Hello": "Hello! How can I help you today?",
-    "analyze this contract": "Based on my analysis, I found the following key points: 1) The request appears valid. 2) No immediate risks detected. 3) Recommend proceeding with standard verification."
-}

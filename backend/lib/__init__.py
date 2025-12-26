@@ -1,13 +1,13 @@
 """
-FlagPilot Backend Library - Simplified
+FlagPilot Backend Library
+=========================
+Shared utilities and services.
 """
 
-from .redis_client import get_redis, init_redis, close_redis
-from .config import get_settings
+from lib.redis_client import get_redis, init_redis, close_redis
 
 __all__ = [
     "get_redis",
     "init_redis",
     "close_redis",
-    "get_settings",
 ]
