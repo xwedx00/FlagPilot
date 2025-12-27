@@ -9,10 +9,11 @@ Messages must be added to the state for CopilotKit to display them.
 
 from typing import TypedDict, Optional, Dict, Any, List
 from langgraph.graph import StateGraph, END
-from langgraph.checkpoint.memory import MemorySaver
 from langgraph.types import Command
 from langchain_core.messages import AIMessage, HumanMessage
 from loguru import logger
+
+from lib.persistence import get_checkpointer
 
 # CopilotKit State import for AG-UI compatibility
 try:
@@ -302,6 +303,6 @@ workflow.add_edge("orchestrate", "credit_deduct")
 workflow.add_edge("credit_deduct", "finalize")
 workflow.add_edge("finalize", END)
 
-# Compile with memory saver for persistence
-memory = MemorySaver()
-graph = workflow.compile(checkpointer=memory)
+# Compile with persistent checkpointer (PostgreSQL or fallback to memory)
+checkpointer = get_checkpointer()
+graph = workflow.compile(checkpointer=checkpointer)

@@ -9,9 +9,10 @@ from typing import Dict, Any, List, Optional, ClassVar
 from langchain_openai import ChatOpenAI
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langgraph.prebuilt import create_react_agent
-from langgraph.checkpoint.memory import MemorySaver
 from loguru import logger
 import json
+
+from lib.persistence import get_checkpointer
 
 
 # =============================================================================
@@ -38,7 +39,8 @@ class FlagPilotAgent:
         self._llm = llm
         self._tools = tools or []
         self._agent = None
-        self._memory = MemorySaver()
+        # Use shared PostgresCheckpointer for persistence across all agents
+        self._checkpointer = get_checkpointer()
     
     @property
     def llm(self) -> ChatOpenAI:
@@ -48,12 +50,12 @@ class FlagPilotAgent:
         return self._llm
     
     def _build_agent(self):
-        """Build the LangGraph agent"""
+        """Build the LangGraph agent with shared checkpointer"""
         if self._agent is None:
             self._agent = create_react_agent(
                 self.llm,
                 self._tools,
-                checkpointer=self._memory
+                checkpointer=self._checkpointer
             )
         return self._agent
     

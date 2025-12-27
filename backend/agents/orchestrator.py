@@ -12,13 +12,13 @@ Implements team orchestration using LangGraph with:
 from typing import TypedDict, Annotated, List, Dict, Any, Optional
 from langgraph.graph import StateGraph, END
 from langgraph.graph.message import add_messages
-from langgraph.checkpoint.memory import MemorySaver
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from loguru import logger
 import asyncio
 
 from config import settings
+from lib.persistence import get_checkpointer
 
 
 class OrchestratorState(TypedDict):
@@ -349,9 +349,9 @@ workflow.add_edge("plan", "execute")
 workflow.add_edge("execute", "synthesize")
 workflow.add_edge("synthesize", END)
 
-# Compile with memory
-memory_saver = MemorySaver()
-orchestrator_graph = workflow.compile(checkpointer=memory_saver)
+# Compile with persistent checkpointer (PostgreSQL or fallback to memory)
+checkpointer = get_checkpointer()
+orchestrator_graph = workflow.compile(checkpointer=checkpointer)
 
 
 async def run_orchestrator(task: str, context: Dict[str, Any] = None) -> Dict[str, Any]:
