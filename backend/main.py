@@ -66,32 +66,40 @@ app.add_middleware(
 )
 
 # =============================================================================
-# CopilotKit Integration (Primary)
+# CopilotKit Integration (AG-UI Protocol)
 # =============================================================================
 try:
-    from copilotkit.integrations.fastapi import add_fastapi_endpoint
-    from lib.copilotkit import sdk
+    from ag_ui_langgraph import add_langgraph_fastapi_endpoint
+    from lib.copilotkit.sdk import flagpilot_agent
 
-    # Add CopilotKit endpoint - this is the primary integration point for frontend
-    add_fastapi_endpoint(app, sdk, "/copilotkit")
-    logger.info("✅ CopilotKit endpoint registered at /copilotkit")
+    # Add AG-UI LangGraph endpoint - the new standard for CopilotKit
+    # This registers routes for /agents/{agent_name} and handles AG-UI streaming
+    add_langgraph_fastapi_endpoint(
+        app=app,
+        agent=flagpilot_agent,
+    )
+    logger.info("✅ CopilotKit AG-UI endpoint registered")
 except ImportError as e:
-    logger.warning(f"CopilotKit not available: {e}")
+    logger.warning(f"CopilotKit AG-UI not available: {e}")
+except Exception as e:
+    logger.error(f"CopilotKit AG-UI setup error: {e}")
 
 # =============================================================================
 # DEBUG: Agent Inspection Endpoint
 # =============================================================================
-try:
-    @app.get("/debug/agents")
-    async def debug_agents():
-        """Debug endpoint to list registered CopilotKit agents"""
+@app.get("/debug/agents")
+async def debug_agents():
+    """Debug endpoint to list registered CopilotKit agents"""
+    try:
+        from lib.copilotkit.sdk import flagpilot_agent
         return {
-            "agents": [a.name for a in sdk.agents],
-            "sdk_type": str(type(sdk)),
-            "agent_types": [str(type(a)) for a in sdk.agents]
+            "agents": [flagpilot_agent.name],
+            "agent_type": str(type(flagpilot_agent)),
+            "description": flagpilot_agent.description[:100] + "..."
         }
-except Exception as e:
-    logger.error(f"Failed to create debug endpoint: {e}")
+    except Exception as e:
+        return {"error": str(e)}
+
 
 # =============================================================================
 # Routers

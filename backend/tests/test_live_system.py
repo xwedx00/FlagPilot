@@ -947,8 +947,8 @@ class TestLiveSystemIntegration:
     
     @pytest.mark.asyncio
     async def test_20_copilotkit_integration(self):
-        """CopilotKit API endpoint availability"""
-        TestReporter.section("TEST 20: COPILOTKIT INTEGRATION")
+        """CopilotKit AG-UI endpoint availability"""
+        TestReporter.section("TEST 20: COPILOTKIT AG-UI INTEGRATION")
         
         import httpx
         
@@ -956,29 +956,50 @@ class TestLiveSystemIntegration:
         
         try:
             async with httpx.AsyncClient() as client:
+                # Check debug endpoint for AG-UI agent
+                TestReporter.subsection("GET /debug/agents (AG-UI)")
+                debug_resp = await client.get(f"{base_url}/debug/agents", timeout=10)
+                
+                if debug_resp.status_code == 200:
+                    data = debug_resp.json()
+                    TestReporter.log(f"Status Code: {debug_resp.status_code}")
+                    
+                    agents = data.get("agents", [])
+                    agent_type = data.get("agent_type", "")
+                    
+                    TestReporter.log(f"Registered Agents: {agents}", "SUCCESS")
+                    TestReporter.log(f"Agent Type: {agent_type}", "DEBUG")
+                    
+                    # Verify it's using AG-UI
+                    if "LangGraphAGUIAgent" in agent_type:
+                        TestReporter.log("✅ Using AG-UI protocol", "SUCCESS")
+                    else:
+                        TestReporter.log("⚠️ Not using AG-UI protocol", "WARNING")
+                else:
+                    TestReporter.log(f"Debug endpoint returned: {debug_resp.status_code}", "WARNING")
+                
+                # Check API agents list
                 TestReporter.subsection("GET /api/agents")
                 agents_resp = await client.get(f"{base_url}/api/agents", timeout=10)
                 
                 if agents_resp.status_code == 200:
                     data = agents_resp.json()
-                    TestReporter.log(f"Status Code: {agents_resp.status_code}")
-                    TestReporter.log(f"Found {data.get('count', 0)} agents registered", "SUCCESS")
-                    
-                    TestReporter.log("Registered Agents:", "DEBUG")
-                    for agent in data.get("agents", [])[:5]:
-                        TestReporter.log(f"  - [{agent['id']}] {agent['description'][:50]}...", "DEBUG")
+                    count = data.get("count", len(data.get("agents", [])))
+                    TestReporter.log(f"Found {count} specialist agents registered", "SUCCESS")
                 else:
-                    TestReporter.log(f"API returned status: {agents_resp.status_code}", "WARNING")
+                    TestReporter.log(f"API returned status: {agents_resp.status_code}", "DEBUG")
                 
-                TestReporter.subsection("GET /api/agents/contract-guardian")
-                detail_resp = await client.get(f"{base_url}/api/agents/contract-guardian", timeout=10)
+                # Check health endpoint
+                TestReporter.subsection("GET /health")
+                health_resp = await client.get(f"{base_url}/health", timeout=10)
                 
-                if detail_resp.status_code == 200:
-                    agent = detail_resp.json()
-                    TestReporter.log(f"Agent Found: {agent.get('id')}", "SUCCESS")
-                    TestReporter.log(f"Description: {agent.get('description')}", "DEBUG")
+                if health_resp.status_code == 200:
+                    health = health_resp.json()
+                    TestReporter.log(f"Status: {health.get('status')}", "SUCCESS")
+                    TestReporter.log(f"Version: {health.get('version')}", "DEBUG")
+                    TestReporter.log(f"Features: {health.get('features', [])[:3]}", "DEBUG")
                 
-                TestReporter.log("CopilotKit integration PASSED", "SUCCESS")
+                TestReporter.log("CopilotKit AG-UI integration PASSED", "SUCCESS")
                 
         except httpx.ConnectError:
             TestReporter.log("Server not running on localhost:8000 - SKIPPED", "WARNING")

@@ -1,10 +1,14 @@
 """
 CopilotKit Integration for FlagPilot
 =====================================
-LangGraph workflow for CopilotKit AG-UI protocol compatibility.
+Provides AG-UI protocol integration with LangGraph agents.
+
+Exports:
+- flagpilot_agent: The main LangGraph agent for CopilotKit
+- graph: The compiled LangGraph workflow
 """
 
-from .graph import graph, FlagPilotState
-from .sdk import sdk
+from .sdk import flagpilot_agent
+from .graph import graph
 
-__all__ = ["graph", "FlagPilotState", "sdk"]
+__all__ = ["flagpilot_agent", "graph"]

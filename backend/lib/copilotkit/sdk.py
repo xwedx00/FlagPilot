@@ -1,20 +1,19 @@
 """
-CopilotKit SDK Setup - LangGraph Integration
-=============================================
-Configures the CopilotKitRemoteEndpoint with FlagPilot agents.
+CopilotKit SDK Setup - LangGraph AG-UI Integration
+====================================================
+Configures the AG-UI endpoint with FlagPilot LangGraph agent.
 
-Uses LangGraphAgent for native LangGraph workflow integration.
+Uses the new AG-UI protocol for streaming agent state to the frontend.
+Documentation: https://docs.copilotkit.ai/langgraph
 """
 
-from copilotkit import CopilotKitRemoteEndpoint, LangGraphAgent
+from copilotkit import LangGraphAGUIAgent
 from .graph import graph
 
-# Create the CopilotKit SDK with FlagPilot LangGraph agent
-sdk = CopilotKitRemoteEndpoint(
-    agents=[
-        LangGraphAgent(
-            name="flagpilot_orchestrator",
-            description="""FlagPilot - AI-powered freelancer protection team.
+# Create the LangGraph AG-UI Agent
+flagpilot_agent = LangGraphAGUIAgent(
+    name="flagpilot_orchestrator",
+    description="""FlagPilot - AI-powered freelancer protection team.
 
 🛡️ **Capabilities:**
 • **Contract Analysis** - Review contracts for legal risks and unfair clauses
@@ -33,10 +32,8 @@ sdk = CopilotKitRemoteEndpoint(
 • RAG-enhanced knowledge base
 • Persistent memory across sessions
 • Fast-fail on critical risks (scams, fraud)""",
-            graph=graph,
-        )
-    ]
+    graph=graph,
 )
 
 # Log initialization
-print(f"[CopilotKit SDK] Initialized with agents: {[a.name for a in sdk.agents]}")
+print(f"[CopilotKit SDK] Initialized agent: {flagpilot_agent.name}")
