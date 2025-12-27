@@ -99,6 +99,58 @@ async def extract_task_node(state: FlagPilotState, config) -> Dict[str, Any]:
     }
 
 
+async def credit_check_node(state: FlagPilotState, config) -> Dict[str, Any]:
+    """
+    Credit check node - validates user has enough credits before running agents.
+    Returns error if insufficient credits.
+    """
+    from lib.billing.credits import credits_service
+    
+    # Get user_id from config
+    configurable = config.get("configurable", {})
+    user_id = configurable.get("user_id", "anonymous")
+    
+    if user_id == "anonymous":
+        logger.info("Anonymous user - skipping credit check")
+        return {"status": "credit_check_passed"}
+    
+    # Estimate agents that will be used
+    estimated_agents = ["orchestrator", "contract-guardian", "job-authenticator", "risk-advisor"]
+    
+    try:
+        check_result = await credits_service.check_credits(user_id, estimated_agents)
+        
+        if not check_result["allowed"]:
+            logger.warning(f"Credit check failed for {user_id}: {check_result['reason']}")
+            return {
+                "messages": [AIMessage(content=f"⚠️ {check_result['reason']}\n\nYour current balance: {check_result['balance']} credits.")],
+                "status": "CREDIT_ERROR",
+                "error": check_result["reason"],
+                "final_synthesis": check_result["reason"],
+            }
+        
+        logger.info(f"Credit check passed: cost={check_result['cost']}, balance={check_result['balance']}")
+        
+        # Store info for deduction
+        context = state.get("context", {}) or {}
+        context["_credit_cost"] = check_result["cost"]
+        context["_user_id"] = user_id
+        context["_agents_used"] = estimated_agents
+        
+        return {"status": "credit_check_passed", "context": context}
+        
+    except Exception as e:
+        logger.error(f"Credit check error: {e}")
+        return {"status": "credit_check_passed"}
+
+
+def should_continue_after_credit_check(state: FlagPilotState) -> str:
+    """Route based on credit check result."""
+    if state.get("status") == "CREDIT_ERROR":
+        return "finalize"  # Skip to finalize with error
+    return "orchestrate"
+
+
 async def orchestrate_node(state: FlagPilotState, config) -> Dict[str, Any]:
     """
     Main orchestration node - runs the FlagPilot multi-agent team.
@@ -191,20 +243,63 @@ async def finalize_node(state: FlagPilotState, config) -> Dict[str, Any]:
     return {}
 
 
+async def credit_deduct_node(state: FlagPilotState, config) -> Dict[str, Any]:
+    """
+    Deduct credits after successful orchestration.
+    Only deducts if orchestration was successful.
+    """
+    from lib.billing.credits import credits_service
+    
+    context = state.get("context", {}) or {}
+    user_id = context.get("_user_id")
+    agents_used = context.get("_agents_used", [])
+    status = state.get("status", "")
+    
+    # Skip deduction if no user or if there was an error
+    if not user_id or status in ["ERROR", "CREDIT_ERROR"]:
+        logger.info("Skipping credit deduction (no user or error state)")
+        return {}
+    
+    try:
+        result = await credits_service.deduct_credits(user_id, agents_used)
+        
+        if result["success"]:
+            logger.info(f"Credits deducted: user={user_id}, cost={result['cost']}, new_balance={result['new_balance']}")
+        else:
+            logger.warning(f"Credit deduction failed: {result.get('reason')}")
+            
+    except Exception as e:
+        logger.error(f"Credit deduction error: {e}")
+        # Don't fail the request for deduction errors
+    
+    return {}
+
+
 # Build the LangGraph workflow
 workflow = StateGraph(FlagPilotState)
 
 # Add nodes
 workflow.add_node("extract_task", extract_task_node)
+workflow.add_node("credit_check", credit_check_node)
 workflow.add_node("orchestrate", orchestrate_node)
+workflow.add_node("credit_deduct", credit_deduct_node)
 workflow.add_node("finalize", finalize_node)
 
 # Set entry point
 workflow.set_entry_point("extract_task")
 
-# Add edges
-workflow.add_edge("extract_task", "orchestrate")
-workflow.add_edge("orchestrate", "finalize")
+# Add edges with conditional routing
+workflow.add_edge("extract_task", "credit_check")
+workflow.add_conditional_edges(
+    "credit_check",
+    should_continue_after_credit_check,
+    {
+        "orchestrate": "orchestrate",
+        "finalize": "finalize",  # Skip to finalize on credit error
+    }
+)
+workflow.add_edge("orchestrate", "credit_deduct")
+workflow.add_edge("credit_deduct", "finalize")
 workflow.add_edge("finalize", END)
 
 # Compile with memory saver for persistence
