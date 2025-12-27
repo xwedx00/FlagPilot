@@ -207,14 +207,28 @@ I'm your AI-powered freelancer protection team. I can help you with:
     except Exception as e:
         logger.debug(f"Context injection skipped: {e}")
     
-    # Select agents
-    selected = identify_relevant_agents(task)
-    logger.info(f"📋 Selected agents: {selected}")
+    # 🧠 INTELLIGENT ROUTING: Use LLM to select agents (replaces naive keyword matching)
+    from agents.router import llm_route_agents
+    selected, reasoning, urgency = await llm_route_agents(task, context)
+    
+    logger.info(f"🧠 LLM Router selected: {selected} (urgency: {urgency})")
+    logger.debug(f"Routing reasoning: {reasoning}")
+    
+    # Elevate risk level based on urgency
+    risk_level = "LOW"
+    is_critical = False
+    if urgency == "critical":
+        risk_level = "CRITICAL"
+        is_critical = True
+    elif urgency == "high":
+        risk_level = "HIGH"
     
     return {
         "selected_agents": selected,
-        "context": context,
-        "status": "executing"
+        "context": {**context, "routing_reasoning": reasoning, "urgency": urgency},
+        "status": "executing",
+        "risk_level": risk_level,
+        "is_critical_risk": is_critical
     }
 
 

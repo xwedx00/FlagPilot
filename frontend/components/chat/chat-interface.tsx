@@ -26,9 +26,17 @@ import { MemoryPanel } from "@/components/chat/memory-panel";
 export function ChatInterface() {
     // Memory panel toggle
     const [showMemory, setShowMemory] = useState(false);
+    const [riskAlert, setRiskAlert] = useState<{ message: string; level: string } | null>(null);
 
-    // FlagPilot state hooks
-    const { agentState } = useFlagPilotActions();
+    // FlagPilot state hooks with UI callbacks
+    const { agentState } = useFlagPilotActions({
+        toggleMemoryPanel: () => setShowMemory(prev => !prev),
+        showRiskAlert: (message, level) => setRiskAlert({ message, level }),
+        exportChat: () => {
+            // TODO: Implement chat export
+            console.log("Chat export triggered by AI");
+        },
+    });
     const { state: coAgentState, isProcessing } = useFlagPilotState();
     useFlagPilotStateRenderer();
 
