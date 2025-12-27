@@ -2,9 +2,9 @@
 "use client";
 
 import { authClient } from "@/lib/auth-client";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Github, Loader2, AlertCircle } from "lucide-react";
+import { AnimatedButton } from "@/components/ui/animated-button";
+import { AnimatedCard, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/animated-card";
+import { Github, Loader2, AlertCircle, Shield } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -42,11 +42,14 @@ export default function SignIn() {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-zinc-50 dark:bg-zinc-950 p-4">
-            <Card className="w-full max-w-md">
+        <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-950 to-indigo-950 p-4">
+            <AnimatedCard className="w-full max-w-md bg-zinc-900/80 backdrop-blur-sm border-zinc-800">
                 <CardHeader className="text-center">
-                    <CardTitle>Welcome to FlagPilot</CardTitle>
-                    <CardDescription>Sign in to access your intelligent agent team</CardDescription>
+                    <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                        <Shield className="w-8 h-8 text-white" />
+                    </div>
+                    <CardTitle className="text-2xl text-white">Welcome to FlagPilot</CardTitle>
+                    <CardDescription className="text-zinc-400">Sign in to access your intelligent agent team</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {error && (
@@ -57,7 +60,7 @@ export default function SignIn() {
                         </Alert>
                     )}
 
-                    <Button
+                    <AnimatedButton
                         onClick={() => handleSignIn("github")}
                         className="w-full flex items-center gap-2"
                         variant="outline"
@@ -65,8 +68,8 @@ export default function SignIn() {
                     >
                         {loading ? <Loader2 className="animate-spin w-4 h-4" /> : <Github className="w-4 h-4" />}
                         Continue with GitHub
-                    </Button>
-                    <Button
+                    </AnimatedButton>
+                    <AnimatedButton
                         onClick={() => handleSignIn("google")}
                         className="w-full flex items-center gap-2"
                         variant="outline"
@@ -93,9 +96,9 @@ export default function SignIn() {
                             </svg>
                         )}
                         Continue with Google
-                    </Button>
+                    </AnimatedButton>
                 </CardContent>
-            </Card>
+            </AnimatedCard>
         </div>
     );
 }
