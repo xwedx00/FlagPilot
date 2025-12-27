@@ -3,46 +3,46 @@ FlagPilot LangGraph Workflow for CopilotKit
 ============================================
 Wraps the multi-agent orchestrator in a CopilotKit-compatible workflow.
 
-Features:
-- Message extraction from CopilotKit
-- State emission via copilotkit_emit_state
-- Message streaming via copilotkit_emit_message
-- Proper exit signaling
+Uses CopilotKitState for proper AG-UI integration.
+Messages must be added to the state for CopilotKit to display them.
 """
 
-from typing import TypedDict, Optional, Dict, Any, Annotated, List
+from typing import TypedDict, Optional, Dict, Any, List
 from langgraph.graph import StateGraph, END
-from langgraph.graph.message import add_messages
 from langgraph.checkpoint.memory import MemorySaver
+from langgraph.types import Command
+from langchain_core.messages import AIMessage, HumanMessage
 from loguru import logger
 
-# CopilotKit LangGraph SDK imports
+# CopilotKit State import for AG-UI compatibility
 try:
+    from copilotkit import CopilotKitState
     from copilotkit.langgraph import (
         copilotkit_emit_state,
         copilotkit_emit_message,
         copilotkit_exit,
-        copilotkit_customize_config
     )
     COPILOTKIT_AVAILABLE = True
 except ImportError:
     COPILOTKIT_AVAILABLE = False
     # Fallback for environments without copilotkit
+    class CopilotKitState(TypedDict):
+        messages: List
+    
     async def copilotkit_emit_state(config, state):
         pass
     async def copilotkit_emit_message(config, message):
         pass
     async def copilotkit_exit(config):
         pass
-    def copilotkit_customize_config(config, **kwargs):
-        return config
 
 
-class FlagPilotState(TypedDict):
-    """State schema for FlagPilot CopilotKit workflow"""
-    # CopilotKit message history
-    messages: Annotated[list, add_messages]
+class FlagPilotState(CopilotKitState):
+    """State schema for FlagPilot CopilotKit workflow
     
+    Inherits from CopilotKitState which provides the 'messages' field
+    that CopilotKit uses for the chat UI.
+    """
     # Task information
     task: str
     context: Optional[Dict[str, Any]]
@@ -71,19 +71,19 @@ async def extract_task_node(state: FlagPilotState, config) -> Dict[str, Any]:
     # Get the last user message as the task
     task = ""
     for msg in reversed(state.get("messages", [])):
-        # Handle different message formats
+        # Handle different message formats (LangChain Message objects)
         if hasattr(msg, "content"):
             content = msg.content
+            role = getattr(msg, "type", "")  # LangChain messages have 'type'
         elif isinstance(msg, dict):
             content = msg.get("content", "")
+            role = msg.get("role", msg.get("type", ""))
         else:
             content = str(msg)
+            role = ""
             
         # Check if it's a user message
-        role = getattr(msg, "role", None) or (msg.get("role") if isinstance(msg, dict) else None)
-        msg_type = getattr(msg, "type", None) or (msg.get("type") if isinstance(msg, dict) else None)
-        
-        if role in ["user", "human"] or msg_type == "human":
+        if role in ["user", "human"]:
             task = content
             break
     
@@ -102,7 +102,7 @@ async def extract_task_node(state: FlagPilotState, config) -> Dict[str, Any]:
 async def orchestrate_node(state: FlagPilotState, config) -> Dict[str, Any]:
     """
     Main orchestration node - runs the FlagPilot multi-agent team.
-    Uses the new LangGraph orchestrator directly.
+    Returns messages to be added to the chat.
     """
     from agents.orchestrator import run_orchestrator
     
@@ -111,7 +111,9 @@ async def orchestrate_node(state: FlagPilotState, config) -> Dict[str, Any]:
     
     if not task:
         logger.warning("No task provided to orchestrate")
+        # Return an AI message for the error
         return {
+            "messages": [AIMessage(content="I didn't receive a message. How can I help you?")],
             "status": "error",
             "error": "No task provided",
             "final_synthesis": "I didn't receive a message. How can I help you?"
@@ -123,7 +125,6 @@ async def orchestrate_node(state: FlagPilotState, config) -> Dict[str, Any]:
         # Emit initial planning state
         await copilotkit_emit_state(config, {
             "status": "planning",
-            "agents": [],
             "current_agent": "orchestrator",
             "risk_level": "none"
         })
@@ -138,13 +139,6 @@ async def orchestrate_node(state: FlagPilotState, config) -> Dict[str, Any]:
         risk_level = result.get("risk_level", "LOW")
         is_critical = result.get("is_critical_risk", False)
         
-        # Emit progress for each agent that ran
-        for agent_id in agent_outputs.keys():
-            await copilotkit_emit_state(config, {
-                "status": "agent_complete",
-                "current_agent": agent_id
-            })
-        
         # Emit final state
         await copilotkit_emit_state(config, {
             "status": "complete",
@@ -152,13 +146,12 @@ async def orchestrate_node(state: FlagPilotState, config) -> Dict[str, Any]:
             "risk_level": risk_level
         })
         
-        # Emit the final message
-        if final_synthesis:
-            await copilotkit_emit_message(config, final_synthesis)
-        
         logger.info(f"Orchestration complete. Status: {status}")
         
+        # IMPORTANT: Return the AI message in the messages array
+        # This is how CopilotKit receives the response
         return {
+            "messages": [AIMessage(content=final_synthesis)] if final_synthesis else [],
             "status": status,
             "agent_outputs": agent_outputs,
             "final_synthesis": final_synthesis,
@@ -177,7 +170,9 @@ async def orchestrate_node(state: FlagPilotState, config) -> Dict[str, Any]:
             "error": str(e)
         })
         
+        # Return error as AI message
         return {
+            "messages": [AIMessage(content=error_message)],
             "status": "ERROR",
             "error": str(e),
             "final_synthesis": error_message

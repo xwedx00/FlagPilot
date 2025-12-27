@@ -374,18 +374,22 @@ KNOWLEDGE SYSTEM:
     // ============================================
     // useCopilotChatSuggestions - Smart prompts
     // ============================================
-    useCopilotChatSuggestions({
-        instructions: `Based on FlagPilot's 17 specialized agents, suggest relevant actions:
-    - For new users: "Analyze a contract" or "Check a job for scams"
-    - If discussing a contract: suggest specific clause analysis
-    - If payment issues: suggest Payment Enforcer strategies
-    - If client communication: suggest Communication Coach
-    - If negotiating: suggest Negotiation Assistant tactics
-    - If ghosting: suggest Ghosting Shield follow-up
-    - If dispute: suggest Dispute Mediator guidance`,
-        minSuggestions: 2,
-        maxSuggestions: 4,
-    });
+    // DISABLED: Causes "Agent default not found" error with ExperimentalEmptyAdapter
+    // useCopilotChatSuggestions requires a direct LLM adapter to generate suggestions
+    // TODO: Re-enable when using OpenAIAdapter or similar
+    //
+    // useCopilotChatSuggestions({
+    //     instructions: `Based on FlagPilot's 17 specialized agents, suggest relevant actions:
+    //     - For new users: "Analyze a contract" or "Check a job for scams"
+    //     - If discussing a contract: suggest specific clause analysis
+    //     - If payment issues: suggest Payment Enforcer strategies
+    //     - If client communication: suggest Communication Coach
+    //     - If negotiating: suggest Negotiation Assistant tactics
+    //     - If ghosting: suggest Ghosting Shield follow-up
+    //     - If dispute: suggest Dispute Mediator guidance`,
+    //     minSuggestions: 2,
+    //     maxSuggestions: 4,
+    // });
 
     return {
         agentState,

@@ -13,7 +13,7 @@ import { NextRequest } from "next/server";
  * 
  * Architecture:
  * - Frontend: CopilotRuntime with LangGraphHttpAgent (AG-UI protocol)
- * - Backend: FastAPI with add_langgraph_fastapi_endpoint exposing flagpilot_orchestrator
+ * - Backend: FastAPI with add_langgraph_fastapi_endpoint at /copilotkit
  * 
  * Pattern from: https://github.com/CopilotKit/with-langgraph-fastapi
  */
@@ -21,14 +21,13 @@ import { NextRequest } from "next/server";
 // Use ExperimentalEmptyAdapter since the backend handles all LLM calls
 const serviceAdapter = new ExperimentalEmptyAdapter();
 
-// Backend URL for the AG-UI agent endpoint (root path, not /copilotkit)
-// AG-UI registers at the root of the FastAPI app
-const BACKEND_URL = process.env.BACKEND_COPILOT_URL || "http://127.0.0.1:8000";
+// Backend URL for the AG-UI agent endpoint
+const BACKEND_URL = process.env.BACKEND_COPILOT_URL || "http://127.0.0.1:8000/copilotkit";
 
 // Create the CopilotRuntime with LangGraphHttpAgent for AG-UI integration
+// Agent name must match the name in LangGraphAGUIAgent on backend
 const runtime = new CopilotRuntime({
     agents: {
-        // Agent name must match the name in LangGraphAGUIAgent on backend
         flagpilot_orchestrator: new LangGraphHttpAgent({
             url: BACKEND_URL,
         }),

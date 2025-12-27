@@ -72,13 +72,14 @@ try:
     from ag_ui_langgraph import add_langgraph_fastapi_endpoint
     from lib.copilotkit.sdk import flagpilot_agent
 
-    # Add AG-UI LangGraph endpoint - the new standard for CopilotKit
-    # This registers routes for /agents/{agent_name} and handles AG-UI streaming
+    # Add AG-UI LangGraph endpoint at /copilotkit path
+    # This registers routes for streaming and handles AG-UI protocol
     add_langgraph_fastapi_endpoint(
         app=app,
         agent=flagpilot_agent,
+        path="/copilotkit",
     )
-    logger.info("✅ CopilotKit AG-UI endpoint registered")
+    logger.info("✅ CopilotKit AG-UI endpoint registered at /copilotkit")
 except ImportError as e:
     logger.warning(f"CopilotKit AG-UI not available: {e}")
 except Exception as e:
