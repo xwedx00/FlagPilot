@@ -41,6 +41,9 @@ class Settings(BaseSettings):
     ES_HOST: str = "es01"
     ES_PORT: int = 9200
     
+    # PostgreSQL (State Persistence for LangGraph Checkpointer)
+    DATABASE_URL: Optional[str] = None
+    
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
