@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Brain, MessageSquare, Lightbulb, History, User, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
+import { Brain, MessageSquare, Lightbulb, History, User, ChevronDown, ChevronUp, Sparkles, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 /**
  * Memory Panel Types
@@ -289,15 +290,37 @@ export function MemoryPanel({ userId, isOpen = true, onToggle, className }: Memo
             {/* Content */}
             <div className="divide-y divide-zinc-200 dark:divide-zinc-700">
                 <CollapsibleSection title="Your Profile" icon={User} defaultOpen={true}>
-                    <ProfileCard profile={profile} />
+                    {loading ? (
+                        <div className="space-y-2">
+                            <Skeleton className="h-4 w-full" />
+                            <Skeleton className="h-4 w-3/4" />
+                        </div>
+                    ) : (
+                        <ProfileCard profile={profile} />
+                    )}
                 </CollapsibleSection>
 
                 <CollapsibleSection title="Recent Sessions" icon={History}>
-                    <SessionsList sessions={sessions} />
+                    {loading ? (
+                        <div className="space-y-2">
+                            <Skeleton className="h-12 w-full rounded-lg" />
+                            <Skeleton className="h-12 w-full rounded-lg" />
+                        </div>
+                    ) : (
+                        <SessionsList sessions={sessions} />
+                    )}
                 </CollapsibleSection>
 
                 <CollapsibleSection title="Global Wisdom" icon={Lightbulb} defaultOpen={true}>
-                    <WisdomList insights={wisdom} />
+                    {loading ? (
+                        <div className="space-y-2">
+                            <Skeleton className="h-16 w-full rounded-lg" />
+                            <Skeleton className="h-16 w-full rounded-lg" />
+                            <Skeleton className="h-16 w-full rounded-lg" />
+                        </div>
+                    ) : (
+                        <WisdomList insights={wisdom} />
+                    )}
                 </CollapsibleSection>
             </div>
         </div>
