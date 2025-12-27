@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Brain, MessageSquare, Lightbulb, History, User, ChevronDown, ChevronUp, Sparkles, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -145,11 +145,35 @@ function SessionsList({ sessions }: { sessions: ChatSession[] }) {
         </div>
     );
 }
-
 /**
- * Wisdom Insights List
+ * Wisdom Insights List with GSAP stagger animation
  */
 function WisdomList({ insights }: { insights: WisdomInsight[] }) {
+    const listRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!listRef.current || !insights || insights.length === 0) return;
+
+        // Dynamically import gsap to avoid SSR issues
+        import('gsap').then(({ gsap }) => {
+            const items = listRef.current?.querySelectorAll('.wisdom-item');
+            if (items && items.length > 0) {
+                gsap.fromTo(
+                    items,
+                    { opacity: 0, y: 15, scale: 0.98 },
+                    {
+                        opacity: 1,
+                        y: 0,
+                        scale: 1,
+                        duration: 0.4,
+                        stagger: 0.1,
+                        ease: "power2.out"
+                    }
+                );
+            }
+        });
+    }, [insights]);
+
     if (!insights || insights.length === 0) {
         return (
             <div className="text-sm text-zinc-500 dark:text-zinc-400 italic">
@@ -159,11 +183,11 @@ function WisdomList({ insights }: { insights: WisdomInsight[] }) {
     }
 
     return (
-        <div className="space-y-2">
+        <div ref={listRef} className="space-y-2">
             {insights.slice(0, 5).map((insight, idx) => (
                 <div
                     key={idx}
-                    className="p-3 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border border-amber-200 dark:border-amber-800/50"
+                    className="wisdom-item p-3 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/30 border border-amber-200 dark:border-amber-800/50 opacity-0"
                 >
                     <div className="flex items-start gap-2">
                         <Sparkles className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
