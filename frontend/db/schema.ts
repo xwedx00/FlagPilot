@@ -6,8 +6,13 @@ import {
     timestamp,
     boolean,
     uuid,
-    primaryKey
+    primaryKey,
+    pgEnum
 } from "drizzle-orm/pg-core";
+
+// --- Enums for SaaS features ---
+export const userRoleEnum = pgEnum("user_role", ["user", "pro", "enterprise", "admin"]);
+export const subscriptionTierEnum = pgEnum("subscription_tier", ["free", "starter", "professional", "enterprise"]);
 
 // --- Better Auth Schema ---
 
@@ -19,6 +24,23 @@ export const user = pgTable("user", {
     image: text("image"),
     createdAt: timestamp("createdAt").notNull(),
     updatedAt: timestamp("updatedAt").notNull(),
+
+    // SaaS Fields
+    role: userRoleEnum("role").default("user"),
+    subscriptionTier: subscriptionTierEnum("subscriptionTier").default("free"),
+    creditsBalance: integer("creditsBalance").default(100),
+    creditsUsedThisMonth: integer("creditsUsedThisMonth").default(0),
+    creditsResetAt: timestamp("creditsResetAt"),
+
+    // Billing
+    stripeCustomerId: text("stripeCustomerId"),
+    stripeSubscriptionId: text("stripeSubscriptionId"),
+    subscriptionStatus: text("subscriptionStatus"),
+    currentPeriodEnd: timestamp("currentPeriodEnd"),
+
+    // Usage tracking
+    totalAgentCalls: integer("totalAgentCalls").default(0),
+    lastAgentCallAt: timestamp("lastAgentCallAt"),
 });
 
 export const session = pgTable("session", {
