@@ -129,6 +129,12 @@ try:
 except ImportError:
     pass
 
+try:
+    from routers import memory
+    app.include_router(memory.router)  # /api/memory endpoints (wisdom, profile, sessions)
+except ImportError:
+    pass
+
 
 # =============================================================================
 # Core Endpoints

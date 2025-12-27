@@ -193,29 +193,77 @@ export function MemoryPanel({ userId, isOpen = true, onToggle, className }: Memo
     const [wisdom, setWisdom] = useState<WisdomInsight[]>([]);
     const [loading, setLoading] = useState(false);
 
-    // Placeholder data for demo - in production this would fetch from backend
+    // Fetch real data from backend API
     useEffect(() => {
-        // Simulated data - replace with actual API calls
-        setWisdom([
-            {
-                category: "contracts",
-                insight: "Always get a deposit before starting work - 30-50% upfront is standard.",
-                confidenceScore: 0.95,
-                sourceCount: 847,
-            },
-            {
-                category: "negotiation",
-                insight: "Anchor high in negotiations - your first number sets the range.",
-                confidenceScore: 0.88,
-                sourceCount: 523,
-            },
-            {
-                category: "scams",
-                insight: "Be wary of clients who want to move communication off-platform immediately.",
-                confidenceScore: 0.92,
-                sourceCount: 1204,
-            },
-        ]);
+        const fetchMemoryData = async () => {
+            setLoading(true);
+
+            try {
+                // Fetch global wisdom
+                const wisdomRes = await fetch(
+                    `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'}/api/memory/wisdom?limit=5`,
+                    { headers: { 'Content-Type': 'application/json' } }
+                );
+                if (wisdomRes.ok) {
+                    const wisdomData = await wisdomRes.json();
+                    setWisdom(wisdomData.map((w: any) => ({
+                        category: w.category,
+                        insight: w.insight,
+                        confidenceScore: w.confidence_score,
+                        sourceCount: w.source_count,
+                    })));
+                }
+
+                // Fetch user profile if userId provided
+                if (userId && userId !== "anonymous") {
+                    const profileRes = await fetch(
+                        `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'}/api/memory/profile`,
+                        {
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-User-ID': userId,
+                            }
+                        }
+                    );
+                    if (profileRes.ok) {
+                        const profileData = await profileRes.json();
+                        setProfile({
+                            userId: profileData.user_id,
+                            summary: profileData.summary,
+                            preferences: profileData.preferences || {},
+                            riskTolerance: profileData.risk_tolerance,
+                            lastUpdated: profileData.last_updated,
+                        });
+                    }
+
+                    // Fetch recent sessions
+                    const sessionsRes = await fetch(
+                        `${process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'}/api/memory/sessions?limit=5`,
+                        {
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-User-ID': userId,
+                            }
+                        }
+                    );
+                    if (sessionsRes.ok) {
+                        const sessionsData = await sessionsRes.json();
+                        setSessions(sessionsData.map((s: any) => ({
+                            sessionId: s.session_id,
+                            timestamp: s.timestamp,
+                            messageCount: s.message_count,
+                            preview: s.preview,
+                        })));
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch memory data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchMemoryData();
     }, [userId]);
 
     if (!isOpen) return null;
