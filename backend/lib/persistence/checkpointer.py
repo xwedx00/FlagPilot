@@ -36,8 +36,11 @@ class CheckpointerFactory:
         
         if database_url:
             try:
-                # Create PostgreSQL checkpointer
-                cls._instance = PostgresSaver.from_conn_string(database_url)
+                # PostgresSaver.from_conn_string() returns a context manager
+                # We need to enter the context to get the actual saver instance
+                context_manager = PostgresSaver.from_conn_string(database_url)
+                # Enter the context manager to get the actual PostgresSaver instance
+                cls._instance = context_manager.__enter__()
                 cls._instance.setup()  # Create tables if needed
                 logger.info("✅ PostgresCheckpointer initialized - state will persist!")
                 return cls._instance
