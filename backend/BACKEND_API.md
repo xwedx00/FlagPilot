@@ -1,8 +1,8 @@
-# FlagPilot Backend API Reference
+# FlagPilot Backend API Reference v6.1
 
 ## Overview
 
-FlagPilot Backend v6.0 is a **LangGraph-based multi-agent system** for freelancer protection, integrated with CopilotKit for frontend connectivity.
+FlagPilot Backend v6.1 is a **LangGraph-based multi-agent system** for freelancer protection, integrated with CopilotKit for frontend connectivity.
 
 **Base URL**: `http://localhost:8000`
 
@@ -19,9 +19,9 @@ Service information and available endpoints.
 ```json
 {
   "name": "FlagPilot Agent API",
-  "version": "6.0.0",
-  "agents": 14,
-  "architecture": "LangGraph + CopilotKit"
+  "version": "6.1.0",
+  "agents": 17,
+  "architecture": "LangGraph + CopilotKit + PostgresCheckpointer"
 }
 ```
 
@@ -32,9 +32,18 @@ Health check with feature list.
 ```json
 {
   "status": "healthy",
-  "version": "6.0.0",
+  "version": "6.1.0",
+  "timestamp": "2024-12-28T12:00:00Z",
   "agents": ["contract-guardian", "job-authenticator", ...],
-  "features": ["LangGraph Team Orchestration", "RAGFlow Integration", ...]
+  "features": [
+    "LangGraph Team Orchestration",
+    "CopilotKit AG-UI Streaming",
+    "AsyncPostgresSaver (State Persistence)",
+    "LLM Router (Semantic Agent Selection)",
+    "RAGFlow Integration",
+    "Elasticsearch Memory",
+    "LangSmith Observability"
+  ]
 }
 ```
 
@@ -50,7 +59,8 @@ Primary endpoint for CopilotKit AG-UI protocol.
 
 This endpoint handles:
 - Message extraction from CopilotKit
-- LangGraph orchestrator invocation
+- LLM Router for semantic agent selection
+- LangGraph orchestrator invocation with AsyncPostgresSaver
 - State emissions via `copilotkit_emit_state`
 - Message streaming via `copilotkit_emit_message`
 
@@ -59,7 +69,7 @@ This endpoint handles:
 ### Agent Metadata
 
 #### `GET /api/agents`
-List all available agents.
+List all available agents (17 total).
 
 **Response**:
 ```json
@@ -69,11 +79,12 @@ List all available agents.
       "id": "contract-guardian",
       "name": "Contract Guardian",
       "description": "Analyzes legal contracts for risks",
-      "profile": "Senior Legal AI Analyst"
+      "profile": "Senior Legal AI Analyst",
+      "credit_cost": 1
     },
     ...
   ],
-  "count": 14,
+  "count": 17,
   "framework": "LangGraph"
 }
 ```
@@ -81,16 +92,36 @@ List all available agents.
 #### `GET /api/agents/{agent_id}`
 Get details for a specific agent.
 
+---
+
+### Memory API (NEW in v6.1)
+
+#### `GET /api/memory/wisdom`
+Get global wisdom entries from Elasticsearch.
+
+**Query Parameters**:
+- `limit` (int): Max entries (default: 5)
+- `category` (string): Filter by category
+
 **Response**:
 ```json
 {
-  "id": "contract-guardian",
-  "name": "Contract Guardian",
-  "description": "Analyzes legal contracts for risks and unfair clauses",
-  "profile": "Senior Legal AI Analyst",
-  "goal": "Protect freelancers from unfair contracts"
+  "wisdom": [
+    {
+      "insight": "Always request a deposit before starting work",
+      "category": "contract",
+      "confidence": 0.9,
+      "tags": ["payment", "deposit"]
+    }
+  ]
 }
 ```
+
+#### `GET /api/memory/profile/{user_id}`
+Get user profile from Elasticsearch.
+
+#### `GET /api/memory/sessions/{user_id}`
+Get recent chat sessions.
 
 ---
 
@@ -112,22 +143,8 @@ Ingest a document into the RAGFlow knowledge base.
 ```json
 {
   "success": true,
-  "document_id": "doc-456"
-}
-```
-
----
-
-### Debug
-
-#### `GET /debug/agents`
-Debug endpoint showing registered CopilotKit agents.
-
-**Response**:
-```json
-{
-  "agents": ["flagpilot_orchestrator"],
-  "agent_types": ["LangGraphAgent"]
+  "document_id": "doc-456",
+  "dataset_id": "ds-789"
 }
 ```
 
@@ -135,38 +152,61 @@ Debug endpoint showing registered CopilotKit agents.
 
 ## Agent Capabilities
 
-| Agent | Specialization |
-|-------|----------------|
-| contract-guardian | Legal contract analysis |
-| job-authenticator | Scam detection, job verification |
-| risk-advisor | Critical risk protocols (fast-fail) |
-| scope-sentinel | Scope creep detection |
-| payment-enforcer | Invoice collection |
-| negotiation-assistant | Rate negotiation |
-| communication-coach | Message drafting |
-| dispute-mediator | Conflict resolution |
-| ghosting-shield | Client recovery |
-| profile-analyzer | Client vetting |
-| talent-vet | Candidate evaluation |
-| application-filter | Application screening |
-| feedback-loop | Outcome learning |
-| planner-role | Task planning |
+| Agent | Specialization | Credit Cost |
+|-------|----------------|-------------|
+| contract-guardian | Legal contract analysis | 1 |
+| job-authenticator | Scam detection, job verification | 1 |
+| risk-advisor | Critical risk protocols (fast-fail) | 2 |
+| scope-sentinel | Scope creep detection | 1 |
+| payment-enforcer | Invoice collection | 1 |
+| negotiation-assistant | Rate negotiation | 1 |
+| communication-coach | Message drafting | 1 |
+| dispute-mediator | Conflict resolution | 1 |
+| ghosting-shield | Client recovery | 1 |
+| profile-analyzer | Client vetting | 1 |
+| talent-vet | Candidate evaluation | 1 |
+| application-filter | Application screening | 1 |
+| feedback-loop | Outcome learning | 0 |
+| planner-role | Task planning | 1 |
+| *+3 additional agents* | | |
 
 ---
 
-## Orchestration Flow
+## Orchestration Flow (v6.1)
 
 ```mermaid
 graph LR
     A[User Message] --> B[CopilotKit Endpoint]
-    B --> C[LangGraph Workflow]
+    B --> C[LLM Router]
     C --> D{Fast-Fail Check}
-    D -->|Scam| E[Risk Advisor]
+    D -->|Scam Signals| E[Risk Advisor]
     D -->|Safe| F[Agent Selection]
-    F --> G[Parallel Execution]
-    G --> H[Synthesis]
-    H --> I[Response]
+    C -->|Semantic Analysis| F
+    F --> G[Parallel Agent Execution]
+    G --> H[AsyncPostgresSaver]
+    H --> I[Synthesis]
+    I --> J[SSE Response]
 ```
+
+---
+
+## New in v6.1
+
+### LLM Router (`agents/router.py`)
+- Semantic task analysis using LLM
+- Confidence scoring for agent selection
+- Urgency detection (low/medium/high/critical)
+- Fallback to keyword matching on LLM failure
+
+### AsyncPostgresSaver
+- Async-compatible checkpointer for streaming
+- Tables: `checkpoints`, `checkpoint_blobs`, `checkpoint_writes`
+- Uses `langgraph.checkpoint.postgres.aio`
+
+### CopilotKit UI Actions
+- `toggleMemoryPanel`: Open/close memory panel
+- `showRiskAlert`: Display critical warnings
+- `exportChatHistory`: Trigger chat export
 
 ---
 
@@ -181,5 +221,6 @@ graph LR
 
 ## Version History
 
+- **v6.1.0** - Smart-Stack Edition (LLM Router, AsyncPostgresSaver, 17 agents)
 - **v6.0.0** - LangGraph architecture
 - **v5.x** - MetaGPT architecture (deprecated)
