@@ -1,14 +1,16 @@
 """
-FlagPilot Backend API
-======================
+FlagPilot Backend API v7.0
+==========================
 LangGraph Multi-Agent Server with CopilotKit Integration
 
 Architecture:
 - FastAPI web framework
 - LangGraph for multi-agent orchestration
 - CopilotKit for frontend integration
-- RAGFlow for knowledge retrieval
-- Elasticsearch for memory persistence
+- Qdrant for vector RAG
+- MinIO for file storage
+- Elasticsearch for memory/wisdom
+- PostgreSQL for LangGraph checkpoints
 - LangSmith for observability
 
 NOTE: Auth and chat persistence are handled by the frontend.
@@ -30,7 +32,7 @@ from loguru import logger
 os.makedirs("logs", exist_ok=True)
 
 # Configure logging
-logger.add("logs/Flagpilot.log", rotation="500 MB", level="INFO")
+logger.add("logs/flagpilot.log", rotation="500 MB", level="INFO")
 
 # Configure LangSmith (if API key is set)
 from config import settings
@@ -45,8 +47,8 @@ else:
 # =============================================================================
 app = FastAPI(
     title="FlagPilot Agent API",
-    description="LangGraph multi-agent server with CopilotKit integration. 14 AI agents with team orchestration and RAGFlow.",
-    version="6.0.0",
+    description="LangGraph multi-agent server with CopilotKit + Qdrant + MinIO. 17 AI agents with team orchestration.",
+    version="7.0.0",
 )
 
 # CORS - Allow frontend origins
@@ -57,7 +59,7 @@ app.add_middleware(
         "http://localhost:3000",
         "http://127.0.0.1",
         "http://127.0.0.1:3000",
-        "https://*.vercel.app",  # Vercel frontend
+        "https://*.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -72,8 +74,6 @@ try:
     from ag_ui_langgraph import add_langgraph_fastapi_endpoint
     from lib.copilotkit.sdk import flagpilot_agent
 
-    # Add AG-UI LangGraph endpoint at /copilotkit path
-    # This registers routes for streaming and handles AG-UI protocol
     add_langgraph_fastapi_endpoint(
         app=app,
         agent=flagpilot_agent,
@@ -107,31 +107,31 @@ async def debug_agents():
 # =============================================================================
 try:
     from routers import health
-    app.include_router(health.router)  # /health endpoints
+    app.include_router(health.router)
 except ImportError:
     pass
 
 try:
     from routers.agents import router as agents_router
-    app.include_router(agents_router)  # /api/agents endpoints
+    app.include_router(agents_router)
 except ImportError:
     pass
 
 try:
     from routers import rag
-    app.include_router(rag.router)  # /api/rag endpoints
+    app.include_router(rag.router)
 except ImportError:
     pass
 
 try:
     from routers import feedback
-    app.include_router(feedback.router)  # /api/v1/feedback endpoints
+    app.include_router(feedback.router)
 except ImportError:
     pass
 
 try:
     from routers import memory
-    app.include_router(memory.router)  # /api/memory endpoints (wisdom, profile, sessions)
+    app.include_router(memory.router)
 except ImportError:
     pass
 
@@ -140,7 +140,6 @@ except ImportError:
 # Core Endpoints
 # =============================================================================
 
-# Agent list
 AVAILABLE_AGENTS = [
     "contract-guardian",
     "job-authenticator",
@@ -172,15 +171,15 @@ async def root():
     """API root - service information"""
     return {
         "name": "FlagPilot Agent API",
-        "version": "6.0.0",
-        "description": "LangGraph multi-agent server with CopilotKit integration",
+        "version": "7.0.0",
+        "description": "LangGraph multi-agent server with CopilotKit + Qdrant + MinIO",
         "agents": len(AVAILABLE_AGENTS),
-        "architecture": "LangGraph + CopilotKit",
+        "architecture": "LangGraph + CopilotKit + Qdrant + PostgreSQL",
         "docs": "/docs",
         "endpoints": {
             "copilotkit": "/copilotkit",
             "agents": "/api/agents",
-            "rag": "/api/rag/search",
+            "rag": "/api/v1/rag",
             "health": "/health",
         }
     }
@@ -192,14 +191,16 @@ async def health_check():
     return HealthResponse(
         status="healthy",
         timestamp=datetime.utcnow().isoformat(),
-        version="6.0.0",
+        version="7.0.0",
         agents=AVAILABLE_AGENTS,
         features=[
             "LangGraph Team Orchestration",
-            "RAGFlow Integration",
+            "Qdrant Vector RAG",
+            "MinIO File Storage",
             "CopilotKit Protocol Streaming",
             "LangSmith Observability",
             "Elasticsearch Memory",
+            "PostgreSQL Checkpoints",
         ]
     )
 

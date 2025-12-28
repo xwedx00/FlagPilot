@@ -189,16 +189,18 @@ I'm your AI-powered freelancer protection team. I can help you with:
     
     # Inject RAG and memory context
     try:
-        from ragflow.client import get_ragflow_client
+        from lib.rag import get_rag_pipeline
         from lib.memory.manager import MemoryManager
         
         user_id = context.get("user_id") or context.get("id")
         if user_id:
-            client = get_ragflow_client()
-            rag_results = await client.search_user_context(user_id, task, limit=3)
-            if rag_results:
-                context["RAG_CONTEXT"] = "\n".join([r.get("content", "")[:300] for r in rag_results])
+            # Get RAG context from Qdrant
+            pipeline = get_rag_pipeline()
+            rag_docs = await pipeline.retrieve(task, k=3, user_id=user_id)
+            if rag_docs:
+                context["RAG_CONTEXT"] = pipeline.get_context_for_query(rag_docs, max_tokens=1000)
             
+            # Get user memory from Elasticsearch
             memory = MemoryManager()
             if memory.connected:
                 profile = await memory.get_user_profile(user_id)

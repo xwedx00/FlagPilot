@@ -1,6 +1,64 @@
-# FlagPilot Backend Requirements
-# ===============================
-# Single unified requirements file
+# FlagPilot Backend Requirements v7.0
+# =====================================
+# Production dependencies for LangGraph + Qdrant + MinIO
 
--r requirements-core.txt
--r requirements-ragflow.txt
+# ===========================================
+# Core Framework
+# ===========================================
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+python-multipart
+httpx
+
+# ===========================================
+# LangChain + LangGraph (Agent Framework)
+# ===========================================
+langchain
+langchain-core
+langchain-openai
+langchain-community
+langgraph
+
+# LangChain Text Splitters
+langchain-text-splitters
+
+# LangGraph PostgreSQL Checkpointer
+langgraph-checkpoint-postgres>=2.0.0
+psycopg[binary,pool]>=3.1.0
+asyncpg>=0.30.0
+
+# ===========================================
+# Qdrant (Vector Database)
+# ===========================================
+qdrant-client
+langchain-qdrant
+
+# ===========================================
+# MinIO (S3 File Storage)
+# ===========================================
+minio
+
+# ===========================================
+# Elasticsearch (Wisdom, Profiles, Chat)
+# ===========================================
+elasticsearch
+
+# ===========================================
+# Redis (Caching)
+# ===========================================
+redis
+
+# ===========================================
+# Utilities
+# ===========================================
+loguru
+python-dotenv
+tenacity
+
+# ===========================================
+# Testing
+# ===========================================
+pytest
+pytest-asyncio

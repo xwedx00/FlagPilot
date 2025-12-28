@@ -1,6 +1,6 @@
-# FlagPilot Backend - LangChain Architecture
-# ===========================================
-# Single unified Python environment with LangChain/LangGraph
+# FlagPilot Backend v7.0 - LangChain + Qdrant + MinIO
+# =====================================================
+# Production Python environment
 
 FROM python:3.11-slim-bookworm AS builder
 
@@ -13,14 +13,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements files
-COPY requirements-core.txt \
-    requirements-ragflow.txt \
-    ./
+# Copy requirements file
+COPY requirements.txt ./
 
 # Install all dependencies in single environment
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --prefer-binary -r requirements-core.txt -r requirements-ragflow.txt
+    pip install --prefer-binary -r requirements.txt
 
 # ============================================
 # Runtime Stage

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-FlagPilot Entry Point
-======================
+FlagPilot Entry Point v7.0
+===========================
 LangGraph multi-agent server with LangSmith observability.
 """
 
@@ -21,13 +21,16 @@ except ImportError:
 
 # Configure LangSmith tracing (must be done before importing LangChain)
 if settings.configure_langsmith():
-    print(f"[Bootstrap] LangSmith tracing enabled for project: {settings.LANGSMITH_PROJECT}")
+    print(f"[Bootstrap] LangSmith tracing enabled for project: {settings.langsmith_project}")
 else:
     print("[Bootstrap] LangSmith tracing disabled (no API key)")
 
 # Log configuration
-print(f"[Bootstrap] Model: {settings.OPENROUTER_MODEL}")
-print(f"[Bootstrap] OpenRouter API Key set: {bool(settings.OPENROUTER_API_KEY)}")
+print(f"[Bootstrap] Model: {settings.openrouter_model}")
+print(f"[Bootstrap] OpenRouter API Key set: {bool(settings.openrouter_api_key)}")
+print(f"[Bootstrap] Qdrant: {settings.qdrant_host}:{settings.qdrant_port}")
+print(f"[Bootstrap] Elasticsearch: {settings.es_url}")
+print(f"[Bootstrap] MinIO: {settings.minio_endpoint}")
 
 # =============================================================================
 # Run uvicorn server
