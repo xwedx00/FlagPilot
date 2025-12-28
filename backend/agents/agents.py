@@ -37,7 +37,16 @@ class FlagPilotAgent:
     
     def __init__(self, llm: Optional[ChatOpenAI] = None, tools: List = None):
         self._llm = llm
-        self._tools = tools or []
+        # Auto-load tools for this agent type
+        if tools is None:
+            try:
+                from lib.tools import get_tools_for_agent
+                self._tools = get_tools_for_agent(self.name)
+                logger.debug(f"Loaded {len(self._tools)} tools for {self.name}")
+            except ImportError:
+                self._tools = []
+        else:
+            self._tools = tools
         self._agent = None
         # Use shared PostgresCheckpointer for persistence across all agents
         self._checkpointer = get_checkpointer()
