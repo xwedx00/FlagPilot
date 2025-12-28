@@ -159,8 +159,8 @@ class QdrantStore:
             info = self._client.get_collection(settings.qdrant_collection)
             return {
                 "name": settings.qdrant_collection,
-                "vectors_count": info.vectors_count,
                 "points_count": info.points_count,
+                "indexed_vectors_count": getattr(info, 'indexed_vectors_count', info.points_count),
                 "status": info.status.value,
             }
         except Exception as e:

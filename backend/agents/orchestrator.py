@@ -206,6 +206,11 @@ I'm your AI-powered freelancer protection team. I can help you with:
                 profile = await memory.get_user_profile(user_id)
                 if profile.get("summary"):
                     context["USER_MEMORY"] = profile["summary"]
+                
+                # Get global wisdom for context enrichment
+                wisdom = await memory.get_global_wisdom(limit=3)
+                if wisdom:
+                    context["SHARED_WISDOM"] = "\n".join([w.get("insight", "") for w in wisdom if w.get("insight")])
     except Exception as e:
         logger.debug(f"Context injection skipped: {e}")
     

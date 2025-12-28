@@ -2,9 +2,10 @@
 RAG Router for FlagPilot v7.0
 =============================
 Document ingestion and retrieval using Qdrant + MinIO.
+Secured with auth middleware - all write operations require authentication.
 """
 
-from fastapi import APIRouter, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Depends
 from pydantic import BaseModel
 from typing import Optional, List
 from loguru import logger
@@ -12,6 +13,7 @@ from loguru import logger
 from lib.rag import get_rag_pipeline
 from lib.vectorstore import get_qdrant_store
 from lib.storage import get_minio_storage
+from lib.auth.middleware import require_auth, get_optional_user
 
 router = APIRouter(prefix="/api/v1/rag", tags=["RAG"])
 
@@ -50,7 +52,10 @@ class SearchResult(BaseModel):
 # ===========================================
 
 @router.post("/ingest/text")
-async def ingest_text(request: IngestTextRequest):
+async def ingest_text(
+    request: IngestTextRequest,
+    user_id: str = Depends(require_auth),
+):
     """
     Ingest plain text into the RAG system.
     Text is chunked and embedded into Qdrant.
@@ -60,7 +65,7 @@ async def ingest_text(request: IngestTextRequest):
         result = await pipeline.ingest_text(
             text=request.text,
             source=request.source,
-            user_id=request.user_id,
+            user_id=user_id,  # Use authenticated user
             metadata=request.metadata,
         )
         
@@ -81,7 +86,7 @@ async def ingest_text(request: IngestTextRequest):
 @router.post("/ingest/file")
 async def ingest_file(
     file: UploadFile = File(...),
-    user_id: Optional[str] = Form(None),
+    user_id: str = Depends(require_auth),
 ):
     """
     Ingest a file into the RAG system.
@@ -150,11 +155,15 @@ async def get_collection_info():
 
 
 @router.get("/files")
-async def list_files(prefix: str = "", user_id: Optional[str] = None):
-    """List files in MinIO storage"""
+async def list_files(
+    prefix: str = "",
+    user_id: str = Depends(require_auth),
+):
+    """List files in MinIO storage for authenticated user"""
     try:
         minio = get_minio_storage()
-        files = minio.list_files(prefix=prefix or (user_id + "/" if user_id else ""))
+        # Only list files in user's directory
+        files = minio.list_files(prefix=user_id + "/" if not prefix else prefix)
         return {"files": files}
     except Exception as e:
         logger.error(f"Failed to list files: {e}")
@@ -162,9 +171,17 @@ async def list_files(prefix: str = "", user_id: Optional[str] = None):
 
 
 @router.get("/files/{object_name:path}/url")
-async def get_file_url(object_name: str, expires: int = 3600):
-    """Get presigned URL for file download"""
+async def get_file_url(
+    object_name: str,
+    expires: int = 3600,
+    user_id: str = Depends(require_auth),
+):
+    """Get presigned URL for file download (must own file)"""
     try:
+        # Verify user owns this file
+        if not object_name.startswith(user_id + "/"):
+            raise HTTPException(status_code=403, detail="Access denied to this file")
+        
         minio = get_minio_storage()
         url = minio.get_presigned_url(object_name, expires=expires)
         return {"url": url}
