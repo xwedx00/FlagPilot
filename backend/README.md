@@ -1,181 +1,104 @@
-# FlagPilot Backend v7.0
+# FlagPilot Backend - Developer Handbook
+> **Technical Manual & Developer Guide** (v7.0)
 
-## Enterprise-Grade Multi-Agent Architecture
+## 🛠️ Setup Strategy
 
-AI-powered freelancer protection backend using **LangGraph** for multi-agent orchestration with **Qdrant** vector search and **MinIO** file storage.
+### 1. Environment Configuration
+The system relies heavily on environment variables defined in `config.py`.
+*   **Copy `.env.example` to `.env`**:
+    ```bash
+    cp .env.example .env
+    ```
+*   **Critical Variables**:
+    *   `OPENROUTER_API_KEY`: Mandatory for Agent & Router intelligence.
+    *   `DATABASE_URL`: Must point to Postgres.
+    *   `QDRANT_HOST`: Default is `qdrant` (Docker) or `localhost` (Local Dev).
 
----
-
-## ✨ What's New in v7.0
-
-| Feature | Description |
-|---------|-------------|
-| **Qdrant Vector DB** | Replaced RAGFlow with Qdrant for document embeddings |
-| **MinIO File Storage** | S3-compatible storage for contracts and documents |
-| **AsyncPostgresSaver** | Async-compatible checkpointer for CopilotKit streaming |
-| **LLM Router** | Semantic agent selection replacing keyword matching |
-| **14 Specialist Agents** | Streamlined agent roster |
-| **Fast-Fail Detection** | Programmatic scam signal detection before LLM calls |
-
----
-
-## 🏗️ Architecture Diagram
-
-```
-┌──────────────────────────────────────────────────────────────────────────────────┐
-│                        FLAGPILOT BACKEND v7.0                                    │
-├──────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                  │
-│  ┌────────────────────────────────────────────────────────────────────────────┐  │
-│  │                          API LAYER (FastAPI)                               │  │
-│  │  /copilotkit  │  /api/agents  │  /api/v1/rag  │  /health  │  /health/rag  │  │
-│  └────────────────────────────────────────────────────────────────────────────┘  │
-│                                      │                                           │
-│                                      ▼                                           │
-│  ┌────────────────────────────────────────────────────────────────────────────┐  │
-│  │                            LLM ROUTER                                      │  │
-│  │  Semantic Analysis → Confidence Scoring → Urgency Detection (low-critical) │  │
-│  └────────────────────────────────────────────────────────────────────────────┘  │
-│                                      │                                           │
-│                                      ▼                                           │
-│  ┌────────────────────────────────────────────────────────────────────────────┐  │
-│  │                      LANGGRAPH ORCHESTRATOR                                │  │
-│  │                                                                            │  │
-│  │     PLAN NODE  →  EXECUTE AGENTS (Parallel)  →  SYNTHESIZE NODE           │  │
-│  │                                                                            │  │
-│  │  ┌─────────────────────────────────────────────────────────────────────┐   │  │
-│  │  │                    14 SPECIALIST AGENTS                              │   │  │
-│  │  │  ⚖️ Contract Guardian  │  🔍 Job Authenticator  │  🚨 Risk Advisor   │   │  │
-│  │  │  🎯 Scope Sentinel     │  💰 Payment Enforcer   │  🤝 Negotiation    │   │  │
-│  │  │  💬 Communication      │  ⚔️ Dispute Mediator   │  👻 Ghosting Shield│   │  │
-│  │  │  📊 Profile Analyzer   │  + 4 more specialized agents               │   │  │
-│  │  └─────────────────────────────────────────────────────────────────────┘   │  │
-│  └────────────────────────────────────────────────────────────────────────────┘  │
-│                                      │                                           │
-│                                      ▼                                           │
-│  ┌────────────────────────────────────────────────────────────────────────────┐  │
-│  │                       PERSISTENCE LAYER                                    │  │
-│  │  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌────────┐ ┌────────┐ │  │
-│  │  │  PostgreSQL  │ │Elasticsearch │ │    Qdrant    │ │  MinIO │ │ Redis  │ │  │
-│  │  │  Checkpoints │ │   Wisdom     │ │  Embeddings  │ │  Files │ │ Cache  │ │  │
-│  │  │  LangGraph   │ │  Profiles    │ │  RAG Search  │ │  S3 API│ │        │ │  │
-│  │  └──────────────┘ └──────────────┘ └──────────────┘ └────────┘ └────────┘ │  │
-│  └────────────────────────────────────────────────────────────────────────────┘  │
-└──────────────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 📁 Directory Structure
-
-```
-backend/
-├── agents/                 # LangGraph agents
-│   ├── router.py           # LLM-based agent routing
-│   ├── orchestrator.py     # LangGraph workflow
-│   └── definitions/        # 14 agent definitions
-├── lib/
-│   ├── vectorstore/        # Qdrant integration
-│   │   └── qdrant_store.py
-│   ├── storage/            # MinIO integration  
-│   │   └── minio_client.py
-│   ├── rag/                # RAG pipeline
-│   │   └── pipeline.py
-│   ├── memory/             # Elasticsearch memory
-│   │   └── manager.py
-│   └── persistence.py      # PostgreSQL checkpointer
-├── routers/                # FastAPI routes
-│   ├── rag.py              # RAG endpoints
-│   ├── health.py           # Health checks
-│   └── agents.py           # Agent endpoints
-├── config.py               # Settings management
-├── main.py                 # FastAPI application
-└── requirements.txt        # Python dependencies
-```
-
----
-
-## 🔌 API Endpoints
-
-### Core
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/` | GET | API info and version |
-| `/health` | GET | Health status |
-| `/health/services` | GET | Individual service health |
-| `/copilotkit` | POST | CopilotKit AG-UI streaming |
-
-### RAG (Qdrant + MinIO)
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/v1/rag/ingest/text` | POST | Ingest text into Qdrant |
-| `/api/v1/rag/ingest/file` | POST | Upload file to MinIO + embed in Qdrant |
-| `/api/v1/rag/search` | POST | Semantic search in Qdrant |
-| `/api/v1/rag/collection/info` | GET | Qdrant collection stats |
-| `/api/v1/rag/files` | GET | List files in MinIO |
-
-### Agents
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/agents` | GET | List all agents |
-| `/api/agents/{id}` | GET | Get agent details |
-
----
-
-## 🧪 Testing
-
+### 2. Running the System
+**Option A: Full Docker (Production/Staging)**
+Spins up everything including the backend API.
 ```bash
-# Run full test suite (22 tests)
-docker exec Flagpilot-backend python -m pytest tests/test_live_system.py -v
+docker-compose up --build -d
+```
+*   **API**: `http://localhost:8000`
+*   **MinIO Console**: `http://localhost:9001`
 
-# View test output
-docker exec Flagpilot-backend cat test_live_output.txt
+**Option B: Hybrid Dev (Local Python + Docker Infra)**
+Best for development. Runs infra in Docker, backend on host for fast iterations.
+```bash
+# 1. Start Infrastructure
+docker-compose up -d redis postgres qdrant minio es01
+
+# 2. Install Dependencies (Use a venv)
+pip install -r requirements.txt
+
+# 3. Run Backend (Hot Reload)
+uvicorn main:app --reload
 ```
 
-### Test Categories
-| Category | Tests | Description |
-|----------|-------|-------------|
-| Environment & Health | 6 | Service connectivity |
-| Agent System | 3 | Agent registry & routing |
-| RAG (Qdrant + MinIO) | 2 | Document ingestion & search |
-| Orchestrator Scenarios | 6 | Full workflow tests |
-| Memory Operations | 4 | ES memory CRUD |
-| Integration | 1 | CopilotKit API |
+## 🗺️ Annotated Directory Map
 
----
+```text
+backend/
+├── main.py                     # App Entry Point. Configures CORS, CopilotKit, and Middleware.
+├── config.py                   # Pydantic Settings. DEFINES ALL DEFAULTS (e.g., chunk size, db urls).
+├── requirements.txt            # Prod dependencies. key: langgraph, qdrant-client, minio.
+├── agents/
+│   ├── agents.py               # DEFINES the 14 Agents (FlagPilotAgent class).
+│   ├── orchestrator.py         # LOGIC CORE. LangGraph StateGraph, Routing, & Synthesis nodes.
+│   └── router.py               # INTELLIGENCE. LLM-based routing logic + Scam Keyword checks.
+├── lib/
+│   ├── auth/                   # Middleware for JWT parsing (Frontend-driven).
+│   ├── rag/
+│   │   └── pipeline.py         # RAG Logic: MinIO Upload -> Text Split -> Qdrant Upsert.
+│   ├── vectorstore/
+│   │   └── qdrant_store.py     # Singleton Wrapper for QdrantClient + LangChain Store.
+│   ├── storage/
+│   │   └── minio_client.py     # Singleton Wrapper for MinIO file ops.
+│   ├── persistence/            # AsyncPostgresSaver implementation for LangGraph checkpoints.
+│   └── tools/                  # Auto-loaded tools for agents (Financial, Market, Legal).
+└── routers/
+    ├── agents.py               # Metadata endpoints (List agents).
+    ├── rag.py                  # RAG Endpoints (Ingest, Search).
+    └── health.py               # Deep health checks for all services.
 
-## ⚙️ Configuration
+## 🔧 Critical Module Configuration
 
-### Required Environment Variables
-```env
-# LLM
-OPENROUTER_API_KEY=sk-or-v1-...
-OPENROUTER_MODEL=kwaipilot/kat-coder-pro:free
+### CopilotKit & LangGraph
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `OPENROUTER_API_KEY` | Logic intelligence (LLM) | ✅ Yes |
+| `DATABASE_URL` | Postgres connection for `AsyncPostgresSaver` checkpoints | ✅ Yes |
 
-# Database
-DATABASE_URL=postgresql://postgres:postgres@postgres:5432/flagpilot
+### Memory & Search
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `ES_HOST` | Elasticsearch Host (default: `es01`) | No (Fallback exists) |
+| `QDRANT_HOST` | Vector DB Host (default: `qdrant`) | ✅ Yes |
 
-# Qdrant
-QDRANT_HOST=qdrant
-QDRANT_PORT=6333
-QDRANT_COLLECTION=flagpilot_documents
+### Storage
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `MINIO_ENDPOINT` | Object Storage (default: `minio:9000`) | ✅ Yes |
+| `MINIO_Access_KEY` | MinIO User | ✅ Yes |
 
-# MinIO
-MINIO_ENDPOINT=minio:9000
-MINIO_ACCESS_KEY=minioadmin
-MINIO_SECRET_KEY=minioadmin
-MINIO_BUCKET=flagpilot-files
-
-# Elasticsearch
-ES_HOST=es01
-ES_PORT=9200
-
-# Redis
-REDIS_URL=redis://redis:6379
 ```
 
----
+## 🔧 Troubleshooting & Logic Notes
 
-## 📄 License
+### Common Issues
+1.  **"Qdrant initialization failed"**:
+    *   **Cause**: The `flagpilot_documents` collection logic in `qdrant_store.py` tries to create the collection on startup. If Qdrant is not healthy, the app crashes.
+    *   **Fix**: Ensure `docker-compose up qdrant` is healthy before starting the backend.
+2.  **"MinIO Connection Refused"**:
+    *   **Cause**: `minio_client.py` connects to `minio:9000` by default. If running locally, set `MINIO_ENDPOINT=localhost:9000`.
+3.  **"LLM Routing Failed"**:
+    *   **Fallback**: If OpenRouter fails, `agents/router.py` catches the exception and falls back to `fallback_keyword_route`. Check logs for "LLM routing failed".
 
-MIT License
+### Logic Quirks
+*   **Scam Detection**: Is **Hybrid**.
+    *   First, `detect_scam_signals` (regex/keywords) runs. If it hits, it **Bypasses** the LLM router and forces `risk-advisor`.
+*   **Context Injection**:
+    *   RAG Context (`k=3`) is *only* injected if `user_id` is present in the request.
+*   **Agent Concurrent Execution**:
+    *   Agents run in parallel via `asyncio.gather`. One slow agent will not block others, but synthesis waits for all.

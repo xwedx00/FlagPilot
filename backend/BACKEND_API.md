@@ -1,194 +1,79 @@
-# FlagPilot Backend API Reference v7.0
+# Backend API Reference (v7.0)
+**Logic-First Documentation**
 
-## Overview
+## 🧠 CopilotKit Protocol
+### `POST /copilotkit`
+**Security Headers**:
+*   `Authorization`: `Bearer <session_token>` (Validated against DB)
+*   `X-Copilot-Session-ID`: (Optional) For threading context.
 
-FlagPilot Backend v7.0 is a **LangGraph-based multi-agent system** for freelancer protection, integrated with CopilotKit, Qdrant vector search, and MinIO file storage.
+**Stream Format (SSE)**:
+The endpoint streams Server-Sent Events (SSE) representing graph updates:
+1.  `event: encoding` -> JSON defining State schema.
+2.  `event: chunk` -> Partial JSON patches for `messages` (token streaming).
+3.  `event: state` -> Full state snapshots (e.g., status updates).
 
-**Base URL**: `http://localhost:8000`
+**Logic Flow**:
+1.  **Handshake**: Establishes a connection with the frontend CopilotKit SDK.
+2.  **Graph Tunnel**: Instantiates the `orchestrator_graph` (`agents/orchestrator.py`).
+3.  **Execution**: Streaming response of LangGraph events (node starts, token stream, node ends).
+4.  **Persistence**: Uses the session ID to save/load checkpoints from PostgreSQL.
 
----
+## 📚 RAG & Data Endpoints (`routers/rag.py`)
 
-## Endpoints
+### `POST /api/v1/rag/ingest/text`
+**Internal Logic**:
+1.  **Auth**: Validates user via `require_auth` middleware.
+2.  **Chunking**: Splits text (size=1000, overlap=200).
+3.  **Embedding**: Calls OpenRouter/OpenAI for embeddings.
+4.  **Vector Store**: Upserts to Qdrant collection `flagpilot_documents`.
+5.  **Return**: Returns the number of chunks created.
 
-### Health & Status
-
-#### `GET /`
-Service information and available endpoints.
-
-**Response**:
+**Payload**:
 ```json
 {
-  "name": "FlagPilot Agent API",
-  "version": "7.0.0",
-  "agents": 14,
-  "architecture": "LangGraph + CopilotKit + Qdrant + PostgreSQL",
-  "endpoints": {
-    "copilotkit": "/copilotkit",
-    "agents": "/api/agents",
-    "rag": "/api/v1/rag",
-    "health": "/health"
-  }
+  "text": "The freelancer contract states...",
+  "source": "contract_v1.txt",
+  "metadata": {"type": "contract"}
 }
 ```
 
-#### `GET /health`
-Health check with feature list.
+### `POST /api/v1/rag/ingest/file`
+**Internal Logic**:
+1.  **MinIO Upload**: Streams file directly to MinIO bucket `flagpilot-files`.
+2.  **Read-Back**: Reads the file stream again for text extraction.
+3.  **Processing**: Decodes (UTF-8/Latin-1) -> Chunks -> Embeds -> Qdrant.
+4.  **Metadata**: Tags Qdrant vectors with the MinIO object path for linkage.
 
-**Response**:
+**Payload**: `multipart/form-data` with file field.
+
+### `POST /api/v1/rag/search`
+**Internal Logic**:
+1.  **Embed Query**: Converts query string to vector.
+2.  **Similarity Search**: Queries Qdrant for nearest neighbors (`k=5`).
+3.  **Score Filtering**: (Optional internal logic) Filters low-confidence results.
+4.  **Format**: Returns list of `SearchResult` objects including raw content and metadata.
+
+**Payload**:
 ```json
 {
-  "status": "healthy",
-  "version": "7.0.0",
-  "timestamp": "2024-12-28T12:00:00Z",
-  "agents": ["contract-guardian", "job-authenticator", ...],
-  "features": [
-    "LangGraph Team Orchestration",
-    "Qdrant Vector RAG",
-    "MinIO File Storage",
-    "CopilotKit Protocol Streaming",
-    "LangSmith Observability",
-    "Elasticsearch Memory",
-    "PostgreSQL Checkpoints"
-  ]
+  "query": "What are the payment terms?",
+  "k": 5
 }
 ```
 
-#### `GET /health/services`
-Individual service health status.
+## 🤖 Agent Metadata (`routers/agents.py`)
 
-**Response**:
-```json
-{
-  "redis": {"status": "healthy", "message": "Connected"},
-  "qdrant": {"status": "healthy", "message": "Connected, 1 collections"},
-  "elasticsearch": {"status": "healthy", "message": "Connected, version 9.2.3"},
-  "minio": {"status": "healthy", "message": "Connected, 1 buckets"},
-  "postgresql": {"status": "healthy", "message": "Connected"}
-}
-```
+### `GET /api/agents`
+**Logic**: Returns a static list of all 14 agents defined in `agents/agents.py`, including their specialized system prompts and credit costs.
 
-#### `GET /health/rag`
-RAG pipeline health (Qdrant + MinIO).
+## 🩺 System Health (`routers/health.py`)
 
----
-
-### CopilotKit Integration
-
-#### `POST /copilotkit`
-Primary endpoint for CopilotKit AG-UI protocol.
-
-**Request**: CopilotKit AG-UI message format
-**Response**: Server-Sent Events (SSE) stream
-
----
-
-### RAG Endpoints (Qdrant + MinIO)
-
-#### `POST /api/v1/rag/ingest/text`
-Ingest text content into Qdrant vector database.
-
-**Request**:
-```json
-{
-  "text": "Contract terms and conditions...",
-  "source": "contract_v1",
-  "user_id": "user123"
-}
-```
-
-**Response**:
-```json
-{
-  "success": true,
-  "chunk_count": 3,
-  "source": "contract_v1"
-}
-```
-
-#### `POST /api/v1/rag/ingest/file`
-Upload file to MinIO and embed content in Qdrant.
-
-**Request**: `multipart/form-data` with file
-**Response**:
-```json
-{
-  "success": true,
-  "object_name": "user123/contract.pdf",
-  "chunk_count": 5
-}
-```
-
-#### `POST /api/v1/rag/search`
-Semantic search in Qdrant.
-
-**Request**:
-```json
-{
-  "query": "payment terms for freelancers",
-  "k": 5,
-  "user_id": "user123"
-}
-```
-
-**Response**:
-```json
-{
-  "results": [
-    {"content": "...", "score": 0.92, "source": "contract_v1"},
-    {"content": "...", "score": 0.87, "source": "guide_v2"}
-  ]
-}
-```
-
-#### `GET /api/v1/rag/collection/info`
-Get Qdrant collection statistics.
-
-#### `GET /api/v1/rag/files`
-List files in MinIO bucket.
-
-#### `GET /api/v1/rag/files/{object_name}/url`
-Get presigned URL for file download.
-
----
-
-### Agent Endpoints
-
-#### `GET /api/agents`
-List all available agents.
-
-**Response**:
-```json
-{
-  "agents": [
-    {"id": "contract-guardian", "name": "Contract Guardian", "description": "..."},
-    {"id": "job-authenticator", "name": "Job Authenticator", "description": "..."}
-  ],
-  "count": 14
-}
-```
-
-#### `GET /api/agents/{agent_id}`
-Get specific agent details.
-
----
-
-## Authentication
-
-Currently no authentication required for local development.
-
----
-
-## Error Responses
-
-```json
-{
-  "detail": "Error message",
-  "status_code": 400
-}
-```
-
-| Code | Description |
-|------|-------------|
-| 400 | Bad Request |
-| 404 | Not Found |
-| 500 | Internal Server Error |
+### `GET /health/services`
+**Logic**: Performs active connectivity tests (not just a static 200 OK):
+1.  **Redis**: PINGS the instance.
+2.  **Qdrant**: Fetches collection list.
+3.  **Elasticsearch**: Checks cluster info.
+4.  **MinIO**: Lists buckets.
+5.  **Postgres**: Executes `SELECT version()`.
+**Return**: JSON object with individual status for each service.
