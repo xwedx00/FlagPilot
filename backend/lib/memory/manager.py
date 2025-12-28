@@ -32,8 +32,8 @@ class MemoryManager:
         Initialize the Memory Manager with Elasticsearch connection.
         Falls back gracefully if ES is unavailable.
         """
-        self.es_host = es_host or settings.ES_HOST
-        self.es_port = es_port or settings.ES_PORT
+        self.es_host = es_host or settings.es_host
+        self.es_port = es_port or settings.es_port
         self.es_url = f"http://{self.es_host}:{self.es_port}"
         self.connected = False
         self.client = None

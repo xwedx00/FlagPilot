@@ -95,3 +95,15 @@ class Settings(BaseSettings):
 
 # Global settings instance
 settings = Settings()
+
+
+def get_llm(temperature: float = 0.7, model: str = None):
+    """Factory function to create LangChain ChatOpenAI with OpenRouter"""
+    from langchain_openai import ChatOpenAI
+    
+    return ChatOpenAI(
+        model=model or settings.openrouter_model,
+        openai_api_key=settings.openrouter_api_key,
+        openai_api_base=settings.openrouter_base_url,
+        temperature=temperature,
+    )
