@@ -504,8 +504,8 @@ class MemoryManager:
             from config import settings
             
             client = AsyncOpenAI(
-                api_key=settings.OPENROUTER_API_KEY,
-                base_url=settings.OPENROUTER_BASE_URL
+                api_key=settings.openrouter_api_key,
+                base_url=settings.openrouter_base_url
             )
             
             prompt = f"""
@@ -526,7 +526,7 @@ Do not include sensitive PII.
 """
             
             response = await client.chat.completions.create(
-                model=settings.OPENROUTER_MODEL,
+                model=settings.openrouter_model,
                 messages=[
                     {"role": "system", "content": "You are a profile synthesis assistant. Create concise user profiles."},
                     {"role": "user", "content": prompt}

@@ -1,19 +1,20 @@
-# FlagPilot Backend v6.1 (Smart-Stack Edition)
+# FlagPilot Backend v7.0
 
 ## Enterprise-Grade Multi-Agent Architecture
 
-AI-powered freelancer protection backend using **LangGraph** for multi-agent orchestration with **CopilotKit** for frontend integration.
+AI-powered freelancer protection backend using **LangGraph** for multi-agent orchestration with **Qdrant** vector search and **MinIO** file storage.
 
 ---
 
-## ✨ What's New in v6.1
+## ✨ What's New in v7.0
 
 | Feature | Description |
 |---------|-------------|
+| **Qdrant Vector DB** | Replaced RAGFlow with Qdrant for document embeddings |
+| **MinIO File Storage** | S3-compatible storage for contracts and documents |
 | **AsyncPostgresSaver** | Async-compatible checkpointer for CopilotKit streaming |
 | **LLM Router** | Semantic agent selection replacing keyword matching |
-| **PostgresStore** | Cross-thread long-term memory for user preferences |
-| **17 Agents** | Expanded from 14 specialized protection agents |
+| **14 Specialist Agents** | Streamlined agent roster |
 | **Fast-Fail Detection** | Programmatic scam signal detection before LLM calls |
 
 ---
@@ -22,106 +23,44 @@ AI-powered freelancer protection backend using **LangGraph** for multi-agent orc
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────────┐
-│                        FLAGPILOT BACKEND v6.1                                    │
+│                        FLAGPILOT BACKEND v7.0                                    │
 ├──────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                  │
 │  ┌────────────────────────────────────────────────────────────────────────────┐  │
 │  │                          API LAYER (FastAPI)                               │  │
-│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │  │
-│  │  │ /copilotkit  │  │ /api/agents  │  │ /api/memory  │  │ /api/v1/rag  │   │  │
-│  │  │  AG-UI SSE   │  │  List/Get    │  │ Wisdom/Prof  │  │   Ingest     │   │  │
-│  │  └──────────────┘  └──────────────┘  └──────────────┘  └──────────────┘   │  │
+│  │  /copilotkit  │  /api/agents  │  /api/v1/rag  │  /health  │  /health/rag  │  │
 │  └────────────────────────────────────────────────────────────────────────────┘  │
 │                                      │                                           │
 │                                      ▼                                           │
 │  ┌────────────────────────────────────────────────────────────────────────────┐  │
 │  │                            LLM ROUTER                                      │  │
-│  │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────────────────┐ │  │
-│  │  │    Semantic     │  │   Confidence    │  │       Urgency Level         │ │  │
-│  │  │    Task         │  │     Scoring     │  │       Detection             │ │  │
-│  │  │    Analysis     │  │   per Agent     │  │  low / medium / high / crit │ │  │
-│  │  └─────────────────┘  └─────────────────┘  └─────────────────────────────┘ │  │
-│  │                              │                                             │  │
-│  │                              ▼                                             │  │
-│  │  ┌─────────────────────────────────────────────────────────────────────┐   │  │
-│  │  │              agent_ids: [contract-guardian, job-authenticator]       │   │  │
-│  │  │              confidence: 0.87  |  urgency: high                      │   │  │
-│  │  └─────────────────────────────────────────────────────────────────────┘   │  │
+│  │  Semantic Analysis → Confidence Scoring → Urgency Detection (low-critical) │  │
 │  └────────────────────────────────────────────────────────────────────────────┘  │
 │                                      │                                           │
 │                                      ▼                                           │
 │  ┌────────────────────────────────────────────────────────────────────────────┐  │
 │  │                      LANGGRAPH ORCHESTRATOR                                │  │
-│  │  ┌────────────────┐   ┌────────────────┐   ┌────────────────────────────┐ │  │
-│  │  │                │   │                │   │                            │ │  │
-│  │  │   PLAN NODE    │──▶│ EXECUTE AGENTS │──▶│      SYNTHESIZE NODE       │ │  │
-│  │  │                │   │   (Parallel)   │   │                            │ │  │
-│  │  │ • Fast-fail    │   │                │   │ • Combine agent outputs    │ │  │
-│  │  │ • Agent select │   │ • Run selected │   │ • Generate final response  │ │  │
-│  │  │ • Context prep │   │ • Collect data │   │ • Risk level synthesis     │ │  │
-│  │  │                │   │                │   │                            │ │  │
-│  │  └────────────────┘   └────────────────┘   └────────────────────────────┘ │  │
-│  │                              │                                             │  │
-│  │                              ▼                                             │  │
+│  │                                                                            │  │
+│  │     PLAN NODE  →  EXECUTE AGENTS (Parallel)  →  SYNTHESIZE NODE           │  │
+│  │                                                                            │  │
 │  │  ┌─────────────────────────────────────────────────────────────────────┐   │  │
-│  │  │                    17 SPECIALIST AGENTS                              │   │  │
-│  │  │                                                                       │   │  │
-│  │  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐    │   │  │
-│  │  │  │ ⚖️ Contract │ │ 🔍 Job      │ │ 🚨 Risk     │ │ 🎯 Scope    │    │   │  │
-│  │  │  │  Guardian   │ │  Authent.   │ │  Advisor    │ │  Sentinel   │    │   │  │
-│  │  │  │  Legal      │ │  Scam Det.  │ │  Fast-Fail  │ │  Creep Det. │    │   │  │
-│  │  │  └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘    │   │  │
-│  │  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐    │   │  │
-│  │  │  │ 💰 Payment  │ │ 🤝 Negot.   │ │ 💬 Comms    │ │ ⚔️ Dispute  │    │   │  │
-│  │  │  │  Enforcer   │ │  Assistant  │ │  Coach      │ │  Mediator   │    │   │  │
-│  │  │  │  Collection │ │  Rate/Value │ │  Messaging  │ │  Resolution │    │   │  │
-│  │  │  └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘    │   │  │
-│  │  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐    │   │  │
-│  │  │  │ 👻 Ghosting │ │ 📊 Profile  │ │ 🎓 Talent   │ │ 📝 App      │    │   │  │
-│  │  │  │  Shield     │ │  Analyzer   │ │  Vet        │ │  Filter     │    │   │  │
-│  │  │  │  Re-engage  │ │  Client Vet │ │  Evaluate   │ │  Screen     │    │   │  │
-│  │  │  └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘    │   │  │
-│  │  │  ┌─────────────┐ ┌─────────────┐ ┌───────────────────────────────┐  │   │  │
-│  │  │  │ 🔄 Feedback │ │ 📋 Planner  │ │    + 3 Additional Agents      │  │   │  │
-│  │  │  │  Loop       │ │  Role       │ │                               │  │   │  │
-│  │  │  │  Learning   │ │  Organize   │ │                               │  │   │  │
-│  │  │  └─────────────┘ └─────────────┘ └───────────────────────────────┘  │   │  │
-│  │  │                                                                       │   │  │
+│  │  │                    14 SPECIALIST AGENTS                              │   │  │
+│  │  │  ⚖️ Contract Guardian  │  🔍 Job Authenticator  │  🚨 Risk Advisor   │   │  │
+│  │  │  🎯 Scope Sentinel     │  💰 Payment Enforcer   │  🤝 Negotiation    │   │  │
+│  │  │  💬 Communication      │  ⚔️ Dispute Mediator   │  👻 Ghosting Shield│   │  │
+│  │  │  📊 Profile Analyzer   │  + 4 more specialized agents               │   │  │
 │  │  └─────────────────────────────────────────────────────────────────────┘   │  │
 │  └────────────────────────────────────────────────────────────────────────────┘  │
 │                                      │                                           │
 │                                      ▼                                           │
 │  ┌────────────────────────────────────────────────────────────────────────────┐  │
 │  │                       PERSISTENCE LAYER                                    │  │
-│  │  ┌──────────────────────┐  ┌──────────────────────┐  ┌─────────────────┐  │  │
-│  │  │      PostgreSQL      │  │    Elasticsearch     │  │      Redis      │  │  │
-│  │  │  ┌────────────────┐  │  │  ┌────────────────┐  │  │  ┌───────────┐  │  │  │
-│  │  │  │ AsyncPostgres  │  │  │  │ Global Wisdom  │  │  │  │ Session   │  │  │  │
-│  │  │  │ Saver          │  │  │  │ (5-star tips)  │  │  │  │ Cache     │  │  │  │
-│  │  │  ├────────────────┤  │  │  ├────────────────┤  │  │  ├───────────┤  │  │  │
-│  │  │  │ PostgresStore  │  │  │  │ User Profiles  │  │  │  │ Rate      │  │  │  │
-│  │  │  │ (Long-term)    │  │  │  │ (preferences)  │  │  │  │ Limiting  │  │  │  │
-│  │  │  ├────────────────┤  │  │  ├────────────────┤  │  │  │           │  │  │  │
-│  │  │  │ User Auth      │  │  │  │ Chat History   │  │  │  │           │  │  │  │
-│  │  │  │ (Drizzle)      │  │  │  │ (searchable)   │  │  │  │           │  │  │  │
-│  │  │  └────────────────┘  │  │  ├────────────────┤  │  │  └───────────┘  │  │  │
-│  │  │                      │  │  │ Experience     │  │  │                 │  │  │
-│  │  │                      │  │  │ Gallery        │  │  │                 │  │  │
-│  │  │                      │  │  └────────────────┘  │  │                 │  │  │
-│  │  └──────────────────────┘  └──────────────────────┘  └─────────────────┘  │  │
+│  │  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌────────┐ ┌────────┐ │  │
+│  │  │  PostgreSQL  │ │Elasticsearch │ │    Qdrant    │ │  MinIO │ │ Redis  │ │  │
+│  │  │  Checkpoints │ │   Wisdom     │ │  Embeddings  │ │  Files │ │ Cache  │ │  │
+│  │  │  LangGraph   │ │  Profiles    │ │  RAG Search  │ │  S3 API│ │        │ │  │
+│  │  └──────────────┘ └──────────────┘ └──────────────┘ └────────┘ └────────┘ │  │
 │  └────────────────────────────────────────────────────────────────────────────┘  │
-│                                      │                                           │
-│                                      ▼                                           │
-│  ┌────────────────────────────────────────────────────────────────────────────┐  │
-│  │                       EXTERNAL SERVICES                                    │  │
-│  │  ┌──────────────────────┐  ┌──────────────────────┐  ┌─────────────────┐  │  │
-│  │  │       RAGFlow        │  │      OpenRouter      │  │    LangSmith    │  │  │
-│  │  │  Document Upload     │  │  LLM API Gateway     │  │  Tracing        │  │  │
-│  │  │  Semantic Search     │  │  Claude/GPT-4/etc    │  │  Evaluation     │  │  │
-│  │  │  Knowledge Base      │  │  Rate Limiting       │  │  Debugging      │  │  │
-│  │  └──────────────────────┘  └──────────────────────┘  └─────────────────┘  │  │
-│  └────────────────────────────────────────────────────────────────────────────┘  │
-│                                                                                  │
 └──────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -131,159 +70,112 @@ AI-powered freelancer protection backend using **LangGraph** for multi-agent orc
 
 ```
 backend/
-├── agents/
-│   ├── __init__.py
-│   ├── agents.py              # Agent registry (17 agents)
-│   ├── orchestrator.py        # LangGraph orchestrator
-│   ├── router.py              # LLM-based agent selection (NEW)
-│   └── roles/                 # Individual agent definitions
-│
+├── agents/                 # LangGraph agents
+│   ├── router.py           # LLM-based agent routing
+│   ├── orchestrator.py     # LangGraph workflow
+│   └── definitions/        # 14 agent definitions
 ├── lib/
-│   ├── copilotkit/
-│   │   ├── graph.py           # LangGraph workflow definition
-│   │   └── sdk.py             # CopilotKit endpoint handler
-│   ├── persistence/           # (NEW in v6.1)
-│   │   ├── __init__.py
-│   │   ├── checkpointer.py    # AsyncPostgresSaver factory
-│   │   └── long_term_memory.py # PostgresStore wrapper
-│   ├── memory/
-│   │   └── manager.py         # Elasticsearch memory operations
-│   └── tools/
-│       └── rag_tool.py        # RAGFlow search utility
-│
-├── ragflow/
-│   └── client.py              # RAGFlow SDK wrapper
-│
-├── routers/
-│   ├── agents.py              # /api/agents endpoints
-│   ├── health.py              # /health endpoint
-│   ├── rag.py                 # /api/v1/rag endpoints
-│   └── memory.py              # /api/memory endpoints
-│
-├── tests/
-│   ├── test_live_system.py    # Full integration tests
-│   └── test_smart_stack.py    # Smart-Stack feature tests
-│
-├── config.py                  # Pydantic settings + LangSmith
-├── main.py                    # FastAPI application
-├── run.py                     # Entry point
-├── Dockerfile
-├── .env.example               # Environment template
-└── requirements-core.txt
+│   ├── vectorstore/        # Qdrant integration
+│   │   └── qdrant_store.py
+│   ├── storage/            # MinIO integration  
+│   │   └── minio_client.py
+│   ├── rag/                # RAG pipeline
+│   │   └── pipeline.py
+│   ├── memory/             # Elasticsearch memory
+│   │   └── manager.py
+│   └── persistence.py      # PostgreSQL checkpointer
+├── routers/                # FastAPI routes
+│   ├── rag.py              # RAG endpoints
+│   ├── health.py           # Health checks
+│   └── agents.py           # Agent endpoints
+├── config.py               # Settings management
+├── main.py                 # FastAPI application
+└── requirements.txt        # Python dependencies
 ```
 
 ---
 
-## 🔧 Technology Stack
+## 🔌 API Endpoints
 
-| Layer | Component | Technology |
-|-------|-----------|------------|
-| **API** | Web Framework | FastAPI |
-| **Agents** | Orchestration | LangGraph |
-| **Agents** | LLM Integration | LangChain |
-| **Routing** | Task Analysis | LLM Router (OpenRouter) |
-| **State** | Checkpointing | AsyncPostgresSaver |
-| **Memory** | Long-term | PostgresStore |
-| **Memory** | Searchable | Elasticsearch 9.0 |
-| **Cache** | Sessions | Redis |
-| **Knowledge** | RAG | RAGFlow |
-| **LLM** | Provider | OpenRouter (multi-model) |
-| **Observability** | Tracing | LangSmith |
-| **Container** | Runtime | Docker |
-
----
-
-## ⚙️ Environment Variables
-
-### Required
-
-```env
-OPENROUTER_API_KEY=sk-or-v1-your-key
-OPENROUTER_MODEL=kwaipilot/kat-coder-pro:free
-```
-
-### Database (Recommended)
-
-```env
-DATABASE_URL=postgresql://postgres:postgres@postgres:5432/flagpilot
-REDIS_URL=redis://:password@redis:6379
-ES_HOST=es01
-ES_PORT=9200
-```
-
-### Observability (Optional)
-
-```env
-LANGSMITH_API_KEY=lsv2_pt_your-key
-LANGSMITH_PROJECT=flagpilot
-```
-
-### RAG (Optional)
-
-```env
-RAGFLOW_URL=http://ragflow:80
-RAGFLOW_API_KEY=your-key
-```
-
----
-
-## 🚀 Quick Start
-
-```bash
-# With docker-compose
-docker-compose up -d backend
-
-# Or standalone
-docker build -t flagpilot-backend .
-docker run -p 8000:8000 --env-file .env flagpilot-backend
-
-# Run tests
-docker exec Flagpilot-backend python tests/test_smart_stack.py
-```
-
----
-
-## 📡 API Endpoints
-
+### Core
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/` | GET | Service info |
-| `/health` | GET | Health check with features |
-| `/copilotkit` | POST | CopilotKit AG-UI endpoint |
-| `/api/agents` | GET | List all agents (17) |
+| `/` | GET | API info and version |
+| `/health` | GET | Health status |
+| `/health/services` | GET | Individual service health |
+| `/copilotkit` | POST | CopilotKit AG-UI streaming |
+
+### RAG (Qdrant + MinIO)
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/v1/rag/ingest/text` | POST | Ingest text into Qdrant |
+| `/api/v1/rag/ingest/file` | POST | Upload file to MinIO + embed in Qdrant |
+| `/api/v1/rag/search` | POST | Semantic search in Qdrant |
+| `/api/v1/rag/collection/info` | GET | Qdrant collection stats |
+| `/api/v1/rag/files` | GET | List files in MinIO |
+
+### Agents
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/agents` | GET | List all agents |
 | `/api/agents/{id}` | GET | Get agent details |
-| `/api/memory/wisdom` | GET | Get global wisdom |
-| `/api/memory/profile/{user_id}` | GET | Get user profile |
-| `/api/memory/sessions/{user_id}` | GET | Get recent sessions |
-| `/api/v1/rag/ingest` | POST | Ingest document |
 
 ---
 
-## 🤖 Agent Capabilities
+## 🧪 Testing
 
-| Agent ID | Specialization | Credit Cost |
-|----------|----------------|-------------|
-| `contract-guardian` | Legal contract analysis | 1 |
-| `job-authenticator` | Scam detection (Fast-Fail) | 1 |
-| `risk-advisor` | Critical risk protocols | 2 |
-| `scope-sentinel` | Scope creep detection | 1 |
-| `payment-enforcer` | Invoice collection | 1 |
-| `negotiation-assistant` | Rate negotiation | 1 |
-| `communication-coach` | Message drafting | 1 |
-| `dispute-mediator` | Conflict resolution | 1 |
-| `ghosting-shield` | Client recovery | 1 |
-| `profile-analyzer` | Client vetting | 1 |
-| `talent-vet` | Candidate evaluation | 1 |
-| `application-filter` | Application screening | 1 |
-| `feedback-loop` | Outcome learning | 0 |
-| `planner-role` | Task planning | 1 |
+```bash
+# Run full test suite (22 tests)
+docker exec Flagpilot-backend python -m pytest tests/test_live_system.py -v
+
+# View test output
+docker exec Flagpilot-backend cat test_live_output.txt
+```
+
+### Test Categories
+| Category | Tests | Description |
+|----------|-------|-------------|
+| Environment & Health | 6 | Service connectivity |
+| Agent System | 3 | Agent registry & routing |
+| RAG (Qdrant + MinIO) | 2 | Document ingestion & search |
+| Orchestrator Scenarios | 6 | Full workflow tests |
+| Memory Operations | 4 | ES memory CRUD |
+| Integration | 1 | CopilotKit API |
 
 ---
 
-## 📊 Version History
+## ⚙️ Configuration
 
-| Version | Date | Changes |
-|---------|------|---------|
-| **v6.1.0** | Dec 2024 | AsyncPostgresSaver, LLM Router, 17 agents |
-| **v6.0.0** | Dec 2024 | LangGraph migration, LangSmith observability |
-| **v5.x** | Nov 2024 | MetaGPT architecture (deprecated) |
+### Required Environment Variables
+```env
+# LLM
+OPENROUTER_API_KEY=sk-or-v1-...
+OPENROUTER_MODEL=kwaipilot/kat-coder-pro:free
+
+# Database
+DATABASE_URL=postgresql://postgres:postgres@postgres:5432/flagpilot
+
+# Qdrant
+QDRANT_HOST=qdrant
+QDRANT_PORT=6333
+QDRANT_COLLECTION=flagpilot_documents
+
+# MinIO
+MINIO_ENDPOINT=minio:9000
+MINIO_ACCESS_KEY=minioadmin
+MINIO_SECRET_KEY=minioadmin
+MINIO_BUCKET=flagpilot-files
+
+# Elasticsearch
+ES_HOST=es01
+ES_PORT=9200
+
+# Redis
+REDIS_URL=redis://redis:6379
+```
+
+---
+
+## 📄 License
+
+MIT License

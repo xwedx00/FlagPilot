@@ -612,7 +612,7 @@ class TestLiveSystemIntegration:
             context={"user_id": "test_scam_scenario"}
         )
         
-        response_text = response.get("final_response", "")
+        response_text = response.get("final_synthesis", "")
         TestReporter.log(f"Response preview: {response_text[:200]}...")
         
         # Should detect scam indicators
@@ -649,7 +649,7 @@ class TestLiveSystemIntegration:
             context={"user_id": "test_contract_user"}
         )
         
-        response_text = response.get("final_response", "")
+        response_text = response.get("final_synthesis", "")
         TestReporter.log(f"Response preview: {response_text[:300]}...")
         
         # Should identify red flags
@@ -686,7 +686,7 @@ class TestLiveSystemIntegration:
             context={"user_id": "test_scope_user"}
         )
         
-        response_text = response.get("final_response", "")
+        response_text = response.get("final_synthesis", "")
         TestReporter.log(f"Response preview: {response_text[:300]}...")
         
         scope_words = ["scope", "additional", "fee", "negotiate", "boundary", "creep"]
@@ -717,7 +717,7 @@ class TestLiveSystemIntegration:
             context={"user_id": "test_ghost_user"}
         )
         
-        response_text = response.get("final_response", "")
+        response_text = response.get("final_synthesis", "")
         TestReporter.log(f"Response preview: {response_text[:300]}...")
         
         ghost_words = ["follow", "reminder", "escalate", "payment", "protect"]
@@ -747,7 +747,7 @@ class TestLiveSystemIntegration:
             context={"user_id": "test_negotiate_user"}
         )
         
-        response_text = response.get("final_response", "")
+        response_text = response.get("final_synthesis", "")
         TestReporter.log(f"Response preview: {response_text[:300]}...")
         
         negotiate_words = ["rate", "value", "counter", "offer", "negotiate"]
@@ -782,7 +782,7 @@ class TestLiveSystemIntegration:
         duration = time.time() - start
         
         TestReporter.log(f"Workflow completed in {duration:.2f}s")
-        TestReporter.log(f"Response length: {len(response.get('final_response', ''))} chars")
+        TestReporter.log(f"Response length: {len(response.get('final_synthesis', ''))} chars")
         TestReporter.log(f"Agents used: {response.get('agents_used', [])}")
         
         TestReporter.log("End-to-end workflow PASSED", "SUCCESS")

@@ -316,9 +316,9 @@ async def synthesize_node(state: OrchestratorState) -> Dict[str, Any]:
     
     # Combine outputs with synthesis
     llm = ChatOpenAI(
-        model=settings.OPENROUTER_MODEL,
-        openai_api_key=settings.OPENROUTER_API_KEY,
-        openai_api_base=settings.OPENROUTER_BASE_URL,
+        model=settings.openrouter_model,
+        openai_api_key=settings.openrouter_api_key,
+        openai_api_base=settings.openrouter_base_url,
         temperature=0.3
     )
     
