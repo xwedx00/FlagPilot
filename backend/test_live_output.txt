@@ -1,295 +1,317 @@
 ================================================================================
   FLAGPILOT LIVE INTEGRATION TEST - v7.0 (Qdrant + MinIO)
-  Started: 2025-12-28T09:40:47.373969
+  Started: 2025-12-28T09:50:49.127908
 ================================================================================
 
 
 ================================================================================
-  TEST SUITE COMPLETED: 2025-12-28T09:40:47.376666
+  TEST SUITE COMPLETED: 2025-12-28T09:50:49.131943
 ================================================================================
-[09:40:47.393] [--] 
-[09:40:47.394] [--] ################################################################################
-[09:40:47.395] [--] #                          TEST 1: ENVIRONMENT CHECK                           #
-[09:40:47.396] [--] ################################################################################
-[09:40:47.398] [--] 
-[09:40:47.443] [--] OpenRouter Model: kwaipilot/kat-coder-pro:free
-[09:40:47.445] [--] OpenRouter Base URL: https://openrouter.ai/api/v1
-[09:40:47.446] [--] Qdrant: qdrant:6333
-[09:40:47.448] [--] MinIO: minio:9000
-[09:40:47.449] [--] ES: es01:9200
-[09:40:47.451] [--]   openrouter_api_key: ✅ SET
-[09:40:47.452] [--]   openrouter_model: ✅ SET
-[09:40:47.453] [--]   openrouter_base_url: ✅ SET
-[09:40:47.454] [--]   qdrant_host: ✅ SET
-[09:40:47.456] [--]   qdrant_port: ✅ SET
-[09:40:47.457] [--]   minio_endpoint: ✅ SET
-[09:40:47.459] [--]   es_host: ✅ SET
-[09:40:47.460] [--]   es_port: ✅ SET
-[09:40:47.462] [??] LangSmith: Not configured
-[09:40:47.463] [OK] Environment check PASSED
-[09:40:47.469] [--] 
-[09:40:47.471] [--] ################################################################################
-[09:40:47.473] [--] #                         TEST 2: QDRANT HEALTH CHECK                          #
-[09:40:47.474] [--] ################################################################################
-[09:40:47.476] [--] 
-[09:40:49.048] [--] Checking Qdrant health...
-[09:40:51.169] [..] Qdrant Status:
-[09:40:51.171] [..]   {
-[09:40:51.174] [..]     "status": "healthy",
-[09:40:51.175] [..]     "connected": true,
-[09:40:51.177] [..]     "collection": null,
-[09:40:51.178] [..]     "vectors_count": 0
-[09:40:51.179] [..]   }
-[09:40:51.181] [OK] Qdrant health check PASSED
-[09:40:51.187] [--] 
-[09:40:51.189] [--] ################################################################################
-[09:40:51.190] [--] #                      TEST 3: LANGCHAIN LLM HEALTH CHECK                      #
-[09:40:51.192] [--] ################################################################################
-[09:40:51.194] [--] 
-[09:40:51.260] [--] Model: kwaipilot/kat-coder-pro:free
-[09:40:51.262] [--] Sending test prompt...
-[09:40:53.143] [--] Response: Hello! I'm working and ready to help you....
-[09:40:53.145] [--] Latency: 1.88s
-[09:40:53.148] [OK] LangChain LLM health check PASSED
-[09:40:53.155] [--] 
-[09:40:53.157] [--] ################################################################################
-[09:40:53.160] [--] #                      TEST 4: ELASTICSEARCH HEALTH CHECK                      #
-[09:40:53.162] [--] ################################################################################
-[09:40:53.164] [--] 
-[09:40:53.475] [--] ES Version: 9.2.3
-[09:40:53.477] [--] Cluster: flagpilot-cluster
-[09:40:53.479] [OK] Elasticsearch health check PASSED
-[09:40:53.483] [--] 
-[09:40:53.485] [--] ################################################################################
-[09:40:53.486] [--] #                          TEST 5: LANGSMITH TRACING                           #
-[09:40:53.487] [--] ################################################################################
-[09:40:53.489] [--] 
-[09:40:53.490] [??] LangSmith not configured - tracing disabled
-[09:40:53.494] [--] 
-[09:40:53.496] [--] ################################################################################
-[09:40:53.497] [--] #                      TEST 6: MINIO STORAGE HEALTH CHECK                      #
-[09:40:53.498] [--] ################################################################################
-[09:40:53.499] [--] 
-[09:40:53.637] [--] Checking MinIO health...
-[09:40:53.647] [--] MinIO connected, 2 files in bucket
-[09:40:53.649] [OK] MinIO health check PASSED
-[09:40:53.656] [--] 
-[09:40:53.658] [--] ################################################################################
-[09:40:53.660] [--] #                            TEST 7: AGENT REGISTRY                            #
-[09:40:53.662] [--] ################################################################################
-[09:40:53.664] [--] 
-[09:40:53.924] [--] Registered Agents: 10
-[09:40:53.925] [OK]   ✅ contract-guardian
-[09:40:53.926] [OK]   ✅ job-authenticator
-[09:40:53.927] [OK]   ✅ scope-sentinel
-[09:40:53.928] [OK]   ✅ payment-enforcer
-[09:40:53.929] [OK]   ✅ dispute-mediator
-[09:40:53.930] [OK]   ✅ communication-coach
-[09:40:53.932] [OK]   ✅ negotiation-assistant
-[09:40:53.933] [OK]   ✅ profile-analyzer
-[09:40:53.934] [OK]   ✅ ghosting-shield
-[09:40:53.935] [OK]   ✅ risk-advisor
-[09:40:53.936] [OK] Agent registry check PASSED
-[09:40:53.941] [--] 
-[09:40:53.942] [--] ################################################################################
-[09:40:53.944] [--] #                       TEST 8: FAST-FAIL SCAM DETECTION                       #
-[09:40:53.945] [--] ################################################################################
-[09:40:53.947] [--] 
-[09:40:53.948] [--] Testing message: Congratulations! You've won $50,000! Send $500 to ...
-[09:41:02.484] [--] Agents selected: ['risk-advisor']
-[09:41:02.486] [--] Urgency: high
-[09:41:02.488] [--] Reasoning: This is a classic advance-fee scam. The user needs immediate scam detection and risk assessment....
-[09:41:02.490] [OK] ✅ Scam correctly routed to risk detection
-[09:41:02.492] [OK] Fast-fail scam detection PASSED
-[09:41:02.497] [--] 
-[09:41:02.498] [--] ################################################################################
-[09:41:02.499] [--] #                         TEST 9: ORCHESTRATOR ROUTING                         #
-[09:41:02.500] [--] ################################################################################
-[09:41:02.501] [--] 
-[09:41:02.503] [--] 
+[09:50:49.149] [--] 
+[09:50:49.151] [--] ################################################################################
+[09:50:49.153] [--] #                          TEST 1: ENVIRONMENT CHECK                           #
+[09:50:49.154] [--] ################################################################################
+[09:50:49.155] [--] 
+[09:50:49.196] [--] OpenRouter Model: kwaipilot/kat-coder-pro:free
+[09:50:49.198] [--] OpenRouter Base URL: https://openrouter.ai/api/v1
+[09:50:49.200] [--] Qdrant: qdrant:6333
+[09:50:49.202] [--] MinIO: minio:9000
+[09:50:49.203] [--] ES: es01:9200
+[09:50:49.204] [--]   openrouter_api_key: ✅ SET
+[09:50:49.205] [--]   openrouter_model: ✅ SET
+[09:50:49.207] [--]   openrouter_base_url: ✅ SET
+[09:50:49.208] [--]   qdrant_host: ✅ SET
+[09:50:49.209] [--]   qdrant_port: ✅ SET
+[09:50:49.210] [--]   minio_endpoint: ✅ SET
+[09:50:49.212] [--]   es_host: ✅ SET
+[09:50:49.213] [--]   es_port: ✅ SET
+[09:50:49.214] [??] LangSmith: Not configured
+[09:50:49.215] [OK] Environment check PASSED
+[09:50:49.219] [--] 
+[09:50:49.220] [--] ################################################################################
+[09:50:49.221] [--] #                         TEST 2: QDRANT HEALTH CHECK                          #
+[09:50:49.222] [--] ################################################################################
+[09:50:49.223] [--] 
+[09:50:50.815] [--] Checking Qdrant health...
+[09:50:53.017] [..] Qdrant Status:
+[09:50:53.019] [..]   {
+[09:50:53.020] [..]     "status": "healthy",
+[09:50:53.021] [..]     "connected": true,
+[09:50:53.023] [..]     "collection": null,
+[09:50:53.024] [..]     "vectors_count": 0
+[09:50:53.025] [..]   }
+[09:50:53.026] [OK] Qdrant health check PASSED
+[09:50:53.030] [--] 
+[09:50:53.031] [--] ################################################################################
+[09:50:53.032] [--] #                      TEST 3: LANGCHAIN LLM HEALTH CHECK                      #
+[09:50:53.033] [--] ################################################################################
+[09:50:53.034] [--] 
+[09:50:53.092] [--] Model: kwaipilot/kat-coder-pro:free
+[09:50:53.094] [--] Sending test prompt...
+[09:50:56.636] [--] Response: Hello! I'm working and ready to help you....
+[09:50:56.639] [--] Latency: 3.54s
+[09:50:56.641] [OK] LangChain LLM health check PASSED
+[09:50:56.648] [--] 
+[09:50:56.649] [--] ################################################################################
+[09:50:56.651] [--] #                      TEST 4: ELASTICSEARCH HEALTH CHECK                      #
+[09:50:56.653] [--] ################################################################################
+[09:50:56.654] [--] 
+[09:50:56.983] [--] ES Version: 9.2.3
+[09:50:56.986] [--] Cluster: flagpilot-cluster
+[09:50:56.988] [OK] Elasticsearch health check PASSED
+[09:50:56.993] [--] 
+[09:50:56.995] [--] ################################################################################
+[09:50:56.997] [--] #                          TEST 5: LANGSMITH TRACING                           #
+[09:50:56.998] [--] ################################################################################
+[09:50:57.000] [--] 
+[09:50:57.001] [--] LangSmith not configured - tracing disabled (OK for local dev)
+[09:50:57.003] [OK] LangSmith tracing check PASSED
+[09:50:57.007] [--] 
+[09:50:57.009] [--] ################################################################################
+[09:50:57.010] [--] #                      TEST 6: MINIO STORAGE HEALTH CHECK                      #
+[09:50:57.012] [--] ################################################################################
+[09:50:57.013] [--] 
+[09:50:57.158] [--] Checking MinIO health...
+[09:50:57.169] [--] MinIO connected, 3 files in bucket
+[09:50:57.171] [OK] MinIO health check PASSED
+[09:50:57.177] [--] 
+[09:50:57.180] [--] ################################################################################
+[09:50:57.182] [--] #                            TEST 7: AGENT REGISTRY                            #
+[09:50:57.183] [--] ################################################################################
+[09:50:57.185] [--] 
+[09:50:57.419] [--] Registered Agents: 10
+[09:50:57.420] [OK]   ✅ contract-guardian
+[09:50:57.421] [OK]   ✅ job-authenticator
+[09:50:57.423] [OK]   ✅ scope-sentinel
+[09:50:57.424] [OK]   ✅ payment-enforcer
+[09:50:57.425] [OK]   ✅ dispute-mediator
+[09:50:57.426] [OK]   ✅ communication-coach
+[09:50:57.427] [OK]   ✅ negotiation-assistant
+[09:50:57.428] [OK]   ✅ profile-analyzer
+[09:50:57.430] [OK]   ✅ ghosting-shield
+[09:50:57.431] [OK]   ✅ risk-advisor
+[09:50:57.432] [OK] Agent registry check PASSED
+[09:50:57.437] [--] 
+[09:50:57.438] [--] ################################################################################
+[09:50:57.440] [--] #                       TEST 8: FAST-FAIL SCAM DETECTION                       #
+[09:50:57.441] [--] ################################################################################
+[09:50:57.442] [--] 
+[09:50:57.444] [--] Testing message: Congratulations! You've won $50,000! Send $500 to ...
+[09:51:01.058] [--] Agents selected: ['risk-advisor']
+[09:51:01.061] [--] Urgency: high
+[09:51:01.063] [--] Reasoning: This is a classic advance fee scam - the user is being asked to pay money to receive a non-existent ...
+[09:51:01.065] [OK] ✅ Scam correctly routed to risk detection
+[09:51:01.067] [OK] Fast-fail scam detection PASSED
+[09:51:01.074] [--] 
+[09:51:01.075] [--] ################################################################################
+[09:51:01.077] [--] #                         TEST 9: ORCHESTRATOR ROUTING                         #
+[09:51:01.079] [--] ################################################################################
+[09:51:01.080] [--] 
+[09:51:01.081] [--] 
 ----- Query: Please review my freelance contract for ... --------------------
-[09:41:11.544] [--] Selected: ['contract-guardian']
-[09:41:11.546] [--] Reasoning: Contract review for red flags is the primary funct...
-[09:41:11.549] [OK] ✅ Correct routing
-[09:41:11.550] [--] 
+[09:51:05.546] [--] Selected: ['contract-guardian']
+[09:51:05.547] [--] Reasoning: The user is requesting a freelance contract review...
+[09:51:05.548] [OK] ✅ Correct routing
+[09:51:05.550] [--] 
 ----- Query: Is this job posting a scam?... ---------------------------------
-[09:41:13.435] [--] Selected: ['job-authenticator', 'risk-advisor']
-[09:41:13.437] [--] Reasoning: Job posting verification and scam detection are ne...
-[09:41:13.439] [OK] ✅ Correct routing
-[09:41:13.441] [--] 
+[09:51:07.757] [--] Selected: ['job-authenticator', 'risk-advisor']
+[09:51:07.759] [--] Reasoning: Job posting verification and scam detection are ne...
+[09:51:07.761] [OK] ✅ Correct routing
+[09:51:07.763] [--] 
 ----- Query: Client keeps adding extra features witho... --------------------
-[09:41:15.536] [--] Selected: ['scope-sentinel', 'payment-enforcer', 'negotiation-assistant']
-[09:41:15.538] [--] Reasoning: Scope creep detection needed to identify unauthori...
-[09:41:15.540] [OK] ✅ Correct routing
-[09:41:15.542] [--] 
+[09:51:10.101] [--] Selected: ['scope-sentinel', 'payment-enforcer', 'negotiation-assistant']
+[09:51:10.104] [--] Reasoning: Scope creep detection needed to identify unauthori...
+[09:51:10.106] [OK] ✅ Correct routing
+[09:51:10.107] [--] 
 ----- Query: Help me negotiate a better rate... -----------------------------
-[09:41:17.826] [--] Selected: ['negotiation-assistant']
-[09:41:17.829] [--] Reasoning: User needs help negotiating a better rate...
-[09:41:17.831] [OK] ✅ Correct routing
-[09:41:17.833] [--] Routing Score: 4/4
-[09:41:17.834] [OK] Orchestrator routing validated
-[09:41:17.841] [--] 
-[09:41:17.843] [--] ################################################################################
-[09:41:17.845] [--] #                       TEST 10: QDRANT INGEST & SEARCH                        #
-[09:41:17.847] [--] ################################################################################
-[09:41:17.849] [--] 
-[09:41:17.881] [--] 
+[09:51:12.524] [--] Selected: ['negotiation-assistant']
+[09:51:12.525] [--] Reasoning: User needs help negotiating a better rate, which i...
+[09:51:12.527] [OK] ✅ Correct routing
+[09:51:12.529] [--] Routing Score: 4/4
+[09:51:12.530] [OK] Orchestrator routing validated
+[09:51:12.536] [--] 
+[09:51:12.538] [--] ################################################################################
+[09:51:12.540] [--] #                       TEST 10: QDRANT INGEST & SEARCH                        #
+[09:51:12.541] [--] ################################################################################
+[09:51:12.542] [--] 
+[09:51:12.575] [--] 
 ----- STEP 1: INGEST TEST DOCUMENT ------------------------------------------
-[09:41:18.774] [--] Ingested 1 chunks
-[09:41:18.777] [--] 
+[09:51:13.492] [--] Ingested 1 chunks
+[09:51:13.494] [--] 
 ----- STEP 2: SEARCH TEST ---------------------------------------------------
-[09:41:19.324] [--] Found 3 relevant documents
-[09:41:19.327] [..]   [1] FREELANCE CONTRACT BEST PRACTICES
+[09:51:14.031] [--] Found 3 relevant documents
+[09:51:14.033] [..]   [1] FREELANCE CONTRACT BEST PRACTICES
         
         This document outlines key terms for freelance co...
-[09:41:19.329] [..]   [2] FREELANCE CONTRACT BEST PRACTICES
+[09:51:14.034] [..]   [2] FREELANCE CONTRACT BEST PRACTICES
         
         This document outlines key terms for freelance co...
-[09:41:19.331] [..]   [3] FREELANCE CONTRACT BEST PRACTICES
+[09:51:14.035] [..]   [3] FREELANCE CONTRACT BEST PRACTICES
         
         This document outlines key terms for freelance co...
-[09:41:19.333] [OK] Qdrant ingest & search PASSED
-[09:41:19.339] [--] 
-[09:41:19.342] [--] ################################################################################
-[09:41:19.344] [--] #                        TEST 11: MINIO FILE OPERATIONS                        #
-[09:41:19.346] [--] ################################################################################
-[09:41:19.348] [--] 
-[09:41:19.349] [--] 
+[09:51:14.037] [OK] Qdrant ingest & search PASSED
+[09:51:14.042] [--] 
+[09:51:14.044] [--] ################################################################################
+[09:51:14.045] [--] #                        TEST 11: MINIO FILE OPERATIONS                        #
+[09:51:14.046] [--] ################################################################################
+[09:51:14.047] [--] 
+[09:51:14.048] [--] 
 ----- STEP 1: UPLOAD TEST FILE ----------------------------------------------
-[09:41:19.359] [--] Uploaded: test_user_minio/20251228_094119_9af09249.txt
-[09:41:19.361] [--] Size: 51 bytes
-[09:41:19.365] [--] 
+[09:51:14.057] [--] Uploaded: test_user_minio/20251228_095114_37021741.txt
+[09:51:14.059] [--] Size: 51 bytes
+[09:51:14.060] [--] 
 ----- STEP 2: DOWNLOAD TEST -------------------------------------------------
-[09:41:19.369] [OK] MinIO file operations PASSED
-[09:41:19.375] [--] 
-[09:41:19.377] [--] ################################################################################
-[09:41:19.379] [--] #                       TEST 12: USER PROFILE OPERATIONS                       #
-[09:41:19.380] [--] ################################################################################
-[09:41:19.382] [--] 
-[09:41:19.421] [--] 
+[09:51:14.063] [OK] MinIO file operations PASSED
+[09:51:14.068] [--] 
+[09:51:14.070] [--] ################################################################################
+[09:51:14.071] [--] #                       TEST 12: USER PROFILE OPERATIONS                       #
+[09:51:14.073] [--] ################################################################################
+[09:51:14.074] [--] 
+[09:51:14.103] [--] 
 ----- CREATE PROFILE --------------------------------------------------------
-[09:41:19.615] [--] Created profile for live_test_user_1766914879
-[09:41:19.618] [--] 
+[09:51:14.364] [--] Created profile for live_test_user_1766915474
+[09:51:15.376] [--] 
 ----- READ PROFILE ----------------------------------------------------------
-[09:41:19.642] [--] Retrieved: N/A
-[09:41:19.650] [--] 
-[09:41:19.652] [--] ################################################################################
-[09:41:19.654] [--] #                       TEST 13: CHAT HISTORY OPERATIONS                       #
-[09:41:19.655] [--] ################################################################################
-[09:41:19.656] [--] 
-[09:41:19.670] [--] 
+[09:51:15.408] [--] Retrieved: Test Freelancer with Python, AI/ML, and LangChain ...
+[09:51:15.411] [OK] User profile operations PASSED
+[09:51:15.416] [--] 
+[09:51:15.418] [--] ################################################################################
+[09:51:15.420] [--] #                       TEST 13: CHAT HISTORY OPERATIONS                       #
+[09:51:15.422] [--] ################################################################################
+[09:51:15.423] [--] 
+[09:51:15.436] [--] 
 ----- SAVE MESSAGES ---------------------------------------------------------
-[09:41:19.678] [--] 
-[09:41:19.680] [--] ################################################################################
-[09:41:19.681] [--] #                      TEST 14: GLOBAL WISDOM OPERATIONS                       #
-[09:41:19.682] [--] ################################################################################
-[09:41:19.684] [--] 
-[09:41:19.696] [--] 
+[09:51:15.475] [--] Saved 2 messages
+[09:51:16.482] [--] 
+----- RETRIEVE HISTORY ------------------------------------------------------
+[09:51:16.579] [--] Retrieved 2 messages
+[09:51:16.582] [OK] Chat history operations PASSED
+[09:51:16.588] [--] 
+[09:51:16.590] [--] ################################################################################
+[09:51:16.592] [--] #                      TEST 14: GLOBAL WISDOM OPERATIONS                       #
+[09:51:16.593] [--] ################################################################################
+[09:51:16.595] [--] 
+[09:51:16.612] [--] 
 ----- INDEX WISDOM ----------------------------------------------------------
-[09:41:19.704] [--] 
-[09:41:19.706] [--] ################################################################################
-[09:41:19.707] [--] #                         TEST 15: EXPERIENCE GALLERY                          #
-[09:41:19.708] [--] ################################################################################
-[09:41:19.710] [--] 
-[09:41:19.721] [--] 
+[09:51:16.669] [--] Indexed: Handling Scope Creep
+[09:51:17.679] [--] 
+----- SEARCH WISDOM ---------------------------------------------------------
+[09:51:17.699] [--] Found 1 wisdom entries
+[09:51:17.702] [OK] Global wisdom operations PASSED
+[09:51:17.707] [--] 
+[09:51:17.709] [--] ################################################################################
+[09:51:17.710] [--] #                         TEST 15: EXPERIENCE GALLERY                          #
+[09:51:17.712] [--] ################################################################################
+[09:51:17.713] [--] 
+[09:51:17.726] [--] 
 ----- ADD EXPERIENCE --------------------------------------------------------
-[09:41:19.730] [--] 
-[09:41:19.732] [--] ################################################################################
-[09:41:19.734] [--] #                       TEST 16: SCAM DETECTION SCENARIO                       #
-[09:41:19.735] [--] ################################################################################
-[09:41:19.736] [--] 
-[09:41:19.737] [--] Testing scam job posting...
-[09:41:24.855] [--] Response preview: # 🚨 CRITICAL RISK DETECTED
+[09:51:17.790] [--] Added experience: AI Integration Project
+[09:51:18.809] [--] Found 1 similar experiences
+[09:51:18.812] [OK] Experience gallery PASSED
+[09:51:18.817] [--] 
+[09:51:18.820] [--] ################################################################################
+[09:51:18.822] [--] #                       TEST 16: SCAM DETECTION SCENARIO                       #
+[09:51:18.824] [--] ################################################################################
+[09:51:18.825] [--] 
+[09:51:18.826] [--] Testing scam job posting...
+[09:51:32.750] [--] Response preview: # 🚨 CRITICAL RISK DETECTED
 
 ## Risk Advisor
 
 ## 🚨 CRITICAL RISK ALERT
 
 ### What We Detected
-**Advance-fee scam** - Fraudulent "work from home" scheme requesting upfront payment
+**High-yield money-making scam with advance fee fraud**
 
-### Why This Is Danger...
-[09:41:24.857] [OK] ✅ Scam indicators detected
-[09:41:24.858] [OK] Scam detection scenario PASSED
-[09:41:24.863] [--] 
-[09:41:24.865] [--] ################################################################################
-[09:41:24.867] [--] #                      TEST 17: CONTRACT ANALYSIS QUALITY                      #
-[09:41:24.868] [--] ################################################################################
-[09:41:24.869] [--] 
-[09:41:24.871] [--] Testing contract with unfair clauses...
-[09:41:53.634] [--] Response preview: # Contract Review: Termination Clause Analysis
+### Why This Is Dangerous
+This is a classic work-fr...
+[09:51:32.752] [OK] ✅ Scam indicators detected
+[09:51:32.753] [OK] Scam detection scenario PASSED
+[09:51:32.758] [--] 
+[09:51:32.759] [--] ################################################################################
+[09:51:32.761] [--] #                      TEST 17: CONTRACT ANALYSIS QUALITY                      #
+[09:51:32.762] [--] ################################################################################
+[09:51:32.763] [--] 
+[09:51:32.764] [--] Testing contract with unfair clauses...
+[09:51:51.060] [--] Response preview: # 🚨 CRITICAL RISK DETECTED
 
-## 🚨 CRITICAL FINDINGS
+## Contract Guardian
 
-This termination clause contains **extremely predatory terms** that create severe financial and legal risks for the Contractor. Multiple provisions are likely unenforceable in most jurisdictions.
+## 🔍 Contract Analysis
 
-### Key Issues Identified:
+### Risk Summary
+This termination clause is heavily one-sided and contains illegal provisions that could void the entire contract.
 
-| I...
-[09:41:53.637] [OK] ✅ Contract issues identified
-[09:41:53.639] [OK] Contract analysis PASSED
-[09:41:53.645] [--] 
-[09:41:53.646] [--] ################################################################################
-[09:41:53.647] [--] #                        TEST 18: SCOPE CREEP DETECTION                        #
-[09:41:53.649] [--] ################################################################################
-[09:41:53.650] [--] 
-[09:41:53.651] [--] Testing scope creep scenario...
-[09:42:26.258] [--] Response preview: # 🚨 Scope Creep Response Strategy
+### Findings
+| Clause | Risk Level | Issue | Recommendation |
+|--------|------------|-------|-...
+[09:51:51.062] [OK] ✅ Contract issues identified
+[09:51:51.064] [OK] Contract analysis PASSED
+[09:51:51.071] [--] 
+[09:51:51.073] [--] ################################################################################
+[09:51:51.075] [--] #                        TEST 18: SCOPE CREEP DETECTION                        #
+[09:51:51.078] [--] ################################################################################
+[09:51:51.081] [--] 
+[09:51:51.084] [--] Testing scope creep scenario...
+[09:52:34.158] [--] Response preview: # 🚩 Scope Creep Response Summary
 
-## Key Findings Summary
+## Key Findings
 
-**Critical Issue**: Client is attempting to expand a $500 landing page project into a full e-commerce platform with mobile app integration, CRM connections, and analytics dashboards - representing **$16,450 in unpaid scope creep**.
+**🚨 CRITICAL SCOPE VIOLATION**: Client is attempting to expand a $500 landing page project into a $15,000-$22,500 enterprise system without additional compensation.
 
-**Risk ...
-[09:42:26.261] [OK] ✅ Scope creep addressed
-[09:42:26.263] [OK] Scope creep detection PASSED
-[09:42:26.268] [--] 
-[09:42:26.270] [--] ################################################################################
-[09:42:26.272] [--] #                         TEST 19: GHOSTING PREVENTION                         #
-[09:42:26.274] [--] ################################################################################
-[09:42:26.275] [--] 
-[09:42:26.276] [--] Testing ghosting prevention scenario...
-[09:42:55.947] [--] Response preview: # Client Non-Response Recovery Plan
+### Scope Analysis
+- **Original**: Simple marketing landing page ($500)
+- **Request...
+[09:52:34.160] [OK] ✅ Scope creep addressed
+[09:52:34.161] [OK] Scope creep detection PASSED
+[09:52:34.169] [--] 
+[09:52:34.171] [--] ################################################################################
+[09:52:34.173] [--] #                         TEST 19: GHOSTING PREVENTION                         #
+[09:52:34.174] [--] ################################################################################
+[09:52:34.176] [--] 
+[09:52:34.177] [--] Testing ghosting prevention scenario...
+[09:53:04.768] [--] Response preview: # Client Non-Response Recovery Plan
 
 ## Summary
-Your client has been unresponsive for 14 days while you have an outstanding second milestone payment for an 80% complete project. This situation requires immediate action to protect your cash flow and establish clear boundaries.
+Your client has been unresponsive for 14 days while you have an outstanding second milestone payment for 80% completed work. This is a common but serious situation that requires immediate action.
 
 ## Key Findings
-- **St...
-[09:42:55.949] [OK] ✅ Ghosting advice provided
-[09:42:55.952] [OK] Ghosting prevention PASSED
-[09:42:55.960] [--] 
-[09:42:55.962] [--] ################################################################################
-[09:42:55.965] [--] #                  TEST 20: CONTRACT NEGOTIATION WITH MEMORY                   #
-[09:42:55.968] [--] ################################################################################
-[09:42:55.969] [--] 
-[09:42:55.972] [--] 
+- **Status**: Payment is overdue and cl...
+[09:53:04.770] [OK] ✅ Ghosting advice provided
+[09:53:04.772] [OK] Ghosting prevention PASSED
+[09:53:04.777] [--] 
+[09:53:04.779] [--] ################################################################################
+[09:53:04.780] [--] #                  TEST 20: CONTRACT NEGOTIATION WITH MEMORY                   #
+[09:53:04.781] [--] ################################################################################
+[09:53:04.782] [--] 
+[09:53:04.784] [--] 
 ----- NEGOTIATION REQUEST ---------------------------------------------------
-[09:43:17.779] [--] Response preview: # Negotiation Strategy for $50/hr Python/AI Project Offer
+[09:53:22.474] [--] Response preview: # Negotiation Strategy for $50/hr Python/AI Project Offer
 
 ## Key Findings
 
-- **Significant Rate Gap**: The client's offer of $50/hr is 67% below your standard rate of $150/hr and well below market rates ($100-$150/hr)
-- **Value Opportunity**: Your Python/AI expertise can deliver 30-40% faster proje...
-[09:43:17.781] [OK] ✅ Negotiation strategy provided
-[09:43:17.783] [OK] Contract negotiation PASSED
-[09:43:17.790] [--] 
-[09:43:17.792] [--] ################################################################################
-[09:43:17.794] [--] #                         TEST 21: END-TO-END WORKFLOW                         #
-[09:43:17.796] [--] ################################################################################
-[09:43:17.797] [--] 
-[09:43:17.798] [--] Running full workflow...
-[09:43:53.327] [--] Workflow completed in 35.53s
-[09:43:53.329] [--] Response length: 2361 chars
-[09:43:53.331] [--] Agents used: []
-[09:43:53.332] [OK] End-to-end workflow PASSED
-[09:43:53.336] [--] 
-[09:43:53.338] [--] ################################################################################
-[09:43:53.339] [--] #                     TEST 22: COPILOTKIT API INTEGRATION                      #
-[09:43:53.340] [--] ################################################################################
-[09:43:53.341] [--] 
-[09:43:53.382] [--] API Version: 7.0.0
-[09:43:53.384] [--] Architecture: LangGraph + CopilotKit + Qdrant + PostgreSQL
-[09:43:53.385] [--] Agents: 14
-[09:43:53.387] [--] CopilotKit endpoint: /copilotkit
-[09:43:53.388] [OK] CopilotKit integration PASSED
+- **Significant Rate Gap**: The client's offer of $50/hour is 67% below your standard $150/hour rate
+- **Market Validation**: $50/hr is well below market rates for Python/AI expertise (typically $100-200/hr)
+- **Negotiation ...
+[09:53:22.477] [OK] ✅ Negotiation strategy provided
+[09:53:22.479] [OK] Contract negotiation PASSED
+[09:53:22.487] [--] 
+[09:53:22.489] [--] ################################################################################
+[09:53:22.492] [--] #                         TEST 21: END-TO-END WORKFLOW                         #
+[09:53:22.494] [--] ################################################################################
+[09:53:22.496] [--] 
+[09:53:22.497] [--] Running full workflow...
+[09:53:55.020] [--] Workflow completed in 32.52s
+[09:53:55.022] [--] Response length: 3711 chars
+[09:53:55.024] [--] Agents used: []
+[09:53:55.025] [OK] End-to-end workflow PASSED
+[09:53:55.030] [--] 
+[09:53:55.031] [--] ################################################################################
+[09:53:55.032] [--] #                     TEST 22: COPILOTKIT API INTEGRATION                      #
+[09:53:55.034] [--] ################################################################################
+[09:53:55.035] [--] 
+[09:53:55.069] [--] API Version: 7.0.0
+[09:53:55.071] [--] Architecture: LangGraph + CopilotKit + Qdrant + PostgreSQL
+[09:53:55.073] [--] Agents: 14
+[09:53:55.074] [--] CopilotKit endpoint: /copilotkit
+[09:53:55.076] [OK] CopilotKit integration PASSED
